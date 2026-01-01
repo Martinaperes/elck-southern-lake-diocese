@@ -1,54 +1,67 @@
-<?php
+﻿<?php
 
-use App\Http\Controllers\Admin\DashboardController;
+// use App\Http\Controllers\Admin\DashboardController; // TEMPORARILY DISABLED
 use App\Http\Controllers\Admin\UserController;
-use App\Http\Controllers\Admin\ProfileController;
-use App\Http\Controllers\Admin\MinistryController;
-use App\Http\Controllers\Admin\EventController;
-use App\Http\Controllers\Admin\GalleryController;
-use App\Http\Controllers\Admin\DonationController;
-use App\Http\Controllers\Admin\SermonController;
-use Illuminate\Support\Facades\Route;
+use App\Http\Controllers\Admin\MinistryController as AdminMinistryController;
+use App\Http\Controllers\Admin\EventController as AdminEventController;
+use App\Http\Controllers\Admin\GalleryController as AdminGalleryController;
+// use App\Http\Controllers\Admin\DonationController as AdminDonationController; // TEMPORARILY DISABLED
+use App\Http\Controllers\Admin\SermonController as AdminSermonController;
+use App\Http\Controllers\Admin\NewsletterController as AdminNewsletterController;
 
-// Public routes (if any)
-Route::get('/sermons', [App\Http\Controllers\SermonController::class, 'index'])->name('sermons.index');
-Route::get('/sermons/{sermon}', [App\Http\Controllers\SermonController::class, 'show'])->name('sermons.show');
-
-// Admin Routes Group
 Route::middleware(['auth', 'admin'])->prefix('admin')->name('admin.')->group(function () {
     
     // Dashboard
-    Route::get('/dashboard', [DashboardController::class, 'index'])->name('dashboard');
+// Route::get('/dashboard', [DashboardController::class, 'index'])->name('dashboard'); // TEMPORARILY DISABLED
     
     // Users Management
     Route::resource('users', UserController::class);
     
     // Ministries Management
-    Route::resource('ministries', MinistryController::class);
+    Route::resource('ministries', AdminMinistryController::class);
 
     // Sermons Management
-    Route::resource('sermons', SermonController::class);
-    Route::post('sermons/{sermon}/toggle-publish', [SermonController::class, 'togglePublish'])
+    Route::resource('sermons', AdminSermonController::class);
+    Route::post('sermons/{sermon}/toggle-publish', [AdminSermonController::class, 'togglePublish'])
          ->name('sermons.toggle-publish');
     
     // Events Management
-    Route::resource('events', EventController::class);
-    Route::get('events/{event}/registrations', [EventController::class, 'registrations'])
+    Route::resource('events', AdminEventController::class);
+    Route::get('events/{event}/registrations', [AdminEventController::class, 'registrations'])
          ->name('events.registrations');
-    Route::post('events/{event}/registrations/{registration}/status', [EventController::class, 'updateRegistrationStatus'])
+    Route::post('events/{event}/registrations/{registration}/status', [AdminEventController::class, 'updateRegistrationStatus'])
          ->name('events.registrations.status');
-    Route::delete('events/{event}/registrations/{registration}', [EventController::class, 'destroyRegistration'])
+    Route::delete('events/{event}/registrations/{registration}', [AdminEventController::class, 'destroyRegistration'])
          ->name('events.registrations.destroy');
-    Route::get('events/{event}/registrations/{registration}/details', [EventController::class, 'getRegistrationDetails'])
+    Route::get('events/{event}/registrations/{registration}/details', [AdminEventController::class, 'getRegistrationDetails'])
          ->name('events.registrations.details');
     
     // Gallery Management
-    Route::resource('gallery', GalleryController::class);
+    Route::resource('gallery', AdminGalleryController::class);
     
     // Donations Management
-    Route::resource('donations', DonationController::class);
+// Route::resource('donations', AdminDonationController::class); // TEMPORARILY DISABLED
     
-    // Profile
-    Route::get('/profile', [ProfileController::class, 'edit'])->name('profile.edit');
-    Route::patch('/profile', [ProfileController::class, 'update'])->name('profile.update');
+    
+    
+    // Newsletter Management (FIXED: No nested groups)
+    Route::prefix('newsletter')->name('newsletter.')->group(function () {
+        Route::get('/subscribers', [AdminNewsletterAdminController::class, 'subscribers'])->name('subscribers');
+        Route::get('/campaigns', [AdminNewsletterAdminController::class, 'campaigns'])->name('campaigns');
+        Route::get('/create', [AdminNewsletterAdminController::class, 'createCampaign'])->name('create');
+        Route::post('/', [AdminNewsletterAdminController::class, 'storeCampaign'])->name('store');
+        Route::get('/analytics/{campaign}', [AdminNewsletterAdminController::class, 'analytics'])->name('analytics');
+        Route::post('/send/{campaign}', [AdminNewsletterAdminController::class, 'sendCampaign'])->name('send');
+        
+        // Add these additional routes
+        Route::post('/{subscriber}/unsubscribe', [AdminNewsletterAdminController::class, 'unsubscribe'])->name('unsubscribe');
+        Route::post('/{subscriber}/resubscribe', [AdminNewsletterAdminController::class, 'resubscribe'])->name('resubscribe');
+        Route::delete('/subscribers/{subscriber}', [AdminNewsletterAdminController::class, 'destroySubscriber'])->name('subscribers.destroy');
+        Route::post('/{campaign}/duplicate', [AdminNewsletterAdminController::class, 'duplicate'])->name('duplicate');
+        Route::post('/{campaign}/cancel', [AdminNewsletterAdminController::class, 'cancel'])->name('cancel');
+        Route::get('/{campaign}/edit', [AdminNewsletterAdminController::class, 'editCampaign'])->name('edit');
+        Route::put('/{campaign}', [AdminNewsletterAdminController::class, 'updateCampaign'])->name('update');
+        Route::delete('/{campaign}', [AdminNewsletterAdminController::class, 'destroyCampaign'])->name('destroy');
+    });
 });
+

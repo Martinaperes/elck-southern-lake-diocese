@@ -1,0 +1,19 @@
+<?php
+
+namespace App\Http\Controllers;
+
+use Illuminate\Http\Request;
+
+class MpesaCallbackController extends Controller
+{
+    public function handle(Request $request)
+    {
+        // Log the callback
+        \Log::info('MPesa callback received', $request->all());
+        
+        return response()->json([
+            'ResultCode' => 0,
+            'ResultDesc' => 'Callback received successfully'
+        ]);
+    }
+}

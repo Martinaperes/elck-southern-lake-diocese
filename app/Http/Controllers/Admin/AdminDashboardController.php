@@ -1,8 +1,4 @@
-<?php
-
-namespace App\Http\Controllers\Admin;
-
-use App\Http\Controllers\Controller;
+﻿<?php\n\nnamespace App\Http\Controllers\Admin;\n\nuse App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
 use App\Models\Member;
 use App\Models\Ministry;
@@ -38,3 +34,4 @@ class DashboardController extends Controller
         ));
     }
 }
+

@@ -16,40 +16,101 @@
 
         {{-- Dynamic Ministry Content --}}
         @if($ministry->slug == 'youth-ministry')
-            @include('ministries.partials.youth')
+         @include('ministries.partials.youth', [
+        'ministry' => $ministry,
+        'upcomingEvents' => $upcomingEvents ?? null,
+        'isMember' => $isMember ?? false,
+        'userEmail' => $userEmail ?? null
+    ])
 
         @elseif($ministry->slug == 'womens-ministry')
-            @include('ministries.partials.women')
+            @include('ministries.partials.women', [
+        'ministry' => $ministry,
+        'upcomingEvents' => $upcomingEvents ?? null,
+        'isMember' => $isMember ?? false,
+        'userEmail' => $userEmail ?? null
+    ])
 
         @elseif($ministry->slug == 'mens-ministry')
-            @include('ministries.partials.men')
+            @include('ministries.partials.men', [
+        'ministry' => $ministry,
+        'upcomingEvents' => $upcomingEvents ?? null,
+        'isMember' => $isMember ?? false,
+        'userEmail' => $userEmail ?? null
+    ])
 
         @elseif($ministry->slug == 'childrens-ministry')
-            @include('ministries.partials.sunday')
+            @include('ministries.partials.sunday', [
+        'ministry' => $ministry,
+        'upcomingEvents' => $upcomingEvents ?? null,
+        'isMember' => $isMember ?? false,
+        'userEmail' => $userEmail ?? null
+    ])
 
         @elseif($ministry->slug == 'worship-and-liturgy-ministry')
-            @include('ministries.partials.choir')
+            @include('ministries.partials.choir', [
+        'ministry' => $ministry,
+        'upcomingEvents' => $upcomingEvents ?? null,
+        'isMember' => $isMember ?? false,
+        'userEmail' => $userEmail ?? null
+    ])
 
         @elseif($ministry->slug == 'orphan-and-vulnerable-children-programs')
-            @include('ministries.partials.ovc')
+            @include('ministries.partials.ovc', [
+        'ministry' => $ministry,
+        'upcomingEvents' => $upcomingEvents ?? null,
+        'isMember' => $isMember ?? false,
+        'userEmail' => $userEmail ?? null
+    ])
 
         @elseif($ministry->slug == 'relief-and-development-ministry')
-            @include('ministries.partials.relief')
+            @include('ministries.partials.relief', [
+        'ministry' => $ministry,
+        'upcomingEvents' => $upcomingEvents ?? null,
+        'isMember' => $isMember ?? false,
+        'userEmail' => $userEmail ?? null
+    ])
 
         @elseif($ministry->slug == 'elck-malaria-campaign')
-            @include('ministries.partials.malaria')
+            @include('ministries.partials.malaria', [
+        'ministry' => $ministry,
+        'upcomingEvents' => $upcomingEvents ?? null,
+        'isMember' => $isMember ?? false,
+        'userEmail' => $userEmail ?? null
+    ])
 
         @elseif($ministry->slug == 'adult-literacy-programs')
-            @include('ministries.partials.literacy')
+            @include('ministries.partials.literacy', [
+        'ministry' => $ministry,
+        'upcomingEvents' => $upcomingEvents ?? null,
+        'isMember' => $isMember ?? false,
+        'userEmail' => $userEmail ?? null
+    ])
 
         @elseif($ministry->slug == 'clergy-and-lay-leader-training')
-            @include('ministries.partials.training')
+            @include('ministries.partials.training', [
+        'ministry' => $ministry,
+        'upcomingEvents' => $upcomingEvents ?? null,
+        'isMember' => $isMember ?? false,
+        'userEmail' => $userEmail ?? null
+    ]
+    )
 
         @elseif($ministry->slug == 'evangelism-and-tree-planting-ministry')
-            @include('ministries.partials.evangelism')
+            @include('ministries.partials.evangelism', [
+        'ministry' => $ministry,
+        'upcomingEvents' => $upcomingEvents ?? null,
+        'isMember' => $isMember ?? false,
+        'userEmail' => $userEmail ?? null
+    ])
 
         @elseif($ministry->slug == 'hiv-and-aids-ministry')
-            @include('ministries.partials.hiv')
+            @include('ministries.partials.hiv', [
+        'ministry' => $ministry,
+        'upcomingEvents' => $upcomingEvents ?? null,
+        'isMember' => $isMember ?? false,
+        'userEmail' => $userEmail ?? null
+    ])
 
         @else
             <div class="text-center py-20 text-gray-600">

@@ -1,8 +1,4 @@
-<?php
-
-namespace App\Http\Controllers\Admin;
-
-use App\Http\Controllers\Controller;
+﻿<?php\n\nnamespace App\Http\Controllers\Admin;\n\nuse App\Http\Controllers\Controller;
 use App\Models\Donation;
 use App\Models\Event;
 
@@ -20,3 +16,4 @@ class ReportController extends Controller
         return view('admin.reports.events', compact('events'));
     }
 }
+

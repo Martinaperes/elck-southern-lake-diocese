@@ -30,6 +30,14 @@ class Member extends Model
         'is_active',
     ];
 
+    protected $casts = [
+        'date_of_birth' => 'date',
+        'baptism_date' => 'date',
+        'confirmation_date' => 'date',
+        'joined_at' => 'date',
+        'is_active' => 'boolean'
+    ];
+
     /**
      * A member belongs to a user (optional).
      */
@@ -40,37 +48,34 @@ class Member extends Model
    
     public function getFullNameAttribute(): string
     {
-        return $this->first_name . ' ' . $this->last_name;
+        return trim($this->first_name . ' ' . $this->last_name);
     }
 
     /**
      * Calculate age
      */
-     public function getAgeAttribute(): ?int
+    public function getAgeAttribute(): ?int
     {
         if (!$this->date_of_birth) {
             return null;
         }
 
-        // Ensure date_of_birth is a Carbon instance
-        $dob = $this->date_of_birth instanceof \Carbon\Carbon 
-            ? $this->date_of_birth 
-            : \Carbon\Carbon::parse($this->date_of_birth);
-
-        return $dob->age;
+        return $this->date_of_birth->age;
     }
+    
     public function getSafeAgeAttribute(): string
     {
         $age = $this->age;
         return $age ? $age . ' years old' : 'N/A';
     }
+    
     /**
      * A member can register for many events.
      */
     public function events()
     {
         return $this->belongsToMany(Event::class, 'event_registration')
-                    ->withPivot('number_of_guests',  'status')
+                    ->withPivot('number_of_guests', 'status')
                     ->withTimestamps();
     }
 
@@ -82,10 +87,60 @@ class Member extends Model
         return $this->hasMany(EventRegistration::class);
     }
     
+    /**
+     * ✅ FIXED: Correct relationship with ministries
+     */
     public function ministries()
     {
-        return $this->belongsToMany(Ministry::class, 'ministry_members', 'member_id', 'ministries_id')
+        return $this->belongsToMany(Ministry::class, 'ministry_members', 'member_id', 'ministry_id')
                     ->withPivot('role', 'joined_at', 'is_active')
                     ->withTimestamps();
+    }
+    
+    /**
+     * ✅ NEW: Relationship with MinistryMember model
+     */
+    public function ministryMembers()
+    {
+        return $this->hasMany(MinistryMember::class);
+    }
+    
+    /**
+     * ✅ NEW: Get member's active ministries
+     */
+    public function activeMinistries()
+    {
+        return $this->ministries()
+                    ->wherePivot('is_active', true);
+    }
+    
+    /**
+     * ✅ NEW: Accessor for initials
+     */
+    public function getInitialsAttribute(): string
+    {
+        return strtoupper(
+            substr($this->first_name, 0, 1) . 
+            substr($this->last_name, 0, 1)
+        );
+    }
+    
+    /**
+     * ✅ NEW: Scope for active members
+     */
+    public function scopeActive($query)
+    {
+        return $query->where('is_active', true);
+    }
+    
+    /**
+     * ✅ NEW: Scope for searching members
+     */
+    public function scopeSearch($query, $search)
+    {
+        return $query->where('first_name', 'like', "%{$search}%")
+                    ->orWhere('last_name', 'like', "%{$search}%")
+                    ->orWhere('email', 'like', "%{$search}%")
+                    ->orWhere('membership_number', 'like', "%{$search}%");
     }
 }

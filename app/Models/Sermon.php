@@ -48,6 +48,13 @@ class Sermon extends Model
             ->join(', ');
     }
 
+public function scopeIsCurrentWeek($query)
+{
+    return $query->whereBetween('sermon_date', [
+        now()->startOfWeek(),
+        now()->endOfWeek()
+    ]);
+}
     // Accessor for duration format
     public function getDurationFormattedAttribute()
     {

@@ -1,8 +1,5 @@
-<?php
-
-namespace App\Http\Controllers\Admin;
-
-use App\Http\Controllers\Controller;
+﻿<?php\n\nnamespace App\Http\Controllers\Admin;\n\n\n\n\n\n
+<?php 
 use App\Models\User;
 use Illuminate\Http\Request;
 
@@ -36,3 +33,4 @@ class UserManagementController extends Controller
         return back()->with('success', 'User deleted successfully.');
     }
 }
+

@@ -1,7 +1,6 @@
-<?php
-// app/Http/Controllers/Admin/SermonController.php
+﻿<?php\n\nnamespace App\Http\Controllers\Admin;\n\n// app/Http/Controllers/Admin/SermonController.php
 
-namespace App\Http\Controllers\Admin;
+
 
 use App\Http\Controllers\Controller;
 use App\Models\Sermon;

@@ -9,13 +9,14 @@ class Notification extends Model
 {
     use HasFactory;
 
-    protected $table = 'notifications';
-
     protected $fillable = [
         'user_id',
-        'title', 
+        'title',
         'message',
         'type',
+        'email',
+        'phone',
+        'inquiry_type',
         'read',
         'data'
     ];
@@ -25,6 +26,7 @@ class Notification extends Model
         'data' => 'array'
     ];
 
+    // Relationship to user (if applicable)
     public function user()
     {
         return $this->belongsTo(User::class);
@@ -36,9 +38,23 @@ class Notification extends Model
         return $query->where('read', false);
     }
 
+    // Scope for contact messages
+    public function scopeContactMessages($query)
+    {
+        return $query->where('type', 'contact');
+    }
+
     // Mark as read
     public function markAsRead()
     {
         $this->update(['read' => true]);
+        return $this;
+    }
+
+    // Mark as unread
+    public function markAsUnread()
+    {
+        $this->update(['read' => false]);
+        return $this;
     }
 }

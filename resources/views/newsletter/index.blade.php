@@ -1,377 +1,516 @@
 @extends('layouts.app')
 
-@section('content')
-<div class="newsletter-page">
-    <!-- Page Header -->
-    <section class="page-header">
-        <div class="container">
-            <div class="header-content">
-                <h1>Newsletter</h1>
-                <p>Stay connected with the latest news, events, and spiritual insights from ELCK Southern Lake Diocese</p>
-                <div class="breadcrumb">
-                    <a href="{{ route('home') }}">Home</a>
-                    <span>/</span>
-                    <span>Newsletter</span>
-                </div>
-            </div>
-        </div>
-    </section>
+@section('title', 'ELCK Diocese Newsletter Signup')
 
-    <!-- Subscription Section -->
-    <section class="subscription-section" id="subscription">
-        <div class="container">
-            <div class="subscription-grid">
-                <div class="subscription-content">
-                    <h2>Subscribe to Our Newsletter</h2>
-                    <p class="lead">Join our community of believers and stay updated with:</p>
+@section('styles')
+<link href="https://fonts.googleapis.com" rel="preconnect">
+<link crossorigin href="https://fonts.gstatic.com" rel="preconnect">
+<link href="https://fonts.googleapis.com/css2?family=Noto+Serif:ital,wght@0,100..900;1,100..900&family=Noto+Sans:ital,wght@0,100..900;1,100..900&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap" rel="stylesheet">
+<style>
+    body { 
+        font-family: "Noto Serif", serif; 
+        scroll-behavior: smooth;
+    }
+    .material-symbols-outlined { 
+        font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24; 
+    }
+    
+    /* Hero section improvements */
+    .hero-section {
+        min-height: 100vh;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        position: relative;
+    }
+    
+    .hero-overlay {
+        background: linear-gradient(135deg, 
+            rgba(0, 0, 0, 0.7) 0%, 
+            rgba(0, 0, 0, 0.8) 100%);
+    }
+    
+    /* Improved form container */
+    .form-container {
+        backdrop-filter: blur(10px);
+        border: 1px solid rgba(255, 255, 255, 0.1);
+        box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+    }
+    
+    /* Enhanced feature cards */
+    .feature-card {
+        transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        height: 100%;
+        position: relative;
+        overflow: hidden;
+    }
+    
+    .feature-card:hover {
+        transform: translateY(-5px);
+        box-shadow: 0 20px 40px rgba(0, 0, 0, 0.1);
+    }
+    
+    .feature-card::before {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: 0;
+        right: 0;
+        height: 3px;
+        background: linear-gradient(90deg, #10b981, #059669);
+        transform: scaleX(0);
+        transition: transform 0.3s ease;
+        transform-origin: left;
+    }
+    
+    .feature-card:hover::before {
+        transform: scaleX(1);
+    }
+    
+    /* Improved icon styling */
+    .feature-icon {
+        width: 64px;
+        height: 64px;
+        background: linear-gradient(135deg, rgba(16, 185, 129, 0.1), rgba(5, 150, 105, 0.05));
+        border-radius: 16px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        margin: 0 auto 1.5rem;
+    }
+    
+    /* Enhanced button */
+    .subscribe-button {
+        background: linear-gradient(135deg, #059669, #047857);
+        transition: all 0.3s ease;
+        font-weight: 600;
+        letter-spacing: 0.025em;
+        position: relative;
+        overflow: hidden;
+    }
+    
+    .subscribe-button:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 10px 30px rgba(5, 150, 105, 0.3);
+        background: linear-gradient(135deg, #10b981, #059669);
+    }
+    
+    .subscribe-button:active {
+        transform: translateY(0);
+    }
+    
+    /* Improved scripture section */
+    .scripture-section {
+        background: linear-gradient(135deg, rgba(209, 250, 229, 0.2), rgba(167, 243, 208, 0.1));
+        position: relative;
+        overflow: hidden;
+    }
+    
+    .scripture-section::before {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        background-image: url("data:image/svg+xml,%3Csvg width='100' height='100' viewBox='0 0 100 100' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='M11 18c3.866 0 7-3.134 7-7s-3.134-7-7-7-7 3.134-7 7 3.134 7 7 7zm48 25c3.866 0 7-3.134 7-7s-3.134-7-7-7-7 3.134-7 7 3.134 7 7 7zm-43-7c1.657 0 3-1.343 3-3s-1.343-3-3-3-3 1.343-3 3 1.343 3 3 3zm63 31c1.657 0 3-1.343 3-3s-1.343-3-3-3-3 1.343-3 3 1.343 3 3 3zM34 90c1.657 0 3-1.343 3-3s-1.343-3-3-3-3 1.343-3 3 1.343 3 3 3zm56-76c1.657 0 3-1.343 3-3s-1.343-3-3-3-3 1.343-3 3 1.343 3 3 3zM12 86c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm28-65c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm23-11c2.76 0 5-2.24 5-5s-2.24-5-5-5-5 2.24-5 5 2.24 5 5 5zm-6 60c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm29 22c2.76 0 5-2.24 5-5s-2.24-5-5-5-5 2.24-5 5 2.24 5 5 5zM32 63c2.76 0 5-2.24 5-5s-2.24-5-5-5-5 2.24-5 5 2.24 5 5 5zm57-13c2.76 0 5-2.24 5-5s-2.24-5-5-5-5 2.24-5 5 2.24 5 5 5zm-9-21c1.105 0 2-.895 2-2s-.895-2-2-2-2 .895-2 2 .895 2 2 2zM60 91c1.105 0 2-.895 2-2s-.895-2-2-2-2 .895-2 2 .895 2 2 2zM35 41c1.105 0 2-.895 2-2s-.895-2-2-2-2 .895-2 2 .895 2 2 2zM12 60c1.105 0 2-.895 2-2s-.895-2-2-2-2 .895-2 2 .895 2 2 2z' fill='%23059669' fill-opacity='0.05' fill-rule='evenodd'/%3E%3C/svg%3E");
+        opacity: 0.3;
+    }
+    
+    /* Dark mode improvements */
+    .dark .scripture-section {
+        background: linear-gradient(135deg, rgba(6, 78, 59, 0.2), rgba(5, 46, 22, 0.1));
+    }
+    
+    /* Typography improvements */
+    .hero-title {
+        font-size: 3.5rem;
+        line-height: 1.1;
+        font-weight: 900;
+        margin-bottom: 1.5rem;
+    }
+    
+    @media (max-width: 768px) {
+        .hero-title {
+            font-size: 2.5rem;
+        }
+    }
+    
+    .hero-subtitle {
+        font-size: 1.25rem;
+        line-height: 1.6;
+        margin-bottom: 2rem;
+    }
+    
+    @media (max-width: 768px) {
+        .hero-subtitle {
+            font-size: 1.125rem;
+        }
+    }
+    
+    .section-title {
+        font-size: 2.5rem;
+        line-height: 1.2;
+        margin-bottom: 1rem;
+    }
+    
+    @media (max-width: 768px) {
+        .section-title {
+            font-size: 2rem;
+        }
+    }
+    
+    .section-subtitle {
+        font-size: 1.125rem;
+        line-height: 1.6;
+        max-width: 42rem;
+        margin: 0 auto;
+    }
+    
+    /* Spacing improvements */
+    .section-spacing {
+        padding-top: 5rem;
+        padding-bottom: 5rem;
+    }
+    
+    @media (max-width: 768px) {
+        .section-spacing {
+            padding-top: 3rem;
+            padding-bottom: 3rem;
+        }
+    }
+    
+    /* Card content improvements */
+    .card-title {
+        font-size: 1.5rem;
+        font-weight: 700;
+        margin-bottom: 1rem;
+    }
+    
+    .card-description {
+        font-size: 1rem;
+        line-height: 1.6;
+    }
+    
+    /* Form input improvements (except dropdown) */
+    .form-input-group:not(select) {
+        transition: all 0.2s ease;
+    }
+    
+    .form-input-group:not(select):focus-within {
+        border-color: #10b981;
+        box-shadow: 0 0 0 3px rgba(16, 185, 129, 0.1);
+    }
+    
+    /* Improved checkbox */
+    .checkbox-container {
+        position: relative;
+        display: flex;
+        align-items: flex-start;
+        gap: 0.75rem;
+    }
+    
+    .checkbox-container input[type="checkbox"] {
+        width: 1.25rem;
+        height: 1.25rem;
+        margin-top: 0.125rem;
+        accent-color: #059669;
+    }
+    
+    .checkbox-label {
+        font-size: 0.875rem;
+        line-height: 1.5;
+        cursor: pointer;
+    }
+    
+    /* Animation for feature cards */
+    @keyframes fadeInUp {
+        from {
+            opacity: 0;
+            transform: translateY(20px);
+        }
+        to {
+            opacity: 1;
+            transform: translateY(0);
+        }
+    }
+    
+    .feature-card {
+        animation: fadeInUp 0.6s ease forwards;
+    }
+    
+    .feature-card:nth-child(2) {
+        animation-delay: 0.2s;
+    }
+    
+    .feature-card:nth-child(3) {
+        animation-delay: 0.4s;
+    }
+</style>
+@endsection
+
+@section('content')
+<div class="min-h-screen bg-gray-50 dark:bg-[#0d1b0d] text-gray-900 dark:text-gray-100">
+
+    <!-- Hero Section -->
+    <section class="hero-section relative w-full bg-center bg-cover" style="background-image: url('https://lh3.googleusercontent.com/aida-public/AB6AXuC7ox9TEhNh3aHkdC7Y4TGNjAh7Ku3OAVDz8CXCTiyQGaUVae9H3iqRjt3R9ihyAnpYo0o-gqo8rD4BNMU7v6veW_Hhb6b9bZS3_nFebMCE4hm_1DQZ4wS8HcfsMACf87EM8UEpLnGypWDOzdH6mE5wm9fk_tAqRm_Ejj81T6kTXmbPe1PNU0QqK7L_3Ht9iKmZC8PboDEd3XtM9rlmX3GBTwswq2fPmAECaKNQ9PCcJBudNKBcZlrdydNJFxvE1TOenVNEaKVaAgc');">
+        <div class="absolute inset-0 hero-overlay"></div>
+        
+        <div class="relative z-10 w-full px-4 py-12 md:py-24">
+            <div class="max-w-6xl mx-auto">
+                <!-- Hero Content -->
+                <div class="text-center mb-12 md:mb-16">
+                    <h1 class="hero-title text-white mb-6">
+                        Join Our Spiritual Community
+                    </h1>
+                    <p class="hero-subtitle text-gray-200 max-w-3xl mx-auto mb-10">
+                        Receive weekly sermons, event updates, and spiritual encouragement directly to your inbox.
+                    </p>
                     
-                    <div class="benefits-list">
-                        <div class="benefit-item">
-                            <i class="fas fa-calendar-check"></i>
-                            <div>
-                                <h4>Upcoming Events</h4>
-                                <p>Be the first to know about church events, retreats, and special services</p>
+                    <!-- Stats Row -->
+                    <div class="flex flex-wrap justify-center gap-6 mb-12">
+                        <div class="flex items-center gap-3 px-4 py-3 bg-white/10 backdrop-blur-sm rounded-lg">
+                            <span class="material-symbols-outlined text-green-300">
+                                groups
+                            </span>
+                            <div class="text-left">
+                                <div class="text-xl font-bold text-white">1,000+</div>
+                                <div class="text-sm text-gray-300">Active Members</div>
                             </div>
                         </div>
-                        <div class="benefit-item">
-                            <i class="fas fa-book-bible"></i>
-                            <div>
-                                <h4>Spiritual Insights</h4>
-                                <p>Receive weekly devotionals, sermon summaries, and biblical teachings</p>
+                        <div class="flex items-center gap-3 px-4 py-3 bg-white/10 backdrop-blur-sm rounded-lg">
+                            <span class="material-symbols-outlined text-green-300">
+                                schedule
+                            </span>
+                            <div class="text-left">
+                                <div class="text-xl font-bold text-white">Weekly</div>
+                                <div class="text-sm text-gray-300">Spiritual Content</div>
                             </div>
                         </div>
-                        <div class="benefit-item">
-                            <i class="fas fa-hands-helping"></i>
-                            <div>
-                                <h4>Ministry Updates</h4>
-                                <p>Stay informed about our outreach programs and community initiatives</p>
-                            </div>
-                        </div>
-                        <div class="benefit-item">
-                            <i class="fas fa-pray"></i>
-                            <div>
-                                <h4>Prayer Requests</h4>
-                                <p>Share and receive prayer requests from our church family</p>
+                        <div class="flex items-center gap-3 px-4 py-3 bg-white/10 backdrop-blur-sm rounded-lg">
+                            <span class="material-symbols-outlined text-green-300">
+                                church
+                            </span>
+                            <div class="text-left">
+                                <div class="text-xl font-bold text-white">Multiple</div>
+                                <div class="text-sm text-gray-300">Parishes</div>
                             </div>
                         </div>
                     </div>
                 </div>
 
-                <div class="subscription-form-container">
-                    <div class="form-card">
-                        <div class="form-header">
-                            <h3>Subscribe Now</h3>
-                            <p>Fill in your details to join our mailing list</p>
+                <!-- Newsletter Form -->
+                <div class="max-w-2xl mx-auto">
+                    <div class="form-container bg-white/95 dark:bg-[#1a2e1a]/95 rounded-2xl p-8 md:p-10 shadow-2xl">
+                        <div class="text-center mb-8">
+                            
+                            <h3 class="text-2xl md:text-3xl font-bold text-gray-900 dark:text-white mb-3">
+                                Subscribe to Our Newsletter
+                            </h3>
+                            <p class="text-gray-600 dark:text-gray-300">
+                                Join our growing spiritual family today
+                            </p>
                         </div>
 
-                        @if(session('success'))
-                            <div class="alert alert-success">
-                                <i class="fas fa-check-circle"></i>
-                                {{ session('success') }}
-                            </div>
-                        @endif
-
-                        @if(session('error'))
-                            <div class="alert alert-error">
-                                <i class="fas fa-exclamation-circle"></i>
-                                {{ session('error') }}
-                            </div>
-                        @endif
-
-                        <form action="{{ route('newsletter.subscribe') }}" method="POST" class="newsletter-form" id="subscribeForm">
+                        <form action="{{ route('newsletter.subscribe') }}" method="POST" class="space-y-6">
                             @csrf
-                            <div class="form-group">
-                                <label for="name">Full Name *</label>
-                                <input type="text" id="name" name="name" value="{{ old('name') }}" required 
-                                       class="form-control @error('name') error @enderror" 
-                                       placeholder="Enter your full name">
-                                @error('name')
-                                    <span class="error-message">{{ $message }}</span>
-                                @enderror
-                            </div>
 
-                            <div class="form-group">
-                                <label for="email">Email Address *</label>
-                                <input type="email" id="email" name="email" value="{{ old('email') }}" required 
-                                       class="form-control @error('email') error @enderror" 
-                                       placeholder="Enter your email address">
-                                @error('email')
-                                    <span class="error-message">{{ $message }}</span>
-                                @enderror
-                            </div>
-
-                            <div class="form-group">
-                                <label for="phone">Phone Number (Optional)</label>
-                                <input type="tel" id="phone" name="phone" value="{{ old('phone') }}" 
-                                       class="form-control @error('phone') error @enderror" 
-                                       placeholder="Enter your phone number">
-                                @error('phone')
-                                    <span class="error-message">{{ $message }}</span>
-                                @enderror
-                            </div>
-
-                            <div class="form-group">
-                                <label>Subscription Preferences</label>
-                                <div class="preferences-grid">
-                                    <label class="checkbox-label">
-                                        <input type="checkbox" name="preferences[]" value="events" {{ in_array('events', old('preferences', [])) ? 'checked' : 'checked' }}>
-                                        <span class="checkmark"></span>
-                                        Events & Activities
-                                    </label>
-                                    <label class="checkbox-label">
-                                        <input type="checkbox" name="preferences[]" value="sermons" {{ in_array('sermons', old('preferences', [])) ? 'checked' : 'checked' }}>
-                                        <span class="checkmark"></span>
-                                        Sermons & Teachings
-                                    </label>
-                                    <label class="checkbox-label">
-                                        <input type="checkbox" name="preferences[]" value="ministries" {{ in_array('ministries', old('preferences', [])) ? 'checked' : '' }}>
-                                        <span class="checkmark"></span>
-                                        Ministry Updates
-                                    </label>
-                                    <label class="checkbox-label">
-                                        <input type="checkbox" name="preferences[]" value="prayer" {{ in_array('prayer', old('preferences', [])) ? 'checked' : '' }}>
-                                        <span class="checkmark"></span>
-                                        Prayer Requests
-                                    </label>
+                            <!-- Name Field -->
+                            <div class="space-y-2">
+                                <label class="block text-sm font-semibold text-gray-700 dark:text-gray-200 mb-2">
+                                    Full Name
+                                </label>
+                                <div class="flex items-center border border-gray-300 dark:border-gray-600 rounded-xl overflow-hidden focus-within:ring-2 focus-within:ring-green-400 focus-within:border-green-400 transition-all duration-200">
+                                    <span class="material-symbols-outlined px-4 text-gray-500 dark:text-gray-400">
+                                        name
+                                    </span>
+                                    <input type="text" 
+                                           name="name" 
+                                           placeholder="Enter your full name" 
+                                           value="{{ old('name') }}" 
+                                           class="w-full px-3 py-4 text-gray-900 dark:text-gray-100 bg-transparent border-none focus:ring-0 placeholder-gray-400 dark:placeholder-gray-500 text-base">
                                 </div>
                             </div>
 
-                            <div class="form-group">
-                                <label class="checkbox-label">
-                                    <input type="checkbox" name="terms" required {{ old('terms') ? 'checked' : '' }}>
-                                    <span class="checkmark"></span>
-                                    I agree to receive email communications from ELCK Southern Lake Diocese and accept the 
-                                    <a href="{{ route('privacy') }}">Privacy Policy</a>
-                                </label>
-                                @error('terms')
-                                    <span class="error-message">{{ $message }}</span>
-                                @enderror
+                            <!-- Email Field -->
+                            <div class="space-y-2">
+                                <div class="flex items-center justify-between mb-2">
+                                    <label class="block text-sm font-semibold text-gray-700 dark:text-gray-200">
+                                        Email Address
+                                    </label>
+                                    <span class="text-xs font-medium text-red-500 bg-red-50 dark:bg-red-900/20 px-2 py-1 rounded">Required</span>
+                                </div>
+                                <div class="flex items-center border border-gray-300 dark:border-gray-600 rounded-xl overflow-hidden focus-within:ring-2 focus-within:ring-green-400 focus-within:border-green-400 transition-all duration-200">
+                                    <span class="material-symbols-outlined px-4 text-gray-500 dark:text-gray-400">
+                                        Email
+                                    </span>
+                                    <input type="email" 
+                                           name="email" 
+                                           placeholder="your.email@example.com" 
+                                           value="{{ old('email') }}" 
+                                           required 
+                                           class="w-full px-3 py-4 text-gray-900 dark:text-gray-100 bg-transparent border-none focus:ring-0 placeholder-gray-400 dark:placeholder-gray-500 text-base">
+                                </div>
                             </div>
 
-                            <button type="submit" class="btn btn-primary btn-full" id="subscribeBtn">
-                                <span class="btn-text">Subscribe to Newsletter</span>
-                                <span class="btn-loading" style="display: none;">
-                                    <i class="fas fa-spinner fa-spin"></i> Subscribing...
+                            <!-- Parish Field - LEFT UNCHANGED -->
+                            <div>
+    <label class="block text-sm font-medium mb-1 text-gray-700 dark:text-gray-200">Parish (Optional)</label>
+    <div class="relative">
+        <div class="flex items-center border border-green-700 dark:border-green-500 rounded-lg overflow-hidden focus-within:ring-2 focus-within:ring-green-400 bg-white dark:bg-[#1a2e1a]">
+            <span class="material-symbols-outlined px-3 text-green-700 dark:text-green-400">church</span>
+            <select name="parish" class="w-full px-3 py-2 bg-transparent border-none appearance-none custom-select cursor-pointer focus:ring-0">
+                <option value="">Select your congregation</option>
+                <option value="othoro" {{ old('parish')=='othoro'?'selected':'' }}>Othoro Parish</option>
+                <option value="andiwo" {{ old('parish')=='andiwo'?'selected':'' }}>Andiwo Parish</option>
+                <option value="visitor" {{ old('parish')=='visitor'?'selected':'' }}>Visitor / Non-member</option>
+            </select>
+            
+        </div>
+    </div>
+</div>
+
+<style>
+/* Style the dropdown options */
+.custom-select {
+    color: #197b3b; /* Text color of selected option */
+    background-color: #e6f4ed; /* Light complementary background */
+}
+
+.custom-select option {
+    color: #197b3b; /* Text color of options */
+    background-color: #e6f4ed; /* Background color of options */
+}
+
+.custom-select option:hover {
+    background-color: #d1f0db; /* Slightly darker green on hover */
+}
+</style>
+
+
+                            <!-- Terms Agreement -->
+                            <div class="checkbox-container p-4 bg-gray-50 dark:bg-gray-800/50 rounded-xl border border-gray-200 dark:border-gray-700">
+                                <input type="checkbox" 
+                                       name="agree_terms" 
+                                       required 
+                                       id="termsCheckbox">
+                                <label for="termsCheckbox" class="checkbox-label text-gray-700 dark:text-gray-300">
+                                    <span class="font-medium">I agree to receive newsletter emails from ELCK Southern Lake Diocese</span>
+                                    <span class="block text-gray-500 dark:text-gray-400 mt-1 text-sm">
+                                        You can unsubscribe at any time using the link in our emails.
+                                    </span>
+                                </label>
+                            </div>
+
+                            <!-- Submit Button -->
+                            <button type="submit" 
+                                    class="subscribe-button w-full text-white font-semibold py-4 rounded-xl text-lg">
+                                <span class="flex items-center justify-center gap-3">
+                                    <span>Subscribe Now</span>
+                                    
                                 </span>
                             </button>
                         </form>
-
-                        <div class="form-footer">
-                            <p><small>We respect your privacy. You can unsubscribe at any time.</small></p>
-                        </div>
                     </div>
                 </div>
             </div>
         </div>
     </section>
 
-    <!-- Newsletter Archive -->
-    <section class="archive-section">
-        <div class="container">
-            <div class="section-header">
-                <h2>Recent Newsletters</h2>
-                <p>Browse through our previously published newsletters</p>
+    <!-- Why Subscribe Section -->
+    <section class="section-spacing px-4 bg-gray-100 dark:bg-[#08110b]">
+        <div class="max-w-6xl mx-auto">
+            <!-- Section Header -->
+            <div class="text-center mb-16">
+                <h2 class="section-title text-gray-900 dark:text-white mb-6">
+                    Why Subscribe?
+                </h2>
+                <p class="section-subtitle text-gray-600 dark:text-gray-300">
+                    Stay informed about the life, events, and spiritual growth opportunities within our diocese community.
+                </p>
             </div>
 
-            @if($newsletters->count() > 0)
-            <div class="newsletters-grid">
-                @foreach($newsletters as $newsletter)
-                <div class="newsletter-card">
-                    <div class="newsletter-header">
-                        <span class="newsletter-date">{{ $newsletter->created_at->format('F j, Y') }}</span>
-                        <span class="newsletter-category">{{ ucfirst($newsletter->category) }}</span>
+            <!-- Feature Cards -->
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-8">
+                <!-- Card 1 -->
+                <div class="feature-card bg-white dark:bg-[#1a2e1a] p-8 rounded-2xl shadow-xl">
+                    <div class="feature-icon">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="w-8 h-8 text-green-600 dark:text-green-400" fill="currentColor" viewBox="0 0 24 24">
+                            <path d="M12 0L11.293 0.707 4 8v16h16V8l-7.293-7.293L12 0zm0 2.828L17.172 8H6.828L12 2.828zM6 10h12v12H6V10z"/>
+                        </svg>
                     </div>
-                    <h3 class="newsletter-title">{{ $newsletter->title }}</h3>
-                    <p class="newsletter-excerpt">{{ $newsletter->excerpt ?? Str::limit(strip_tags($newsletter->content), 150) }}</p>
-                    <div class="newsletter-actions">
-                        <a href="{{ route('newsletter.view', $newsletter->id) }}" class="btn btn-sm btn-outline">
-                            Read More
-                        </a>
-                        @if($newsletter->file_path)
-                        <a href="{{ asset('storage/' . $newsletter->file_path) }}" class="btn btn-sm btn-secondary" target="_blank">
-                            <i class="fas fa-download"></i> PDF
-                        </a>
-                        @endif
-                    </div>
-                </div>
-                @endforeach
-            </div>
-
-            @if($newsletters->hasPages())
-            <div class="pagination-container">
-                {{ $newsletters->links() }}
-            </div>
-            @endif
-
-            @else
-            <div class="no-newsletters">
-                <i class="fas fa-newspaper"></i>
-                <h3>No Newsletters Available</h3>
-                <p>Check back later for our latest updates and publications.</p>
-            </div>
-            @endif
-        </div>
-    </section>
-
-    <!-- FAQ Section -->
-    <section class="faq-section">
-        <div class="container">
-            <div class="section-header">
-                <h2>Frequently Asked Questions</h2>
-                <p>Get answers to common questions about our newsletter</p>
-            </div>
-
-            <div class="faq-grid">
-                <div class="faq-item">
-                    <div class="faq-question">
-                        <h4>How often will I receive the newsletter?</h4>
-                        <i class="fas fa-chevron-down"></i>
-                    </div>
-                    <div class="faq-answer">
-                        <p>We typically send our main newsletter once a week, usually on Friday afternoons. However, you may receive occasional special updates for urgent prayer requests or important event announcements.</p>
-                    </div>
+                    <h3 class="card-title text-gray-900 dark:text-white text-center">Weekly Sermons</h3>
+                    <p class="card-description text-gray-600 dark:text-gray-300 text-center">
+                        Receive Sunday sermons and spiritual reflections directly in your inbox to guide your daily walk with God.
+                    </p>
                 </div>
 
-                <div class="faq-item">
-                    <div class="faq-question">
-                        <h4>Can I choose what type of emails I receive?</h4>
-                        <i class="fas fa-chevron-down"></i>
+                <!-- Card 2 -->
+                <div class="feature-card bg-white dark:bg-[#1a2e1a] p-8 rounded-2xl shadow-xl">
+                    <div class="feature-icon">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="w-8 h-8 text-green-600 dark:text-green-400" fill="currentColor" viewBox="0 0 24 24">
+                            <path d="M19 4h-1V2h-2v2H8V2H6v2H5a2 2 0 00-2 2v14a2 2 0 002 2h14a2 2 0 002-2V6a2 2 0 00-2-2zm0 16H5V9h14v11z"/>
+                        </svg>
                     </div>
-                    <div class="faq-answer">
-                        <p>Yes! During subscription, you can select your preferences for different types of content. You can also update these preferences at any time by clicking the "Update Preferences" link in any of our emails.</p>
-                    </div>
+                    <h3 class="card-title text-gray-900 dark:text-white text-center">Event Updates</h3>
+                    <p class="card-description text-gray-600 dark:text-gray-300 text-center">
+                        Never miss church gatherings, synods, youth camps, or fellowship events across our diocese.
+                    </p>
                 </div>
 
-                <div class="faq-item">
-                    <div class="faq-question">
-                        <h4>How do I unsubscribe?</h4>
-                        <i class="fas fa-chevron-down"></i>
+                <!-- Card 3 -->
+                <div class="feature-card bg-white dark:bg-[#1a2e1a] p-8 rounded-2xl shadow-xl">
+                    <div class="feature-icon">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="w-8 h-8 text-green-600 dark:text-green-400" fill="currentColor" viewBox="0 0 24 24">
+                            <path d="M16 11c1.657 0 3-1.343 3-3S17.657 5 16 5s-3 1.343-3 3 1.343 3 3 3zm-8 0c1.657 0 3-1.343 3-3S9.657 5 8 5 5 6.343 5 8s1.343 3 3 3zm0 2c-2.67 0-8 1.337-8 4v3h16v-3c0-2.663-5.33-4-8-4zm8 0c-.29 0-.62.02-.98.05 1.16.84 1.98 1.97 1.98 3.45v3h6v-3c0-2.663-5.33-4-7-4z"/>
+                        </svg>
                     </div>
-                    <div class="faq-answer">
-                        <p>You can unsubscribe at any time by clicking the "Unsubscribe" link at the bottom of any newsletter email. Alternatively, you can contact us directly and we'll remove you from our mailing list.</p>
-                    </div>
-                </div>
-
-                <div class="faq-item">
-                    <div class="faq-question">
-                        <h4>Is my information secure?</h4>
-                        <i class="fas fa-chevron-down"></i>
-                    </div>
-                    <div class="faq-answer">
-                        <p>Absolutely. We take your privacy seriously. We will never share your personal information with third parties, and we use secure systems to protect your data. Read our <a href="{{ route('privacy') }}">Privacy Policy</a> for more details.</p>
-                    </div>
-                </div>
-
-                <div class="faq-item">
-                    <div class="faq-question">
-                        <h4>Can I submit content for the newsletter?</h4>
-                        <i class="fas fa-chevron-down"></i>
-                    </div>
-                    <div class="faq-answer">
-                        <p>We welcome submissions from our church community! If you have a testimony, event announcement, or ministry update you'd like to share, please contact our communications team at <a href="mailto:communications@elcksld.org">communications@elcksld.org</a>.</p>
-                    </div>
+                    <h3 class="card-title text-gray-900 dark:text-white text-center">Community News</h3>
+                    <p class="card-description text-gray-600 dark:text-gray-300 text-center">
+                        Inspiring stories and testimonies from our parishes across Southern Lake Diocese.
+                    </p>
                 </div>
             </div>
         </div>
     </section>
 
-    <!-- CTA Section -->
-    <section class="cta-section">
-        <div class="container">
-            <div class="cta-content">
-                <h2>Stay Connected With Our Church Family</h2>
-                <p>Join over 2,000 subscribers who receive spiritual nourishment and church updates directly in their inbox</p>
-                <a href="#subscription" class="btn btn-primary btn-large">
-                    <i class="fas fa-envelope"></i>
-                    Subscribe Now
-                </a>
+    <!-- Scripture Quote -->
+    <section class="scripture-section section-spacing px-4">
+        <div class="max-w-4xl mx-auto mt-8" >
+            <div class="text-center">
+                <blockquote class="text-2xl md:text-3xl font-serif italic text-gray-900 dark:text-white leading-relaxed mb-8 max-w-3xl mx-auto">
+                    "How good and pleasant it is when God's people live together in unity!"
+                </blockquote>
+                
+                <div class="flex flex-col items-center gap-6">
+                    <div class="flex items-center gap-4">
+                        <div class="w-16 h-px bg-gray-300 dark:bg-gray-600"></div>
+                        <cite class="flex items-center gap-3 text-green-700 dark:text-green-400 font-bold text-base uppercase tracking-wider">
+                            <span class="material-symbols-outlined">
+                                book_2
+                            </span>
+                            Psalm 133:1
+                        </cite>
+                        <div class="w-16 h-px bg-gray-300 dark:bg-gray-600"></div>
+                    </div>
+                    
+                    <p class="mt-8 mb-8text-gray-600 dark:text-gray-400 text-lg">
+                        Join our unified community in worship, fellowship, and spiritual growth
+                    </p>
+                </div>
             </div>
         </div>
     </section>
 </div>
-@endsection
 
-@push('scripts')
 <script>
 document.addEventListener('DOMContentLoaded', function() {
-    // Form submission handling
-    const subscribeForm = document.getElementById('subscribeForm');
-    const subscribeBtn = document.getElementById('subscribeBtn');
-    
-    if (subscribeForm && subscribeBtn) {
-        const btnText = subscribeBtn.querySelector('.btn-text');
-        const btnLoading = subscribeBtn.querySelector('.btn-loading');
-
-        subscribeForm.addEventListener('submit', function() {
-            btnText.style.display = 'none';
-            btnLoading.style.display = 'inline-block';
-            subscribeBtn.disabled = true;
-        });
-    }
-
-    // FAQ Accordion
-    const faqQuestions = document.querySelectorAll('.faq-question');
-    
-    faqQuestions.forEach(question => {
-        question.addEventListener('click', function() {
-            const faqItem = this.parentElement;
-            const answer = this.nextElementSibling;
-            const icon = this.querySelector('i');
-            
-            // Toggle current item
-            faqItem.classList.toggle('active');
-            
-            // Toggle icon
-            if (faqItem.classList.contains('active')) {
-                icon.classList.remove('fa-chevron-down');
-                icon.classList.add('fa-chevron-up');
-                answer.style.maxHeight = answer.scrollHeight + 'px';
-            } else {
-                icon.classList.remove('fa-chevron-up');
-                icon.classList.add('fa-chevron-down');
-                answer.style.maxHeight = '0';
-            }
-            
-            // Close other items
-            faqQuestions.forEach(otherQuestion => {
-                if (otherQuestion !== this) {
-                    const otherFaqItem = otherQuestion.parentElement;
-                    const otherAnswer = otherQuestion.nextElementSibling;
-                    const otherIcon = otherQuestion.querySelector('i');
-                    
-                    otherFaqItem.classList.remove('active');
-                    otherIcon.classList.remove('fa-chevron-up');
-                    otherIcon.classList.add('fa-chevron-down');
-                    otherAnswer.style.maxHeight = '0';
-                }
-            });
-        });
-    });
-
-    // Phone number formatting
-    const phoneInput = document.getElementById('phone');
-    if (phoneInput) {
-        phoneInput.addEventListener('input', function(e) {
-            let value = e.target.value.replace(/\D/g, '');
-            if (value.length > 0) {
-                if (value.length <= 3) {
-                    value = value;
-                } else if (value.length <= 6) {
-                    value = value.slice(0, 3) + '-' + value.slice(3);
-                } else {
-                    value = value.slice(0, 3) + '-' + value.slice(3, 6) + '-' + value.slice(6, 10);
-                }
-            }
-            e.target.value = value;
-        });
-    }
-
-    // Smooth scroll for CTA button
-    const ctaButton = document.querySelector('a[href="#subscription"]');
-    if (ctaButton) {
-        ctaButton.addEventListener('click', function(e) {
+    // Add smooth scroll behavior
+    document.querySelectorAll('a[href^="#"]').forEach(anchor => {
+        anchor.addEventListener('click', function (e) {
             e.preventDefault();
-            const target = document.querySelector('.subscription-section');
+            const target = document.querySelector(this.getAttribute('href'));
             if (target) {
                 target.scrollIntoView({
                     behavior: 'smooth',
@@ -379,7 +518,39 @@ document.addEventListener('DOMContentLoaded', function() {
                 });
             }
         });
-    }
+    });
+    
+    // Add form submission animation
+    const form = document.querySelector('form');
+    const submitBtn = form.querySelector('button[type="submit"]');
+    
+    form.addEventListener('submit', function(e) {
+        // Only add animation if form is valid
+        if (form.checkValidity()) {
+            submitBtn.innerHTML = `
+                <span class="flex items-center justify-center gap-3">
+                    <svg class="animate-spin h-5 w-5 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                        <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+                        <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                    </svg>
+                    Subscribing...
+                </span>
+            `;
+            submitBtn.disabled = true;
+        }
+    });
+    
+    // Add hover effect to feature cards
+    const cards = document.querySelectorAll('.feature-card');
+    cards.forEach(card => {
+        card.addEventListener('mouseenter', function() {
+            this.style.zIndex = '10';
+        });
+        
+        card.addEventListener('mouseleave', function() {
+            this.style.zIndex = '1';
+        });
+    });
 });
 </script>
-@endpush
+@endsection

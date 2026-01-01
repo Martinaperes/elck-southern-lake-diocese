@@ -1,9 +1,6 @@
-<?php
-
-namespace App\Http\Controllers\Admin;
-
-use App\Http\Controllers\Controller;
+﻿<?php\n\nnamespace App\Http\Controllers\Admin;\n\nuse App\Http\Controllers\Controller;
 use App\Models\Ministry;
+use App\Models\Event;
 use Illuminate\Http\Request;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\View\View;
@@ -119,6 +116,7 @@ class MinistryController extends Controller
         return redirect()->route('admin.ministries.index')
             ->with('success', 'Ministry updated successfully.');
     }
+    
 
     /**
      * Remove the specified ministry from storage.

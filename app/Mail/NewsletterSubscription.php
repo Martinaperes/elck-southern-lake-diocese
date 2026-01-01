@@ -2,16 +2,19 @@
 
 namespace App\Mail;
 
+use App\Models\NewsletterSubscriber;
 use Illuminate\Bus\Queueable;
 use Illuminate\Mail\Mailable;
+use Illuminate\Mail\Mailables\Content;
+use Illuminate\Mail\Mailables\Envelope;
 use Illuminate\Queue\SerializesModels;
-use App\Models\NewsletterSubscriber;
 
 class NewsletterSubscription extends Mailable
 {
     use Queueable, SerializesModels;
 
     public $subscriber;
+    public $unsubscribeUrl;
 
     /**
      * Create a new message instance.
@@ -19,19 +22,34 @@ class NewsletterSubscription extends Mailable
     public function __construct(NewsletterSubscriber $subscriber)
     {
         $this->subscriber = $subscriber;
+        $this->unsubscribeUrl = route('newsletter.unsubscribe', $subscriber->subscription_token);
     }
 
     /**
-     * Build the message.
+     * Get the message envelope.
      */
-    public function build()
+    public function envelope(): Envelope
     {
-        return $this->subject('Welcome to ELCK Southern Lake Diocese Newsletter')
-                    ->markdown('emails.newsletter.welcome')
-                    ->with([
-                        'subscriber' => $this->subscriber,
-                        'confirmUrl' => route('newsletter.confirm', $this->subscriber->subscription_token),
-                        'unsubscribeUrl' => route('newsletter.unsubscribe', $this->subscriber->unsubscribe_token)
-                    ]);
+        return new Envelope(
+            subject: 'Welcome to ELCK Southern Lake Diocese Newsletter',
+        );
+    }
+
+    /**
+     * Get the message content definition.
+     */
+    public function content(): Content
+    {
+        return new Content(
+            view: 'emails.newsletter.welcome',
+        );
+    }
+
+    /**
+     * Get the attachments for the message.
+     */
+    public function attachments(): array
+    {
+        return [];
     }
 }

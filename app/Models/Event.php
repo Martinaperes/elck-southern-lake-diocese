@@ -1,5 +1,4 @@
 <?php
-// app/Models/Event.php
 
 namespace App\Models;
 
@@ -21,7 +20,7 @@ class Event extends Model
         'event_type',
         'ministry_id',
         'is_public',
-        'poster' // Add poster to fillable
+        'poster'
     ];
 
     protected $casts = [
@@ -30,12 +29,11 @@ class Event extends Model
         'is_public' => 'boolean'
     ];
 
-    // Relationship with Ministry
+    // Relationship with Ministry - Make sure this exists
     public function ministry(): BelongsTo
     {
         return $this->belongsTo(Ministry::class);
     }
-
     // Relationship with Event Registrations
     public function registrations(): HasMany
     {
