@@ -292,7 +292,7 @@ h3 {
                         </span>
                     </h1>
                     
-                    <p class="text-lg md:text-xl text-purple-100 mb-6 md:mb-8 max-w-3xl mx-auto leading-relaxed px-4">
+                    <p class="text-lg md:text-xl text-purple-300 mb-6 md:mb-8 max-w-3xl mx-auto leading-relaxed px-4">
                         A vibrant community where women of all ages find spiritual growth, authentic relationships, and purposeful service in God's love.
                     </p>
                     
@@ -671,7 +671,7 @@ h3 {
                                     </div>
                                 </div>
                                 
-                                <!-- Life Stage (using SELECT like Youth Ministry's age_group) -->
+                                <!-- Age Group -->
 <div>
     <label class="block text-gray-700 font-medium mb-2 text-sm md:text-base" for="life_stage">
         Your Life Stage *
@@ -687,8 +687,7 @@ h3 {
     @error('life_stage')
         <p class="text-red-500 text-xs mt-1">{{ $message }}</p>
     @enderror
-</div>
-                                
+</div>                       
                                 <div>
                                     <label class="block text-gray-700 font-medium mb-2 text-sm md:text-base" for="role">
                                         What role would you like to have?
@@ -812,7 +811,7 @@ h3 {
                                 </div>
                                 
                                 <div class="flex flex-col sm:flex-row gap-4 justify-center">
-                                    <a href="#events" 
+                                    <a href="{{ route('events.index') }}"
                                        class="btn-feminine px-8">
                                         <i class="fas fa-calendar-alt"></i>
                                         View Events
@@ -901,7 +900,7 @@ h3 {
                     </div>
 
                     <!-- Quick Stats -->
-                    <div class="modern-card bg-gradient-to-r from-purple-600 to-pink-600 text-white">
+                    <div class="modern-card bg-pink-200 text-white">
                         <h3 class="text-xl font-bold mb-4">Women's Ministry at a Glance</h3>
                         <div class="space-y-3">
                             @foreach([

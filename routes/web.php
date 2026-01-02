@@ -5,7 +5,8 @@ use Illuminate\Http\Request;
 use App\Http\Controllers\{
     HomeController, AboutController, ContactController, GalleryController,
     MinistryController, EventController, EventRegistrationController, MpesaCallbackController,
-    SermonController, DonationController, NewsletterController, PageController, ProfileController
+    SermonController, DonationController, NewsletterController, PageController, ProfileController,
+    ChoirController
 };
 // Add this at the very top of web.php
 Route::get('/test-working', function() {
@@ -72,6 +73,9 @@ Route::prefix('ministries')->name('ministries.')->group(function () {
         return view($viewPath);
     })->name('partials');
 });
+//choir registration
+Route::post('/choir/register', [ChoirController::class, 'register'])->name('choir.register');
+
 
 // Events
 Route::get('/events', [EventController::class, 'index'])->name('events.index');

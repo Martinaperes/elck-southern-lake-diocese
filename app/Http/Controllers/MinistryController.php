@@ -61,7 +61,7 @@ class MinistryController extends Controller
     ]);
 
     return view('ministries.show', compact(
-        'ministry',
+        'ministry', // Make sure this is included
         'relatedMinistries',
         'upcomingEvents', 
         'isMember',
@@ -73,44 +73,105 @@ class MinistryController extends Controller
         return view('ministries.subscribe', compact('ministry'));
     }
 
-    // Member subscription - UPDATED
-    public function subscribe(Request $request, Ministry $ministry)
+    // In your MinistryController::subscribe method
+public function subscribe(Request $request, Ministry $ministry)
 {
-    $request->validate([
-        'first_name' => 'required|string|max:255',
-        'last_name'  => 'required|string|max:255',
-        'email'      => 'required|email',
-        'phone'      => 'nullable|string|max:20',
-        'age_group'  => 'required|string|in:13-15,16-18,19-25',
-        'role'       => 'nullable|string|max:50',
-        'interests'  => 'nullable|array',
-        'interests.*'=> 'string|max:100',
-        'message'    => 'nullable|string|max:1000',
-    ]);
-
+    // Debug what's coming in
+    \Log::info('Form submission data:', $request->all());
+    \Log::info('Ministry ID:', ['id' => $ministry->id]);
+    
+    // Define different validation rules based on ministry type
+    if ($ministry->slug == 'womens-ministry') {
+        $rules = [
+            'first_name' => 'required|string|max:255',
+            'last_name'  => 'required|string|max:255',
+            'email'      => 'required|email',
+            'phone'      => 'nullable|string|max:20',
+            'life_stage' => 'required|string|in:Young Adult (18-30),Mother & Family (31-50),Seasoned & Senior (51+)',
+            'role'       => 'nullable|string|max:50',
+            'interests'  => 'nullable|array',
+            'interests.*'=> 'string|max:100',
+            'message'    => 'nullable|string|max:1000',
+        ];
+    } 
+    // ADD THIS SECTION FOR CHOIR MINISTRY
+    elseif ($ministry->slug == 'worship-and-liturgy-ministry') {
+        $rules = [
+            'first_name' => 'required|string|max:255',
+            'last_name'  => 'required|string|max:255',
+            'email'      => 'required|email',
+            'phone'      => 'nullable|string|max:20',
+            'voice_instrument' => 'required|string|in:soprano,alto,tenor,bass,piano,guitar,drums,bass_guitar,other_instrument',
+            'choir_group' => 'required|string|in:adult_choir,youth_choir,praise_band,children_choir',
+            'role'       => 'nullable|string|max:50',
+            'experience' => 'nullable|string|max:1000',
+            'interests'  => 'nullable|array',
+            'interests.*'=> 'string|max:100',
+            'message'    => 'nullable|string|max:1000',
+        ];
+    }//ovc ministry
+    elseif ($ministry->slug == 'orphan-and-vulnerable-children-programs') {
+        $rules = [
+            'first_name' => 'required|string|max:255',
+            'last_name'  => 'required|string|max:255',
+            'email'      => 'required|email',
+            'phone'      => 'nullable|string|max:20',
+            'role'       => 'nullable|string|max:50',
+            'interests'  => 'nullable|array',
+            'interests.*'=> 'string|max:100',
+            'message'    => 'nullable|string|max:1000',
+        ];
+    }
+    else {
+        // Default validation (for youth ministry, etc.)
+        $rules = [
+            'first_name' => 'required|string|max:255',
+            'last_name'  => 'required|string|max:255',
+            'email'      => 'required|email',
+            'phone'      => 'nullable|string|max:20',
+            'age_group'  => 'required|string|in:13-15,16-18,19-25',
+            'role'       => 'nullable|string|max:50',
+            'interests'  => 'nullable|array',
+            'interests.*'=> 'string|max:100',
+            'message'    => 'nullable|string|max:1000',
+        ];
+    }
+    
+    $validated = $request->validate($rules);
+    
     // Check if member already exists with this email
     $member = Member::where('email', $request->email)->first();
     
     if (!$member) {
         // Create new member if doesn't exist
-        $member = Member::create([
-            'first_name' => $request->first_name,
-            'last_name'  => $request->last_name,
-            'email'      => $request->email,
-            'phone'      => $request->phone,
+        $memberData = [
+            'first_name' => $validated['first_name'],
+            'last_name'  => $validated['last_name'],
+            'email'      => $validated['email'],
+            'phone'      => $validated['phone'] ?? null,
             'joined_at'  => now(),
             'is_active'  => true,
-            // Store age group as additional info
-            'gender'     => 'Other', // You might want to add a gender field to form
-        ]);
-    } else {
-        // Update existing member info if provided
-        $member->first_name = $request->first_name;
-        $member->last_name = $request->last_name;
-        if ($request->phone) {
-            $member->phone = $request->phone;
+        ];
+        
+        // For choir ministry, you might want to add gender detection or ask for it
+        if ($ministry->slug == 'worship-and-liturgy-ministry
+') {
+            // You could add logic to detect gender from name or add gender field to form
+            $memberData['gender'] = 'Unknown'; // Or add gender field to choir form
+        } elseif ($ministry->slug == 'womens-ministry') {
+            $memberData['gender'] = 'Female';
+        } else {
+            $memberData['gender'] = 'Unknown'; // Default for other ministries
         }
-        $member->save();
+        
+        $member = Member::create($memberData);
+    } else {
+        // Update existing member info
+        $member->update([
+            'first_name' => $validated['first_name'],
+            'last_name'  => $validated['last_name'],
+            'phone'      => $validated['phone'] ?? $member->phone,
+        ]);
     }
 
     // Check if already a member of this ministry
@@ -119,55 +180,55 @@ class MinistryController extends Controller
         ->first();
     
     if ($existingMembership) {
-        // If exists but inactive, reactivate
         if (!$existingMembership->is_active) {
             $existingMembership->update([
                 'is_active' => true,
-                'role' => $request->role ?? $existingMembership->role,
+                'role' => $validated['role'] ?? 'Member',
             ]);
-            
-            // Store interests in additional info if needed
-            if ($request->has('interests')) {
-                // You can store this in a separate table or as JSON
-                // For now, we'll store as additional note
-                $existingMembership->notes = json_encode([
-                    'age_group' => $request->age_group,
-                    'interests' => $request->interests,
-                    'message' => $request->message,
-                ]);
-                $existingMembership->save();
-            }
             
             return redirect()->route('ministries.show', $ministry)
                 ->with('success', 'Welcome back! Your membership has been reactivated.');
         }
         
-        // If already an active member
         return redirect()->route('ministries.show', $ministry)
             ->with('info', 'You are already a member of this ministry.');
     }
 
-    // Add new membership
+    // Create new membership
     $ministryMember = MinistryMember::create([
         'ministry_id' => $ministry->id,
         'member_id'   => $member->id,
-        'role'        => $request->role ?? 'Member',
+        'role'        => $validated['role'] ?? 'Member',
         'joined_at'   => now(),
         'is_active'   => true,
     ]);
     
     // Store additional info as notes
     $notesData = [
-        'age_group' => $request->age_group,
         'joined_at' => now()->format('Y-m-d H:i:s'),
     ];
     
-    if ($request->has('interests')) {
-        $notesData['interests'] = $request->interests;
+    // Ministry-specific data
+    if ($ministry->slug == 'womens-ministry') {
+        $notesData['life_stage'] = $validated['life_stage'];
+    } elseif ($ministry->slug === 'worship-and-liturgy-ministry') {
+    $notesData['voice_instrument'] = $validated['voice_instrument'];
+    $notesData['choir_group'] = $validated['choir_group'];
+
+    if (!empty($validated['experience'])) {
+        $notesData['experience'] = $validated['experience'];
+    }
+}
+else {
+        $notesData['age_group'] = $validated['age_group'];
     }
     
-    if ($request->message) {
-        $notesData['message'] = $request->message;
+    if (!empty($validated['interests'])) {
+        $notesData['interests'] = $validated['interests'];
+    }
+    
+    if (!empty($validated['message'])) {
+        $notesData['message'] = $validated['message'];
     }
     
     $ministryMember->notes = json_encode($notesData);
