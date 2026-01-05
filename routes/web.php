@@ -105,7 +105,7 @@ Route::get('/test-ministries', function () {
 require __DIR__.'/auth.php';
 
 // Include admin routes (REMOVE the duplicate admin routes from this file)
-//require __DIR__.'/admin.php';
+require __DIR__.'/admin.php';
 
 // Catch-All Page Route (KEEP LAST!)
 Route::get('/{page}', [PageController::class, 'show'])

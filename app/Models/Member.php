@@ -28,6 +28,7 @@ class Member extends Model
         'emergency_contact_name',
         'emergency_contact_phone',
         'is_active',
+        'parish_id',
     ];
 
     protected $casts = [
@@ -88,7 +89,7 @@ class Member extends Model
     }
     
     /**
-     * ✅ FIXED: Correct relationship with ministries
+     * Correct relationship with ministries
      */
     public function ministries()
     {
@@ -98,7 +99,7 @@ class Member extends Model
     }
     
     /**
-     * ✅ NEW: Relationship with MinistryMember model
+     * Relationship with MinistryMember model
      */
     public function ministryMembers()
     {
@@ -106,7 +107,7 @@ class Member extends Model
     }
     
     /**
-     * ✅ NEW: Get member's active ministries
+     * Get member's active ministries
      */
     public function activeMinistries()
     {
@@ -115,7 +116,7 @@ class Member extends Model
     }
     
     /**
-     * ✅ NEW: Accessor for initials
+     * Accessor for initials
      */
     public function getInitialsAttribute(): string
     {
@@ -124,9 +125,19 @@ class Member extends Model
             substr($this->last_name, 0, 1)
         );
     }
-    
+    // Add to your Member model
+public function parish()
+{
+    return $this->belongsTo(Parish::class);
+}
+
+//Accessor for display
+public function getCongregationDisplayAttribute()
+{
+    return $this->parish ? $this->parish->name : ($this->home_congregation ?? 'Not specified');
+}
     /**
-     * ✅ NEW: Scope for active members
+     * cope for active members
      */
     public function scopeActive($query)
     {
@@ -134,7 +145,7 @@ class Member extends Model
     }
     
     /**
-     * ✅ NEW: Scope for searching members
+     * Scope for searching members
      */
     public function scopeSearch($query, $search)
     {

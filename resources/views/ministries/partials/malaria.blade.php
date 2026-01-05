@@ -906,14 +906,14 @@ h3 {
                                         
                                         <div class="flex items-center text-xs md:text-sm text-gray-600 mb-1">
                                             <i class="fas fa-calendar-alt mr-2 text-teal-500"></i>
-                                            @if($event->start_date && $event->end_date)
-                                                @if($event->start_date == $event->end_date)
-                                                    <span>{{ \Carbon\Carbon::parse($event->start_date)->format('F j, Y') }}</span>
+                                            @if($event->date && $event->end_date)
+                                                @if($event->date == $event->end_date)
+                                                    <span>{{ \Carbon\Carbon::parse($event->date)->format('F j, Y') }}</span>
                                                 @else
-                                                    <span>{{ \Carbon\Carbon::parse($event->start_date)->format('F j') }} - {{ \Carbon\Carbon::parse($event->end_date)->format('F j, Y') }}</span>
+                                                    <span>{{ \Carbon\Carbon::parse($event->date)->format('F j') }} - {{ \Carbon\Carbon::parse($event->end_date)->format('F j, Y') }}</span>
                                                 @endif
-                                            @elseif($event->start_date)
-                                                <span>{{ \Carbon\Carbon::parse($event->start_date)->format('F j, Y') }}</span>
+                                            @elseif($event->date)
+                                                <span>{{ \Carbon\Carbon::parse($event->date)->format('F j, Y') }}</span>
                                             @endif
                                         </div>
                                         

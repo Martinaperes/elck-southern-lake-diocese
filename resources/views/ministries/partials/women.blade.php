@@ -949,7 +949,7 @@ h3 {
                                         
                                         <div class="flex items-center text-xs text-gray-600 mb-1">
                                             <i class="fas fa-calendar-alt mr-2 text-purple-500"></i>
-                                            <span>{{ \Carbon\Carbon::parse($event->start_date)->format('M j') }}</span>
+                                            <span>{{ \Carbon\Carbon::parse($event->date)->format('M j') }}</span>
                                         </div>
                                         
                                         @if($event->location)

@@ -21,6 +21,7 @@ class User extends Authenticatable
         'name',
         'email',
         'password',
+        'role'
     ];
 
     /**
@@ -57,4 +58,19 @@ public function donations()
     {
         return $this->member !== null;
     }
+    public function parish()
+{
+    return $this->belongsTo(Parish::class);
+}
+
+public function createMemberProfile(array $memberData): Member
+{
+    // Create member profile associated with this user
+    return $this->member()->create(array_merge($memberData, [
+        'user_id' => $this->id,
+        'email' => $this->email,
+        'joined_at' => now(),
+        'is_active' => true,
+    ]));
+}
 }

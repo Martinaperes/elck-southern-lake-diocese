@@ -1,230 +1,113 @@
 <!DOCTYPE html>
-<html lang="en">
+<html class="dark" lang="en">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Admin Dashboard - {{ config('app.name', 'ELCK Southern Lake Diocese') }}</title>
+    <meta charset="utf-8"/>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+    <meta name="csrf-token" content="{{ csrf_token() }}">
+    <title>@yield('title', 'ELCK Diocese Admin')</title>
+    
+    <!-- Google Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Public+Sans:wght@300;400;500;600;700&amp;display=swap" rel="stylesheet"/>
+    <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
     
     <!-- Tailwind CSS -->
-    <script src="https://cdn.tailwindcss.com"></script>
-    <script src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js" defer></script>
+    <script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
     
-    <!-- Font Awesome -->
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <!-- Tailwind Configuration -->
+    <script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    colors: {
+                        "primary": "#197b3b",
+                        "background-light": "#f6f8f7",
+                        "background-dark": "#0a0f0c",
+                        "surface-dark": "#122017",
+                    },
+                    fontFamily: {
+                        "display": ["Public Sans", "sans-serif"]
+                    },
+                    borderRadius: {
+                        "DEFAULT": "0.5rem",
+                        "lg": "0.75rem",
+                        "xl": "1rem",
+                        "full": "9999px"
+                    },
+                },
+            },
+        }
+    </script>
     
-    <!-- Custom Styles -->
+    <!-- Additional Styles -->
     <style>
-        .sidebar {
-            transition: all 0.3s ease;
+        body {
+            min-height: max(884px, 100dvh);
+            padding-bottom: 6rem; /* Space for bottom nav */
         }
-        .sidebar.collapsed {
-            width: 64px;
-        }
-        .sidebar.collapsed .sidebar-text {
-            display: none;
-        }
-        .main-content {
-            transition: all 0.3s ease;
-        }
-        .active-menu {
-            background-color: #3b82f6;
-            color: white;
+        .pb-safe {
+            padding-bottom: env(safe-area-inset-bottom);
         }
     </style>
+    
+    @stack('styles') <!-- For page-specific styles -->
 </head>
-<body class="bg-gray-100">
-    <div class="flex h-screen">
-        <!-- Sidebar -->
-        <div class="sidebar bg-white shadow-lg w-64 flex flex-col">
-            <!-- Logo -->
-            <div class="p-4 border-b">
-                <div class="flex items-center space-x-3">
-                    <i class="fas fa-church text-blue-600 text-2xl"></i>
-                    <span class="sidebar-text text-xl font-bold text-gray-800">
-                        ELCK-Southern-lake AdminDashboard
-                    </span>
+
+<body class="bg-background-light dark:bg-background-dark font-display text-slate-900 dark:text-white overflow-x-hidden">
+    <!-- Header -->
+    <header class="sticky top-0 z-30 bg-background-light/95 dark:bg-background-dark/95 backdrop-blur-md border-b border-black/5 dark:border-white/5">
+        <div class="flex items-center justify-between px-4 py-3">
+            <div class="flex items-center gap-3">
+                <div class="relative">
+                    <div class="size-10 rounded-full bg-cover bg-center border border-white/10" style="background-image: url('{{ Auth::user()->avatar_url ?? 'https://via.placeholder.com/150' }}');" data-alt="Portrait of the administrator">
+                    </div>
+                    <div class="absolute bottom-0 right-0 size-3 bg-primary rounded-full border-2 border-background-dark"></div>
+                </div>
+                <div class="flex flex-col">
+                    <span class="text-xs text-slate-500 dark:text-slate-400 font-medium leading-none mb-1">Welcome back,</span>
+                    <h2 class="text-base font-bold leading-none tracking-tight">{{ Auth::user()->name ?? 'Admin' }}</h2>
                 </div>
             </div>
-
-            <!-- Navigation -->
-            <nav class="flex-1 p-4 space-y-2">
-                <!-- Dashboard -->
-                <a href="{{ route('admin.dashboard') }}" 
-                   class="flex items-center space-x-3 p-3 rounded-lg hover:bg-blue-50 text-gray-700 {{ request()->routeIs('admin.dashboard') ? 'active-menu' : '' }}">
-                    <i class="fas fa-tachometer-alt w-6"></i>
-                    <span class="sidebar-text">Dashboard</span>
-                </a>
-
-                <!-- Users -->
-                <a href="{{ route('admin.users.index') }}" 
-                   class="flex items-center space-x-3 p-3 rounded-lg hover:bg-blue-50 text-gray-700 {{ request()->routeIs('admin.users.*') ? 'active-menu' : '' }}">
-                    <i class="fas fa-users w-6"></i>
-                    <span class="sidebar-text">Users</span>
-                </a>
-
-                <!-- Ministries -->
-                <a href="{{ route('admin.ministries.index') }}" 
-                   class="flex items-center space-x-3 p-3 rounded-lg hover:bg-blue-50 text-gray-700 {{ request()->routeIs('admin.ministries.*') ? 'active-menu' : '' }}">
-                    <i class="fas fa-hands-helping w-6"></i>
-                    <span class="sidebar-text">Ministries</span>
-                </a>
-
-                <!-- Events -->
-                <a href="{{ route('admin.events.index') }}" 
-                   class="flex items-center space-x-3 p-3 rounded-lg hover:bg-blue-50 text-gray-700 {{ request()->routeIs('admin.events.*') ? 'active-menu' : '' }}">
-                    <i class="fas fa-calendar-alt w-6"></i>
-                    <span class="sidebar-text">Events</span>
-                </a>
-
-                <!-- Sermons -->
-                <a href="{{ route('admin.sermons.index') }}" 
-                   class="flex items-center space-x-3 p-3 rounded-lg hover:bg-blue-50 text-gray-700 {{ request()->routeIs('admin.sermons.*') ? 'active-menu' : '' }}">
-                    <i class="fas fa-bible w-6"></i>
-                    <span class="sidebar-text">Sermons</span>
-                </a>
-
-                <!-- Gallery -->
-                <a href="{{ route('admin.gallery.index') }}" 
-                   class="flex items-center space-x-3 p-3 rounded-lg hover:bg-blue-50 text-gray-700 {{ request()->routeIs('admin.gallery.*') ? 'active-menu' : '' }}">
-                    <i class="fas fa-images w-6"></i>
-                    <span class="sidebar-text">Gallery</span>
-                </a>
-
-                <!-- Donations -->
-                <a href="{{ route('admin.donations.index') }}" 
-                   class="flex items-center space-x-3 p-3 rounded-lg hover:bg-blue-50 text-gray-700 {{ request()->routeIs('admin.donations.*') ? 'active-menu' : '' }}">
-                    <i class="fas fa-donate w-6"></i>
-                    <span class="sidebar-text">Donations</span>
-                </a>
-
-                <!-- Back to Site -->
-                <a href="{{ url('/') }}" 
-                   class="flex items-center space-x-3 p-3 rounded-lg hover:bg-blue-50 text-gray-700 mt-8">
-                    <i class="fas fa-arrow-left w-6"></i>
-                    <span class="sidebar-text">Back to Site</span>
-                </a>
-            </nav>
-
-            <!-- User Profile -->
-            <div class="p-4 border-t">
-                <div class="flex items-center space-x-3">
-                    <div class="w-8 h-8 bg-blue-600 rounded-full flex items-center justify-center">
-                        <span class="text-white text-sm font-bold">
-                            {{ strtoupper(substr(auth()->user()->name, 0, 1)) }}
-                        </span>
-                    </div>
-                    <div class="sidebar-text">
-                        <div class="text-sm font-medium text-gray-800">{{ auth()->user()->name }}</div>
-                        <div class="text-xs text-gray-500">Administrator</div>
-                    </div>
-                </div>
-            </div>
+            <button class="relative flex items-center justify-center size-10 rounded-full bg-slate-100 dark:bg-white/5 text-slate-700 dark:text-white hover:bg-slate-200 dark:hover:bg-white/10 transition-colors">
+                <span class="material-symbols-outlined text-[24px]">notifications</span>
+                <span class="absolute top-2.5 right-2.5 size-2 bg-red-500 rounded-full border border-background-dark"></span>
+            </button>
         </div>
+    </header>
 
-        <!-- Main Content -->
-        <div class="main-content flex-1 flex flex-col overflow-hidden">
-            <!-- Header -->
-            <header class="bg-white shadow-sm border-b">
-                <div class="flex items-center justify-between p-4">
-                    <div class="flex items-center space-x-4">
-                        <button id="sidebarToggle" class="text-gray-600 hover:text-gray-900">
-                            <i class="fas fa-bars text-xl"></i>
-                        </button>
-                        <h1 class="text-2xl font-semibold text-gray-800">@yield('title', 'Dashboard')</h1>
-                    </div>
-                    
-                    <div class="flex items-center space-x-4">
-                        <!-- Notifications -->
-                        <div class="relative">
-                            <button class="text-gray-600 hover:text-gray-900">
-                                <i class="fas fa-bell text-xl"></i>
-                                @if($unreadCount = \App\Models\Notification::where('user_id', auth()->id())->where('read', 0)->count() ?? 0)
-                                    <span class="absolute -top-1 -right-1 bg-red-500 text-white rounded-full w-5 h-5 text-xs flex items-center justify-center">
-                                        {{ $unreadCount }}
-                                    </span>
-                                @endif
-                            </button>
-                        </div>
+    <!-- Main Content -->
+    <main class="min-h-screen">
+        @yield('content') <!-- This is where your page content will go -->
+    </main>
 
-                        <!-- User Menu -->
-                        <div class="relative" x-data="{ open: false }">
-                            <button @click="open = !open" class="flex items-center space-x-2 text-gray-700 hover:text-gray-900">
-                                <span>{{ auth()->user()->name }}</span>
-                                <i class="fas fa-chevron-down"></i>
-                            </button>
-                            
-                            <div x-show="open" @click.away="open = false" 
-                                 class="absolute right-0 mt-2 w-48 bg-white rounded-lg shadow-lg py-2 z-50">
-                                <a href="{{ route('admin.profile.edit') }}" class="block px-4 py-2 text-gray-700 hover:bg-gray-100">
-                                    <i class="fas fa-user-circle mr-2"></i>Profile
-                                </a>
-                                <form method="POST" action="{{ route('logout') }}">
-                                    @csrf
-                                    <button type="submit" class="block w-full text-left px-4 py-2 text-gray-700 hover:bg-gray-100">
-                                        <i class="fas fa-sign-out-alt mr-2"></i>Logout
-                                    </button>
-                                </form>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            </header>
-
-            <!-- Page Content -->
-            <main class="flex-1 overflow-y-auto p-6">
-                <!-- Flash Messages -->
-                @if(session('success'))
-                    <div class="bg-green-100 border border-green-400 text-green-700 px-4 py-3 rounded mb-6">
-                        {{ session('success') }}
-                    </div>
-                @endif
-
-                @if(session('error'))
-                    <div class="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded mb-6">
-                        {{ session('error') }}
-                    </div>
-                @endif
-
-                <!-- Page Content -->
-                @yield('content')
-            </main>
+    <!-- Bottom Navigation -->
+    <nav class="fixed bottom-0 left-0 right-0 z-50 bg-white/90 dark:bg-[#0f1612]/90 backdrop-blur-lg border-t border-slate-200 dark:border-white/5 pb-safe">
+        <div class="flex items-center justify-around h-16 px-2">
+            <a href="{{ route('admin.dashboard') }}" class="flex flex-1 flex-col items-center justify-center gap-1 h-full {{ request()->routeIs('admin.dashboard') ? 'text-primary' : 'text-slate-500 dark:text-slate-400 hover:text-primary dark:hover:text-primary' }} transition-colors">
+                <span class="material-symbols-outlined text-[24px] {{ request()->routeIs('admin.dashboard') ? 'font-variation-settings-\'FILL\'-1' : '' }}">dashboard</span>
+                <span class="text-[10px] font-medium">Overview</span>
+            </a>
+            
+            <a href="{{ route('admin.users.index') }}" class="flex flex-1 flex-col items-center justify-center gap-1 h-full {{ request()->routeIs('admin.users.*') ? 'text-primary' : 'text-slate-500 dark:text-slate-400 hover:text-primary dark:hover:text-primary' }} transition-colors">
+                <span class="material-symbols-outlined text-[24px] {{ request()->routeIs('admin.users.*') ? 'font-variation-settings-\'FILL\'-1' : '' }}">groups</span>
+                <span class="text-[10px] font-medium">Members</span>
+            </a>
+            
+            <a href="{{ route('admin.events.index') }}" class="flex flex-1 flex-col items-center justify-center gap-1 h-full {{ request()->routeIs('admin.events.*') ? 'text-primary' : 'text-slate-500 dark:text-slate-400 hover:text-primary dark:hover:text-primary' }} transition-colors">
+                <span class="material-symbols-outlined text-[24px] {{ request()->routeIs('admin.events.*') ? 'font-variation-settings-\'FILL\'-1' : '' }}">calendar_today</span>
+                <span class="text-[10px] font-medium">Calendar</span>
+            </a>
+            
+            <a href="#" class="flex flex-1 flex-col items-center justify-center gap-1 h-full {{ request()->routeIs('#') ? 'text-primary' : 'text-slate-500 dark:text-slate-400 hover:text-primary dark:hover:text-primary' }} transition-colors">
+                <span class="material-symbols-outlined text-[24px] {{ request()->routeIs('#') ? 'font-variation-settings-\'FILL\'-1' : '' }}">settings</span>
+                <span class="text-[10px] font-medium">Settings</span>
+            </a>
         </div>
-    </div>
+        <!-- Safe Area Spacer for iOS Home Indicator -->
+        <div class="h-4 w-full"></div>
+    </nav>
 
-    <!-- Alpine.js for dropdown functionality -->
-    <script src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js" defer></script>
-
-    <script>
-        // Sidebar toggle functionality
-        document.getElementById('sidebarToggle').addEventListener('click', function() {
-            const sidebar = document.querySelector('.sidebar');
-            const mainContent = document.querySelector('.main-content');
-            
-            sidebar.classList.toggle('collapsed');
-            
-            if (sidebar.classList.contains('collapsed')) {
-                mainContent.classList.add('ml-16');
-            } else {
-                mainContent.classList.remove('ml-16');
-            }
-        });
-
-        // Auto-hide flash messages after 5 seconds
-        document.addEventListener('DOMContentLoaded', function() {
-            const flashMessages = document.querySelectorAll('.bg-green-100, .bg-red-100');
-            flashMessages.forEach(function(message) {
-                setTimeout(function() {
-                    message.style.transition = 'opacity 0.5s ease';
-                    message.style.opacity = '0';
-                    setTimeout(function() {
-                        message.remove();
-                    }, 500);
-                }, 5000);
-            });
-        });
-    </script>
-
-    <!-- Additional Scripts -->
-    @stack('scripts')
+    <!-- Scripts -->
+    @stack('scripts') <!-- For page-specific scripts -->
 </body>
 </html>
