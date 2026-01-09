@@ -1,10 +1,10 @@
-﻿<?php
+<?php
 
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\Admin\DashboardController;
-use App\Http\Controllers\Admin\UserController;
+
 use App\Http\Controllers\Admin\MemberController;
-use App\Http\Controllers\Admin\MinistryController as AdminMinistryController;
+use App\Http\Controllers\Admin\MinistryController;
 use App\Http\Controllers\Admin\EventController as AdminEventController;
 use App\Http\Controllers\Admin\GalleryController as AdminGalleryController;
 use App\Http\Controllers\Admin\SermonController as AdminSermonController;
@@ -17,10 +17,10 @@ Route::middleware(['auth', 'admin'])->prefix('admin')->name('admin.')->group(fun
     Route::get('/dashboard', [DashboardController::class, 'index'])->name('dashboard');
     Route::get('/dashboard/chart-data', [DashboardController::class, 'getChartData'])->name('dashboard.chart');
     
-    // Users Management
-    Route::resource('users', UserController::class);
+    
     // Members Management Routes
 Route::prefix('members')->name('members.')->group(function () {
+    Route::get('/', [MemberController::class, 'index'])->name('index'); // Make sure this exists!
     Route::get('/create', [MemberController::class, 'create'])->name('create');
     Route::post('/', [MemberController::class, 'store'])->name('store');
     Route::get('/{member}', [MemberController::class, 'show'])->name('show');
@@ -30,7 +30,13 @@ Route::prefix('members')->name('members.')->group(function () {
 });
     
     // Ministries Management
-    Route::resource('ministries', AdminMinistryController::class);
+   // Ministries Management
+Route::resource('ministries', MinistryController::class);
+Route::post('ministries/{ministry}/add-member', [MinistryController::class, 'addMember'])->name('ministries.add-member');
+Route::delete('ministries/{ministry}/remove-member/{ministryMember}', [MinistryController::class, 'removeMember'])->name('ministries.remove-member');
+Route::post('ministries/{ministry}/register-event', [MinistryController::class, 'registerForEvent'])->name('ministries.register-event');
+Route::get('ministries/{ministry}/events', [MinistryController::class, 'events'])->name('ministries.events');
+Route::put('ministries/{ministry}/update-role/{ministryMember}', [MinistryController::class, 'updateMemberRole'])->name('ministries.update-role');
 
     // Sermons Management
     Route::resource('sermons', AdminSermonController::class);

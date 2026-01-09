@@ -4,7 +4,6 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
-use Illuminate\Database\Eloquent\Relations\HasMany; 
 
 class Ministry extends Model
 {
@@ -18,98 +17,118 @@ class Ministry extends Model
         'leader_image',
         'contact_email',
         'meeting_schedule',
+        'image_path',
+        'is_active',
         'image_url',
-        'is_active'
     ];
 
     protected $casts = [
-        'is_active' => 'boolean'
+        'is_active' => 'boolean',
     ];
 
-    // Relationship with events
-    public function events(): HasMany
-    {
-        return $this->hasMany(Event::class);
-    }
-
-    // Relationship with members through ministry_members pivot
+    /**
+     * Relationship with MinistryMember (members of this ministry)
+     */
     public function members()
     {
-        return $this->belongsToMany(Member::class, 'ministry_members', 'ministry_id', 'member_id')
-                    ->withPivot('role', 'joined_at', 'is_active')
-                    ->withTimestamps();
+        return $this->hasMany(MinistryMember::class);
     }
-    
-    // Relationship with MinistryMember model
+
+    /**
+     * Relationship with Member through MinistryMember
+     */
     public function ministryMembers()
     {
         return $this->hasMany(MinistryMember::class);
     }
 
-    public function getRouteKeyName()
+    /**
+     * Get active members
+     */
+    public function activeMembers()
     {
-        return 'slug';
+        return $this->members()->where('is_active', true);
     }
-    
-    //Accessor for active members count
-    public function getActiveMembersCountAttribute(): int
+
+    /**
+     * Get leaders of this ministry
+     */
+    public function leaders()
     {
-        return $this->ministryMembers()->where('is_active', true)->count();
+        return $this->members()->where('role', 'like', '%leader%');
     }
-    
-    public function getCreatedAtFormattedAttribute(): string
+
+    /**
+     * Relationship with Events
+     */
+    public function events()
     {
-        return $this->created_at ? $this->created_at->format('M j, Y') : 'N/A';
+        return $this->hasMany(Event::class);
     }
-    
-    public function getUpdatedAtFormattedAttribute(): string
+
+    /**
+     * Get upcoming events
+     */
+    public function upcomingEvents()
     {
-        return $this->updated_at ? $this->updated_at->format('M j, Y') : 'N/A';
+        return $this->events()->where('start_time', '>=', now());
     }
-    
-    public function getCreatedAtHumanAttribute(): string
+
+    /**
+     * Accessor for leader image URL
+     */
+    public function getLeaderImageUrlAttribute()
     {
-        return $this->created_at ? $this->created_at->diffForHumans() : 'N/A';
-    }
-    
-    // Add this accessor for abbreviation
-    public function getAbbreviationAttribute(): string
-    {
-        $words = explode(' ', $this->name);
-        $abbreviation = '';
-        
-        foreach ($words as $word) {
-            $abbreviation .= strtoupper(substr($word, 0, 1));
+        if ($this->leader_image) {
+            return asset('storage/' . $this->leader_image);
         }
-        
-        return substr($abbreviation, 0, 3) ?: strtoupper(substr($this->name, 0, 3));
+        return null;
     }
-    
-    // Scope for active ministries
+
+    /**
+     * Accessor for image URL
+     */
+    public function getImageUrlAttribute($value)
+    {
+        return $value ?: asset('images/default-ministry.png');
+    }
+
+    /**
+     * Scope for active ministries
+     */
     public function scopeActive($query)
     {
         return $query->where('is_active', true);
     }
-    
-    // Scope for searching ministries
+
+    /**
+     * Scope for searching ministries
+     */
     public function scopeSearch($query, $search)
     {
         return $query->where('name', 'like', "%{$search}%")
                     ->orWhere('description', 'like', "%{$search}%")
                     ->orWhere('leader_name', 'like', "%{$search}%");
     }
-    
-    //  Get active members
-    public function activeMembers()
+
+    /**
+     * Get total active members count
+     */
+    public function getActiveMembersCountAttribute()
     {
-        return $this->members()->wherePivot('is_active', true);
+        return $this->members()->where('is_active', true)->count();
     }
-    
-    //  Get ministry leaders
-    public function leaders()
+
+    /**
+     * Get next meeting date
+     */
+    public function getNextMeetingAttribute()
     {
-        return $this->members()
-                    ->wherePivot('role', 'like', '%leader%')
-                    ->wherePivot('is_active', true);
+        // Parse meeting schedule if available
+        if ($this->meeting_schedule) {
+            // You can implement logic to parse schedule
+            return 'Every Sunday at 10 AM';
+        }
+        return 'Schedule not set';
     }
 }

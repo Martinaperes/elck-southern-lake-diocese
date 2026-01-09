@@ -1,34 +1,35 @@
 @extends('admin.layouts.app')
 
-@section('title', 'User Details - ' . $user->name)
+@section('title', 'Member Details - ' . ($member->user->name ?? $member->first_name . ' ' . $member->last_name))
 
 @section('content')
 <div class="container mx-auto px-4 py-8">
+     
     <!-- Header -->
     <div class="flex flex-col md:flex-row md:items-center md:justify-between mb-6">
         <div>
             <div class="flex items-center space-x-2">
-                <a href="{{ route('admin.users.index') }}" 
-                   class="text-blue-600 hover:text-blue-900">
+                <a href="{{ route('admin.members.index') }}" 
+                   class="text-[#197b3b] hover:text-black">
                     <i class="fas fa-arrow-left"></i>
                 </a>
-                <h1 class="text-2xl font-bold text-gray-900">User Details</h1>
+                <h1 class="text-2xl font-bold text-white">Member Details</h1>
             </div>
-            <p class="text-gray-600 mt-1">View detailed information about this user</p>
+            <p class="text-gray-600 mt-1">View detailed information about this member</p>
         </div>
         <div class="flex space-x-2 mt-4 md:mt-0">
-            <a href="{{ route('admin.users.edit', $user) }}" 
-               class="inline-flex items-center px-4 py-2 bg-green-600 border border-transparent rounded-md font-semibold text-xs text-white uppercase tracking-widest hover:bg-green-700 focus:bg-green-700 active:bg-green-800 focus:outline-none focus:ring-2 focus:ring-green-500 focus:ring-offset-2 transition ease-in-out duration-150">
-                <i class="fas fa-edit mr-2"></i> Edit User
+            <a href="{{ route('admin.members.edit', $member) }}" 
+               class="inline-flex items-center px-4 py-2 bg-[#197b3b] border border-transparent rounded-md font-semibold text-xs text-white uppercase tracking-widest hover:bg-black focus:bg-black active:bg-[#0d5d2a] focus:outline-none focus:ring-2 focus:ring-[#197b3b] focus:ring-offset-2 transition ease-in-out duration-150">
+                <i class="fas fa-edit mr-2"></i> Edit Member
             </a>
-            @if($user->id !== auth()->id())
-                <form action="{{ route('admin.users.destroy', $user) }}" method="POST"
-                      onsubmit="return confirm('Are you sure you want to delete this user? This action cannot be undone.')">
+            @if($member->user && $member->user->id !== auth()->id())
+                <form action="{{ route('admin.members.destroy', $member) }}" method="POST"
+                      onsubmit="return confirm('Are you sure you want to delete this member? This action cannot be undone.')">
                     @csrf
                     @method('DELETE')
                     <button type="submit" 
                             class="inline-flex items-center px-4 py-2 bg-red-600 border border-transparent rounded-md font-semibold text-xs text-white uppercase tracking-widest hover:bg-red-700 focus:bg-red-700 active:bg-red-800 focus:outline-none focus:ring-2 focus:ring-red-500 focus:ring-offset-2 transition ease-in-out duration-150">
-                        <i class="fas fa-trash mr-2"></i> Delete User
+                        <i class="fas fa-trash mr-2"></i> Delete Member
                     </button>
                 </form>
             @endif
@@ -36,58 +37,50 @@
     </div>
 
     <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
-        <!-- Left Column - User Profile -->
+        <!-- Left Column - Member Profile -->
         <div class="lg:col-span-1">
             <!-- Profile Card -->
-            <div class="bg-white shadow-lg rounded-lg overflow-hidden">
-                <div class="bg-gradient-to-r from-blue-500 to-purple-600 h-20"></div>
+            <div class="bg-white shadow-lg rounded-lg overflow-hidden border border-gray-200">
+                <div class="bg-gradient-to-r from-[#197b3b] to-black h-20"></div>
                 <div class="px-6 py-4 -mt-12">
                     <!-- Avatar -->
                     <div class="flex justify-center">
-                        <div class="h-24 w-24 rounded-full bg-blue-600 flex items-center justify-center text-white text-2xl font-bold border-4 border-white shadow-lg">
-                            @if($user->member && $user->member->photo)
-                                <img src="{{ asset('storage/' . $user->member->photo) }}" 
-                                     alt="{{ $user->name }}" 
+                        <div class="h-24 w-24 rounded-full bg-[#197b3b] flex items-center justify-center text-white text-2xl font-bold border-4 border-white shadow-lg">
+                            @if($member->photo)
+                                <img src="{{ asset('storage/' . $member->photo) }}" 
+                                     alt="{{ $member->first_name }}" 
                                      class="h-24 w-24 rounded-full object-cover border-4 border-white">
                             @else
-                                {{ strtoupper(substr($user->name, 0, 1)) }}
+                                {{ strtoupper(substr($member->first_name, 0, 1)) }}{{ strtoupper(substr($member->last_name, 0, 1)) }}
                             @endif
                         </div>
                     </div>
                     
-                    <!-- User Info -->
+                    <!-- Member Info -->
                     <div class="text-center mt-4">
-                        <h2 class="text-xl font-bold text-gray-900">
-                            @if($user->member)
-                                {{ $user->member->first_name }} {{ $user->member->last_name }}
-                            @else
-                                {{ $user->name }}
-                            @endif
+                        <h2 class="text-xl font-bold text-black">
+                            {{ $member->first_name }} {{ $member->last_name }}
                         </h2>
-                        <p class="text-gray-600">{{ $user->email }}</p>
+                        <p class="text-gray-600">{{ $member->email ?? ($member->user->email ?? 'No email') }}</p>
                         
                         <!-- Role Badge -->
                         <div class="mt-2">
-                            <span class="inline-flex items-center px-3 py-1 rounded-full text-sm font-medium 
-                                {{ $user->role === 'admin' ? 'bg-purple-100 text-purple-800' : 'bg-green-100 text-green-800' }}">
-                                <i class="fas fa-user-shield mr-1"></i>
-                                {{ ucfirst($user->role) }}
-                            </span>
+                            @if($member->user)
+                                <span class="inline-flex items-center px-3 py-1 rounded-full text-sm font-medium 
+                                    {{ $member->user->role === 'admin' ? 'bg-black text-white' : 'bg-[#197b3b] text-white' }}">
+                                    <i class="fas fa-user-shield mr-1"></i>
+                                    {{ ucfirst($member->user->role) }}
+                                </span>
+                            @endif
                         </div>
 
                         <!-- Member Status -->
                         <div class="mt-2">
-                            @if($user->member)
-                                <span class="inline-flex items-center px-3 py-1 rounded-full text-sm font-medium bg-green-100 text-green-800">
-                                    <i class="fas fa-check-circle mr-1"></i>
-                                    Church Member
-                                </span>
-                            @else
-                                <span class="inline-flex items-center px-3 py-1 rounded-full text-sm font-medium bg-yellow-100 text-yellow-800">
-                                    <i class="fas fa-user mr-1"></i>
-                                    Basic User
-                                </span>
-                            @endif
+                            <span class="inline-flex items-center px-3 py-1 rounded-full text-sm font-medium 
+                                {{ $member->is_active ? 'bg-[#e8f5e9] text-[#197b3b] border border-[#c8e6c9]' : 'bg-gray-100 text-gray-800 border border-gray-300' }}">
+                                <i class="fas fa-user mr-1"></i>
+                                {{ $member->is_active ? 'Active Member' : 'Inactive Member' }}
+                            </span>
                         </div>
                     </div>
                 </div>
@@ -96,18 +89,22 @@
                 <div class="border-t border-gray-200 px-6 py-4">
                     <div class="grid grid-cols-2 gap-4 text-center">
                         <div>
-                           <div class="text-2xl font-bold text-gray-900">
-    @if($user->member && $user->member->date_of_birth)
-        {{ \Carbon\Carbon::parse($user->member->date_of_birth)->age }}
-    @else
-        N/A
-    @endif
-</div>
+                            <div class="text-2xl font-bold text-black">
+                                @if($member->date_of_birth)
+                                    {{ \Carbon\Carbon::parse($member->date_of_birth)->age }}
+                                @else
+                                    N/A
+                                @endif
+                            </div>
                             <div class="text-sm text-gray-600">Age</div>
                         </div>
                         <div>
-                            <div class="text-2xl font-bold text-gray-900">
-                                {{ $user->created_at->format('M Y') }}
+                            <div class="text-2xl font-bold text-black">
+                                @if($member->joined_at)
+                                    {{ $member->joined_at->format('M Y') }}
+                                @else
+                                    {{ $member->created_at->format('M Y') }}
+                                @endif
                             </div>
                             <div class="text-sm text-gray-600">Joined</div>
                         </div>
@@ -116,56 +113,40 @@
             </div>
 
             <!-- Account Information -->
-            <div class="bg-white shadow-lg rounded-lg mt-6">
+            <div class="bg-white shadow-lg rounded-lg mt-6 border border-gray-200">
                 <div class="px-6 py-4 border-b border-gray-200">
-                    <h3 class="text-lg font-semibold text-gray-900">Account Information</h3>
+                    <h3 class="text-lg font-semibold text-black">Member Information</h3>
                 </div>
                 <div class="p-6">
                     <dl class="space-y-4">
                         <div>
-                            <dt class="text-sm font-medium text-gray-500">User ID</dt>
-                            <dd class="text-sm text-gray-900">{{ $user->id }}</dd>
+                            <dt class="text-sm font-medium text-gray-500">Member ID</dt>
+                            <dd class="text-sm text-black font-medium">{{ $member->id }}</dd>
                         </div>
                         <div>
-                            <dt class="text-sm font-medium text-gray-500">Email Verified</dt>
+                            <dt class="text-sm font-medium text-gray-500">Membership Number</dt>
+                            <dd class="text-sm text-black font-medium">{{ $member->membership_number ?? 'Not assigned' }}</dd>
+                        </div>
+                        <div>
+                            <dt class="text-sm font-medium text-gray-500">User Account</dt>
                             <dd class="text-sm">
-                                @if($user->email_verified_at)
-                                    <span class="text-green-600">
+                                @if($member->user)
+                                    <span class="text-[#197b3b] font-medium">
                                         <i class="fas fa-check-circle mr-1"></i>
-                                        {{ $user->email_verified_at->format('M j, Y') }}
+                                        Linked (ID: {{ $member->user->id }})
                                     </span>
                                 @else
-                                    <span class="text-red-600">
-                                        <i class="fas fa-times-circle mr-1"></i>
-                                        Not Verified
-                                    </span>
-                                @endif
-                            </dd>
-                        </div>
-                        <div>
-                            <dt class="text-sm font-medium text-gray-500">Last Login</dt>
-                            <dd class="text-sm text-gray-900">
-                                @if($user->last_login_at)
-                                    {{ $user->last_login_at->diffForHumans() }}
-                                @else
-                                    <span class="text-gray-500">Never logged in</span>
-                                @endif
-                            </dd>
-                        </div>
-                        <div>
-                            <dt class="text-sm font-medium text-gray-500">Member Profile</dt>
-                            <dd class="text-sm">
-                                @if($user->member)
-                                    <span class="text-green-600">
-                                        <i class="fas fa-check-circle mr-1"></i>
-                                        Complete
-                                    </span>
-                                @else
-                                    <span class="text-yellow-600">
+                                    <span class="text-yellow-600 font-medium">
                                         <i class="fas fa-exclamation-triangle mr-1"></i>
-                                        Not Created
+                                        No User Account
                                     </span>
                                 @endif
+                            </dd>
+                        </div>
+                        <div>
+                            <dt class="text-sm font-medium text-gray-500">Created</dt>
+                            <dd class="text-sm text-black font-medium">
+                                {{ $member->created_at->format('M j, Y \a\t g:i A') }}
                             </dd>
                         </div>
                     </dl>
@@ -173,52 +154,42 @@
             </div>
         </div>
 
-        <!-- Right Column - User Details & Activity -->
+        <!-- Right Column - Member Details -->
         <div class="lg:col-span-2">
             <!-- Personal Information -->
-            <div class="bg-white shadow-lg rounded-lg">
+            <div class="bg-white shadow-lg rounded-lg border border-gray-200">
                 <div class="px-6 py-4 border-b border-gray-200">
-                    <h3 class="text-lg font-semibold text-gray-900">
-                        @if($user->member)
-                            Member Information
-                        @else
-                            Personal Information
-                        @endif
-                    </h3>
+                    <h3 class="text-lg font-semibold text-black">Personal Information</h3>
                 </div>
                 <div class="p-6">
                     <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
                         <!-- Basic Info -->
                         <div>
-                            <h4 class="text-md font-semibold text-gray-700 mb-4">Basic Information</h4>
+                            <h4 class="text-md font-semibold text-black mb-4">Basic Information</h4>
                             <dl class="space-y-3">
                                 <div>
                                     <dt class="text-sm font-medium text-gray-500">Full Name</dt>
-                                    <dd class="text-sm text-gray-900">
-                                        @if($user->member)
-                                            {{ $user->member->first_name }} {{ $user->member->last_name }}
-                                        @else
-                                            {{ $user->name }}
-                                        @endif
+                                    <dd class="text-sm text-black font-medium">
+                                        {{ $member->first_name }} {{ $member->last_name }}
                                     </dd>
                                 </div>
                                 <div>
                                     <dt class="text-sm font-medium text-gray-500">Email Address</dt>
-                                    <dd class="text-sm text-gray-900">{{ $user->email }}</dd>
+                                    <dd class="text-sm text-black font-medium">{{ $member->email ?? 'Not provided' }}</dd>
                                 </div>
-                                <div>
-                                    <dt class="text-sm font-medium text-gray-500">Account Role</dt>
-                                    <dd class="text-sm">
-                                        <span class="inline-flex items-center px-2 py-1 rounded text-xs font-medium 
-                                            {{ $user->role === 'admin' ? 'bg-purple-100 text-purple-800' : 'bg-green-100 text-green-800' }}">
-                                            {{ ucfirst($user->role) }}
-                                        </span>
-                                    </dd>
-                                </div>
-                                @if($user->member)
                                 <div>
                                     <dt class="text-sm font-medium text-gray-500">Phone Number</dt>
-                                    <dd class="text-sm text-gray-900">{{ $user->member->phone ?? 'Not provided' }}</dd>
+                                    <dd class="text-sm text-black font-medium">{{ $member->phone ?? 'Not provided' }}</dd>
+                                </div>
+                                @if($member->user)
+                                <div>
+                                    <dt class="text-sm font-medium text-gray-500">User Role</dt>
+                                    <dd class="text-sm">
+                                        <span class="inline-flex items-center px-2 py-1 rounded text-xs font-medium 
+                                            {{ $member->user->role === 'admin' ? 'bg-black text-white' : 'bg-[#197b3b] text-white' }}">
+                                            {{ ucfirst($member->user->role) }}
+                                        </span>
+                                    </dd>
                                 </div>
                                 @endif
                             </dl>
@@ -226,95 +197,102 @@
 
                         <!-- Member Details -->
                         <div>
-                            <h4 class="text-md font-semibold text-gray-700 mb-4">
-                                @if($user->member)
-                                    Member Details
-                                @else
-                                    Account Timeline
-                                @endif
-                            </h4>
-                            
-                            @if($user->member)
-                                <dl class="space-y-3">
-                                    <div>
-                                        <dt class="text-sm font-medium text-gray-500">Date of Birth</dt>
-                                        <dd class="text-sm text-gray-900">
-    @if($user->member->date_of_birth)
-        {{ \Carbon\Carbon::parse($user->member->date_of_birth)->format('F j, Y') }}
-        <span class="text-gray-500">({{ \Carbon\Carbon::parse($user->member->date_of_birth)->age }} years old)</span>
-    @else
-        Not provided
-    @endif
-</dd>
-                                    </div>
-                                    <div>
-                                        <dt class="text-sm font-medium text-gray-500">Gender</dt>
-                                        <dd class="text-sm text-gray-900">{{ $user->member->gender ?? 'Not provided' }}</dd>
-                                    </div>
-                                    <div>
-                                        <dt class="text-sm font-medium text-gray-500">Marital Status</dt>
-                                        <dd class="text-sm text-gray-900">{{ $user->member->marital_status ?? 'Not provided' }}</dd>
-                                    </div>
-                                    <div>
-                                        <dd class="text-sm text-gray-900">
-    @if($user->member->membership_date)
-        {{ \Carbon\Carbon::parse($user->member->membership_date)->format('F j, Y') }}
-    @else
-        Not provided
-    @endif
-</dd>
-                                    </div>
-                                </dl>
-                            @else
-                                <!-- Account Timeline for non-members -->
-                                <div class="space-y-3">
-                                    <div class="flex items-start space-x-3">
-                                        <div class="flex-shrink-0 w-2 h-2 bg-green-500 rounded-full mt-2"></div>
-                                        <div>
-                                            <p class="text-sm font-medium text-gray-900">Account Created</p>
-                                            <p class="text-sm text-gray-500">{{ $user->created_at->format('F j, Y \a\t g:i A') }}</p>
-                                            <p class="text-xs text-gray-400">{{ $user->created_at->diffForHumans() }}</p>
-                                        </div>
-                                    </div>
-                                    
-                                    @if($user->email_verified_at)
-                                    <div class="flex items-start space-x-3">
-                                        <div class="flex-shrink-0 w-2 h-2 bg-blue-500 rounded-full mt-2"></div>
-                                        <div>
-                                            <p class="text-sm font-medium text-gray-900">Email Verified</p>
-                                            <p class="text-sm text-gray-500">{{ $user->email_verified_at->format('F j, Y \a\t g:i A') }}</p>
-                                            <p class="text-xs text-gray-400">{{ $user->email_verified_at->diffForHumans() }}</p>
-                                        </div>
-                                    </div>
-                                    @endif
+                            <h4 class="text-md font-semibold text-black mb-4">Member Details</h4>
+                            <dl class="space-y-3">
+                                <div>
+                                    <dt class="text-sm font-medium text-gray-500">Date of Birth</dt>
+                                    <dd class="text-sm text-black font-medium">
+                                        @if($member->date_of_birth)
+                                            {{ \Carbon\Carbon::parse($member->date_of_birth)->format('F j, Y') }}
+                                            <span class="text-gray-500">({{ \Carbon\Carbon::parse($member->date_of_birth)->age }} years old)</span>
+                                        @else
+                                            Not provided
+                                        @endif
+                                    </dd>
                                 </div>
-                            @endif
+                                <div>
+                                    <dt class="text-sm font-medium text-gray-500">Gender</dt>
+                                    <dd class="text-sm text-black font-medium">{{ $member->gender ?? 'Not provided' }}</dd>
+                                </div>
+                                <div>
+                                    <dt class="text-sm font-medium text-gray-500">Marital Status</dt>
+                                    <dd class="text-sm text-black font-medium">{{ $member->marital_status ?? 'Not provided' }}</dd>
+                                </div>
+                                <div>
+                                    <dt class="text-sm font-medium text-gray-500">Membership Date</dt>
+                                    <dd class="text-sm text-black font-medium">
+                                        @if($member->membership_date)
+                                            {{ \Carbon\Carbon::parse($member->membership_date)->format('F j, Y') }}
+                                        @else
+                                            Not provided
+                                        @endif
+                                    </dd>
+                                </div>
+                            </dl>
                         </div>
                     </div>
 
-                    <!-- Additional Member Information -->
-                    @if($user->member && ($user->member->address || $user->member->occupation || $user->member->emergency_contact))
+                    <!-- Additional Information -->
+                    @if($member->address || $member->home_congregation || $member->emergency_contact_name)
                     <div class="mt-6 pt-6 border-t border-gray-200">
-                        <h4 class="text-md font-semibold text-gray-700 mb-4">Additional Information</h4>
+                        <h4 class="text-md font-semibold text-black mb-4">Additional Information</h4>
                         <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
-                            @if($user->member->address)
+                            @if($member->address)
                             <div>
                                 <dt class="text-sm font-medium text-gray-500">Address</dt>
-                                <dd class="text-sm text-gray-900 mt-1">{{ $user->member->address }}</dd>
+                                <dd class="text-sm text-black font-medium mt-1">{{ $member->address }}</dd>
                             </div>
                             @endif
                             
-                            @if($user->member->occupation)
+                            @if($member->home_congregation)
                             <div>
-                                <dt class="text-sm font-medium text-gray-500">Occupation</dt>
-                                <dd class="text-sm text-gray-900 mt-1">{{ $user->member->occupation }}</dd>
+                                <dt class="text-sm font-medium text-gray-500">Home Congregation</dt>
+                                <dd class="text-sm text-black font-medium mt-1">{{ $member->home_congregation }}</dd>
                             </div>
                             @endif
                             
-                            @if($user->member->emergency_contact)
+                            @if($member->emergency_contact_name)
                             <div class="md:col-span-2">
                                 <dt class="text-sm font-medium text-gray-500">Emergency Contact</dt>
-                                <dd class="text-sm text-gray-900 mt-1">{{ $user->member->emergency_contact }}</dd>
+                                <dd class="text-sm text-black font-medium mt-1">
+                                    {{ $member->emergency_contact_name }}
+                                    @if($member->emergency_contact_phone)
+                                        <br><span class="text-gray-600">{{ $member->emergency_contact_phone }}</span>
+                                    @endif
+                                </dd>
+                            </div>
+                            @endif
+                        </div>
+                    </div>
+                    @endif
+
+                    <!-- Religious Information -->
+                    @if($member->baptism_date || $member->confirmation_date || $member->parish)
+                    <div class="mt-6 pt-6 border-t border-gray-200">
+                        <h4 class="text-md font-semibold text-black mb-4">Religious Information</h4>
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                            @if($member->baptism_date)
+                            <div>
+                                <dt class="text-sm font-medium text-gray-500">Baptism Date</dt>
+                                <dd class="text-sm text-black font-medium mt-1">
+                                    {{ \Carbon\Carbon::parse($member->baptism_date)->format('F j, Y') }}
+                                </dd>
+                            </div>
+                            @endif
+                            
+                            @if($member->confirmation_date)
+                            <div>
+                                <dt class="text-sm font-medium text-gray-500">Confirmation Date</dt>
+                                <dd class="text-sm text-black font-medium mt-1">
+                                    {{ \Carbon\Carbon::parse($member->confirmation_date)->format('F j, Y') }}
+                                </dd>
+                            </div>
+                            @endif
+                            
+                            @if($member->parish)
+                            <div>
+                                <dt class="text-sm font-medium text-gray-500">Parish</dt>
+                                <dd class="text-sm text-black font-medium mt-1">{{ $member->parish->name }}</dd>
                             </div>
                             @endif
                         </div>
@@ -324,37 +302,41 @@
             </div>
 
             <!-- Quick Actions -->
-            <div class="bg-white shadow-lg rounded-lg mt-6">
+            <div class="bg-white shadow-lg rounded-lg mt-6 border border-gray-200">
                 <div class="px-6 py-4 border-b border-gray-200">
-                    <h3 class="text-lg font-semibold text-gray-900">Quick Actions</h3>
+                    <h3 class="text-lg font-semibold text-black">Quick Actions</h3>
                 </div>
                 <div class="p-6">
                     <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-                        <a href="mailto:{{ $user->email }}" 
-                           class="flex items-center p-4 border border-gray-200 rounded-lg hover:bg-gray-50 transition-colors">
-                            <i class="fas fa-envelope text-blue-600 text-xl mr-3"></i>
+                        @if($member->email)
+                        <a href="mailto:{{ $member->email }}" 
+                           class="flex items-center p-4 border border-gray-200 rounded-lg hover:bg-gray-50 transition-colors hover:border-[#197b3b]">
+                            <i class="fas fa-envelope text-[#197b3b] text-xl mr-3"></i>
                             <div>
-                                <div class="font-medium text-gray-900">Send Email</div>
-                                <div class="text-sm text-gray-600">Contact this user</div>
+                                <div class="font-medium text-black">Send Email</div>
+                                <div class="text-sm text-gray-600">Contact this member</div>
                             </div>
                         </a>
+                        @endif
                         
-                        <a href="{{ route('admin.users.edit', $user) }}" 
-                           class="flex items-center p-4 border border-gray-200 rounded-lg hover:bg-gray-50 transition-colors">
-                            <i class="fas fa-user-edit text-green-600 text-xl mr-3"></i>
+                        <a href="{{ route('admin.members.edit', $member) }}" 
+                           class="flex items-center p-4 border border-gray-200 rounded-lg hover:bg-gray-50 transition-colors hover:border-[#197b3b]">
+                            <i class="fas fa-user-edit text-[#197b3b] text-xl mr-3"></i>
                             <div>
-                                <div class="font-medium text-gray-900">Edit Profile</div>
-                                <div class="text-sm text-gray-600">Update user information</div>
+                                <div class="font-medium text-black">Edit Profile</div>
+                                <div class="text-sm text-gray-600">Update member information</div>
                             </div>
                         </a>
 
-                        @if($user->member)
+                        
+                        
+                        @if($member->user)
                         <a href="#" 
-                           class="flex items-center p-4 border border-gray-200 rounded-lg hover:bg-gray-50 transition-colors">
-                            <i class="fas fa-file-pdf text-red-600 text-xl mr-3"></i>
+                           class="flex items-center p-4 border border-gray-200 rounded-lg hover:bg-gray-50 transition-colors hover:border-[#197b3b]">
+                            <i class="fas fa-history text-[#197b3b] text-xl mr-3"></i>
                             <div>
-                                <div class="font-medium text-gray-900">Member Report</div>
-                                <div class="text-sm text-gray-600">Generate member profile</div>
+                                <div class="font-medium text-black">User Account</div>
+                                <div class="text-sm text-gray-600">View user details</div>
                             </div>
                         </a>
                         @endif

@@ -1,332 +1,322 @@
 @extends('admin.layouts.app')
 
-@section('title', 'Ministries Management')
+@section('title', 'Church Ministries')
 
 @section('content')
-<div class="p-6">
+<div class="container mx-auto px-4 py-6">
+    <!-- Header -->
+    <div class="flex flex-col md:flex-row md:items-center md:justify-between mb-8">
+        <div>
+            <h1 class="text-2xl font-bold text-secondary dark:text-white mb-2">Church Ministries</h1>
+            <p class="text-slate-600 dark:text-slate-400">Manage all church ministries, leaders, and events</p>
+        </div>
+        <div class="flex space-x-3 mt-4 md:mt-0">
+            <a href="{{ route('admin.ministries.create') }}" 
+               class="inline-flex items-center px-4 py-2 bg-primary text-white rounded-lg font-medium hover:bg-secondary focus:outline-none focus:ring-2 focus:ring-primary focus:ring-offset-2">
+                <span class="material-symbols-outlined mr-2">add</span>
+                New Ministry
+            </a>
+        </div>
+    </div>
 
-    <!-- Header Section -->
-    <div class="mb-8">
-        <div class="flex flex-col md:flex-row md:items-center md:justify-between">
-            <div>
-                <h1 class="text-3xl font-bold text-gray-900">Ministries Management</h1>
-                <p class="text-gray-600 mt-2">Manage all church ministries and outreach programs</p>
+    <!-- Stats Cards -->
+    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
+        <div class="bg-white dark:bg-surface-dark rounded-xl p-5 border border-slate-200 dark:border-white/5 shadow-sm">
+            <div class="flex items-center justify-between mb-3">
+                <div class="flex size-12 items-center justify-center rounded-lg bg-primary/10">
+                    <span class="material-symbols-outlined text-2xl text-primary">diversity_3</span>
+                </div>
             </div>
-            
-            <!-- Action Buttons -->
-            <div class="flex space-x-3 mt-4 md:mt-0">
-                <a href="{{ route('admin.ministries.create') }}"
-                   class="inline-flex items-center px-6 py-3 bg-gradient-to-r from-blue-600 to-blue-700 hover:from-blue-700 hover:to-blue-800 text-white font-semibold rounded-lg shadow-lg transition-all duration-200 transform hover:-translate-y-0.5">
-                    <i class="fas fa-plus-circle mr-2"></i>
-                    Create Ministry
-                </a>
+            <p class="text-sm text-slate-500 dark:text-slate-400 font-medium mb-1">Total Ministries</p>
+            <p class="text-2xl font-bold text-secondary dark:text-white">{{ $stats['total_ministries'] }}</p>
+            <div class="h-1 w-full bg-slate-100 dark:bg-white/5 rounded-full mt-3 overflow-hidden">
+                <div class="h-full bg-primary rounded-full" style="width: {{ min(($stats['active_ministries'] / max($stats['total_ministries'], 1)) * 100, 100) }}%"></div>
             </div>
         </div>
-
-        <!-- Stats Cards -->
-        <div class="grid grid-cols-1 md:grid-cols-4 gap-6 mt-6">
-            <div class="bg-gradient-to-br from-blue-500 to-blue-600 rounded-2xl p-6 text-white shadow-lg">
-                <div class="flex items-center justify-between">
-                    <div>
-                        <p class="text-blue-100 text-sm font-medium">Total Ministries</p>
-                        <p class="text-3xl font-bold mt-1">{{ $ministries->total() }}</p>
-                    </div>
-                    <div class="bg-blue-400 bg-opacity-30 p-3 rounded-full">
-                        <i class="fas fa-church text-xl"></i>
-                    </div>
+        
+        <div class="bg-white dark:bg-surface-dark rounded-xl p-5 border border-slate-200 dark:border-white/5 shadow-sm">
+            <div class="flex items-center justify-between mb-3">
+                <div class="flex size-12 items-center justify-center rounded-lg bg-emerald-100 dark:bg-emerald-900/30">
+                    <span class="material-symbols-outlined text-2xl text-emerald-600 dark:text-emerald-400">groups</span>
                 </div>
             </div>
-
-            <div class="bg-gradient-to-br from-green-500 to-green-600 rounded-2xl p-6 text-white shadow-lg">
-                <div class="flex items-center justify-between">
-                    <div>
-                        <p class="text-green-100 text-sm font-medium">Active</p>
-                        <p class="text-3xl font-bold mt-1">{{ App\Models\Ministry::where('is_active', true)->count() }}</p>
-                    </div>
-                    <div class="bg-green-400 bg-opacity-30 p-3 rounded-full">
-                        <i class="fas fa-check-circle text-xl"></i>
-                    </div>
+            <p class="text-sm text-slate-500 dark:text-slate-400 font-medium mb-1">Total Members</p>
+            <p class="text-2xl font-bold text-secondary dark:text-white">{{ $stats['total_members'] }}</p>
+            <div class="h-1 w-full bg-slate-100 dark:bg-white/5 rounded-full mt-3 overflow-hidden">
+                <div class="h-full bg-emerald-500 rounded-full" style="width: {{ min(($stats['active_leaders'] / max($stats['total_members'], 1)) * 100, 100) }}%"></div>
+            </div>
+        </div>
+        
+        <div class="bg-white dark:bg-surface-dark rounded-xl p-5 border border-slate-200 dark:border-white/5 shadow-sm">
+            <div class="flex items-center justify-between mb-3">
+                <div class="flex size-12 items-center justify-center rounded-lg bg-blue-100 dark:bg-blue-900/30">
+                    <span class="material-symbols-outlined text-2xl text-blue-600 dark:text-blue-400">person</span>
                 </div>
             </div>
-
-            <div class="bg-gradient-to-br from-purple-500 to-purple-600 rounded-2xl p-6 text-white shadow-lg">
-                <div class="flex items-center justify-between">
-                    <div>
-                        <p class="text-purple-100 text-sm font-medium">With Leaders</p>
-                        <p class="text-3xl font-bold mt-1">{{ App\Models\Ministry::whereNotNull('leader_name')->where('leader_name', '!=', '')->count() }}</p>
-                    </div>
-                    <div class="bg-purple-400 bg-opacity-30 p-3 rounded-full">
-                        <i class="fas fa-users text-xl"></i>
-                    </div>
+            <p class="text-sm text-slate-500 dark:text-slate-400 font-medium mb-1">Active Leaders</p>
+            <p class="text-2xl font-bold text-secondary dark:text-white">{{ $stats['active_leaders'] }}</p>
+            <div class="h-1 w-full bg-slate-100 dark:bg-white/5 rounded-full mt-3 overflow-hidden">
+                <div class="h-full bg-blue-500 rounded-full" style="width: 100%"></div>
+            </div>
+        </div>
+        
+        <div class="bg-white dark:bg-surface-dark rounded-xl p-5 border border-slate-200 dark:border-white/5 shadow-sm">
+            <div class="flex items-center justify-between mb-3">
+                <div class="flex size-12 items-center justify-center rounded-lg bg-purple-100 dark:bg-purple-900/30">
+                    <span class="material-symbols-outlined text-2xl text-purple-600 dark:text-purple-400">event_upcoming</span>
                 </div>
             </div>
-
-            <div class="bg-gradient-to-br from-orange-500 to-orange-600 rounded-2xl p-6 text-white shadow-lg">
-                <div class="flex items-center justify-between">
-                    <div>
-                        <p class="text-orange-100 text-sm font-medium">With Images</p>
-                        <p class="text-3xl font-bold mt-1">{{ App\Models\Ministry::whereNotNull('image_url')->where('image_url', '!=', '')->count() }}</p>
-                    </div>
-                    <div class="bg-orange-400 bg-opacity-30 p-3 rounded-full">
-                        <i class="fas fa-image text-xl"></i>
-                    </div>
-                </div>
+            <p class="text-sm text-slate-500 dark:text-slate-400 font-medium mb-1">Upcoming Events</p>
+            <p class="text-2xl font-bold text-secondary dark:text-white">{{ $stats['upcoming_events'] }}</p>
+            <div class="h-1 w-full bg-slate-100 dark:bg-white/5 rounded-full mt-3 overflow-hidden">
+                <div class="h-full bg-purple-500 rounded-full" style="width: 100%"></div>
             </div>
         </div>
     </div>
 
-    <!-- Ministries Table Card -->
-    <div class="bg-white rounded-2xl shadow-xl border border-gray-100 overflow-hidden">
-        <!-- Table Header -->
-        <div class="px-6 py-4 border-b border-gray-100 bg-gradient-to-r from-gray-50 to-gray-75">
-            <div class="flex flex-col md:flex-row md:items-center md:justify-between">
-                <h3 class="text-lg font-semibold text-gray-800">All Ministries</h3>
+    <!-- Main Content Grid -->
+    <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+        <!-- Ministries List -->
+        <div class="lg:col-span-2">
+            <div class="bg-white dark:bg-surface-dark rounded-xl border border-slate-200 dark:border-white/5 shadow-sm overflow-hidden">
+                <div class="px-6 py-4 border-b border-slate-200 dark:border-white/5">
+                    <h2 class="text-lg font-semibold text-secondary dark:text-white">All Ministries</h2>
+                    <p class="text-sm text-slate-500 dark:text-slate-400 mt-1">Click on a ministry to view details</p>
+                </div>
                 
-                <!-- Search and Filters -->
-                <div class="flex items-center space-x-4 mt-4 md:mt-0">
-                    <form method="GET" action="{{ route('admin.ministries.index') }}" class="relative">
-    @if(request('status'))
-        <input type="hidden" name="status" value="{{ request('status') }}">
-    @endif
-    <input type="text" 
-           name="search" 
-           placeholder="Search ministries..." 
-           value="{{ request('search') }}"
-           class="pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 w-64">
-    <i class="fas fa-search absolute left-3 top-3 text-gray-400"></i>
-    @if(request('search'))
-        <a href="{{ route('admin.ministries.index') }}" 
-           class="absolute right-3 top-3 text-gray-400 hover:text-gray-600"
-           title="Clear search">
-            <i class="fas fa-times"></i>
-        </a>
-    @endif
-</form>
-                    <div class="relative" x-data="{ open: false }">
-    <button type="button" 
-            @click="open = !open"
-            class="px-4 py-2 border border-gray-300 rounded-lg hover:bg-gray-50 transition-colors">
-        <i class="fas fa-filter mr-2"></i>Filter
-    </button>
-    
-    <!-- Dropdown menu -->
-    <div x-show="open" 
-         @click.away="open = false"
-         class="absolute right-0 mt-2 w-48 bg-white rounded-lg shadow-lg border border-gray-200 z-10">
-        <div class="p-2">
-            <a href="{{ route('admin.ministries.index', ['status' => 'active'] + request()->except('status')) }}"
-               class="block px-3 py-2 text-sm text-gray-700 hover:bg-gray-100 rounded {{ request('status') == 'active' ? 'bg-blue-50 text-blue-700' : '' }}">
-                Active Only
-            </a>
-            <a href="{{ route('admin.ministries.index', ['status' => 'inactive'] + request()->except('status')) }}"
-               class="block px-3 py-2 text-sm text-gray-700 hover:bg-gray-100 rounded {{ request('status') == 'inactive' ? 'bg-blue-50 text-blue-700' : '' }}">
-                Inactive Only
-            </a>
-            <a href="{{ route('admin.ministries.index', request()->except('status')) }}"
-               class="block px-3 py-2 text-sm text-gray-700 hover:bg-gray-100 rounded {{ !request('status') ? 'bg-blue-50 text-blue-700' : '' }}">
-                All Status
-            </a>
-        </div>
-    </div>
-</div>
+                <div class="divide-y divide-slate-200 dark:divide-white/5">
+                    @forelse($ministries as $ministry)
+                        <a href="{{ route('admin.ministries.show', $ministry) }}" 
+                           class="block p-5 hover:bg-slate-50 dark:hover:bg-white/2.5 transition-colors">
+                            <div class="flex items-start justify-between">
+                                <div class="flex items-start space-x-4">
+                                    <!-- Ministry Image -->
+                                    <div class="flex-shrink-0">
+                                        @if($ministry->image_url)
+                                            <img src="{{ asset('images/gallery/' . $ministry->image_url) }}" 
+                                                 alt="{{ $ministry->name }}"
+                                                 class="w-16 h-16 rounded-lg object-cover border border-slate-200 dark:border-white/5">
+                                        @else
+                                            <div class="w-16 h-16 rounded-lg bg-primary/10 flex items-center justify-center">
+                                                <span class="material-symbols-outlined text-2xl text-primary">diversity_3</span>
+                                            </div>
+                                        @endif
+                                    </div>
+                                    
+                                    <!-- Ministry Info -->
+                                    <div class="flex-1">
+                                        <div class="flex items-center justify-between">
+                                            <h3 class="font-semibold text-secondary dark:text-white">{{ $ministry->name }}</h3>
+                                            <span class="text-xs font-medium px-2 py-1 rounded-full {{ $ministry->is_active ? 'bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-400' : 'bg-red-100 text-red-800 dark:bg-red-900/30 dark:text-red-400' }}">
+                                                {{ $ministry->is_active ? 'Active' : 'Inactive' }}
+                                            </span>
+                                        </div>
+                                        
+                                        <p class="text-sm text-slate-600 dark:text-slate-400 mt-1 line-clamp-2">
+                                            {{ $ministry->description ?: 'No description available.' }}
+                                        </p>
+                                        
+                                        <!-- Leaders -->
+                                        <div class="flex items-center mt-3">
+                                            <div class="flex -space-x-2 mr-3">
+                                                @foreach($ministry->members->take(3) as $member)
+                                                    <div class="w-8 h-8 rounded-full bg-primary/20 border-2 border-white dark:border-surface-dark flex items-center justify-center text-xs font-semibold text-primary">
+                                                        {{ $member->member->initials ?? '??' }}
+                                                    </div>
+                                                @endforeach
+                                                @if($ministry->members_count > 3)
+                                                    <div class="w-8 h-8 rounded-full bg-slate-100 dark:bg-white/5 border-2 border-white dark:border-surface-dark flex items-center justify-center text-xs font-semibold text-slate-600 dark:text-slate-400">
+                                                        +{{ $ministry->members_count - 3 }}
+                                                    </div>
+                                                @endif
+                                            </div>
+                                            <div class="text-sm text-slate-500 dark:text-slate-400">
+                                                <span class="font-medium">{{ $ministry->members_count }}</span> members
+                                                @if($ministry->leader_name)
+                                                    • Leader: {{ $ministry->leader_name }}
+                                                @endif
+                                            </div>
+                                        </div>
+                                        
+                                        <!-- Contact -->
+                                        @if($ministry->contact_email)
+                                            <div class="flex items-center mt-2 text-sm text-slate-500 dark:text-slate-400">
+                                                <span class="material-symbols-outlined text-[16px] mr-1">mail</span>
+                                                {{ $ministry->contact_email }}
+                                            </div>
+                                        @endif
+                                    </div>
+                                </div>
+                            </div>
+                        </a>
+                    @empty
+                        <div class="p-10 text-center">
+                            <div class="w-16 h-16 mx-auto mb-4 rounded-full bg-slate-100 dark:bg-white/5 flex items-center justify-center">
+                                <span class="material-symbols-outlined text-2xl text-slate-400">diversity_3</span>
+                            </div>
+                            <h3 class="text-lg font-medium text-secondary dark:text-white mb-2">No Ministries Yet</h3>
+                            <p class="text-slate-500 dark:text-slate-400 mb-4">Create your first ministry to get started</p>
+                            <a href="{{ route('admin.ministries.create') }}" 
+                               class="inline-flex items-center px-4 py-2 bg-primary text-white rounded-lg font-medium hover:bg-secondary">
+                                <span class="material-symbols-outlined mr-2">add</span>
+                                Create Ministry
+                            </a>
+                        </div>
+                    @endforelse
                 </div>
-            </div>
-        </div>
-
-        <!-- Table -->
-        <div class="overflow-x-auto">
-            <table class="min-w-full divide-y divide-gray-200">
-                <thead class="bg-gray-50">
-                    <tr>
-                        <th class="px-6 py-4 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">
-                            Ministry
-                        </th>
-                        <th class="px-6 py-4 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">
-                            Leader
-                        </th>
-                        <th class="px-6 py-4 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">
-                            Contact
-                        </th>
-                        <th class="px-6 py-4 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">
-                            Status
-                        </th>
-                        <th class="px-6 py-4 text-right text-xs font-semibold text-gray-600 uppercase tracking-wider">
-                            Actions
-                        </th>
-                    </tr>
-                </thead>
-
-                <tbody class="bg-white divide-y divide-gray-100">
-                    @foreach($ministries as $ministry)
-                    <tr class="hover:bg-blue-50 transition-colors duration-150 group">
-                        <!-- Ministry Info with Image -->
-                        <td class="px-6 py-4 whitespace-nowrap">
-                            <div class="flex items-center">
-                                <div class="flex-shrink-0 h-12 w-12 relative">
-                                    @if(!empty($ministry->image_url))
-                                        <img src="{{ asset('images/gallery/' . $ministry->image_url) }}"
-                                             alt="{{ $ministry->name }}"
-                                             class="h-12 w-12 rounded-xl object-cover border-2 border-white shadow-lg ring-2 ring-blue-100">
-                                        <div class="absolute -bottom-1 -right-1 bg-green-500 text-white rounded-full w-5 h-5 flex items-center justify-center text-xs shadow-sm">
-                                            <i class="fas fa-image text-xs"></i>
-                                        </div>
-                                    @else
-                                        @php
-                                            $colors = [
-                                                'bg-gradient-to-br from-blue-500 to-blue-600',
-                                                'bg-gradient-to-br from-green-500 to-green-600', 
-                                                'bg-gradient-to-br from-purple-500 to-purple-600',
-                                                'bg-gradient-to-br from-red-500 to-red-600',
-                                                'bg-gradient-to-br from-yellow-500 to-yellow-600',
-                                                'bg-gradient-to-br from-indigo-500 to-indigo-600'
-                                            ];
-                                            $colorIndex = crc32($ministry->name) % count($colors);
-                                            $bgGradient = $colors[$colorIndex];
-                                        @endphp
-                                        <div class="h-12 w-12 rounded-xl {{ $bgGradient }} flex items-center justify-center text-white font-bold text-lg shadow-lg">
-                                            {{ strtoupper(substr($ministry->name, 0, 1)) }}
-                                        </div>
-                                    @endif
-                                </div>
-                                <div class="ml-4">
-                                    <div class="text-sm font-semibold text-gray-900 group-hover:text-blue-700 transition-colors">
-                                        {{ $ministry->name }}
-                                    </div>
-                                    <div class="text-sm text-gray-500 line-clamp-1 max-w-xs">
-                                        {{ Str::limit($ministry->description, 50) }}
-                                    </div>
-                                </div>
-                            </div>
-                        </td>
-
-                        <!-- Leader -->
-                        <td class="px-6 py-4 whitespace-nowrap">
-                            <div class="text-sm text-gray-900">
-                                @if($ministry->leader_name && trim($ministry->leader_name) !== '')
-                                    <div class="flex items-center">
-                                        <div class="w-8 h-8 bg-blue-100 rounded-full flex items-center justify-center mr-2">
-                                            <i class="fas fa-user text-blue-600 text-sm"></i>
-                                        </div>
-                                        <span class="font-medium">{{ $ministry->leader_name }}</span>
-                                    </div>
-                                @else
-                                    <span class="text-gray-400 italic">No leader</span>
-                                @endif
-                            </div>
-                        </td>
-
-                        <!-- Contact -->
-                        <td class="px-6 py-4 whitespace-nowrap">
-                            <div class="text-sm text-gray-600">
-                                @if($ministry->contact_email && trim($ministry->contact_email) !== '')
-                                    <div class="flex items-center">
-                                        <i class="fas fa-envelope text-gray-400 mr-2"></i>
-                                        <span class="truncate max-w-xs">{{ $ministry->contact_email }}</span>
-                                    </div>
-                                @else
-                                    <span class="text-gray-400 italic">No email</span>
-                                @endif
-                            </div>
-                        </td>
-
-                        <!-- Status -->
-                        <td class="px-6 py-4 whitespace-nowrap">
-                            @if($ministry->is_active)
-                                <span class="inline-flex items-center px-3 py-1 rounded-full text-xs font-semibold bg-green-100 text-green-800 border border-green-200">
-                                    <i class="fas fa-circle mr-1" style="font-size: 6px;"></i>
-                                    Active
-                                </span>
-                            @else
-                                <span class="inline-flex items-center px-3 py-1 rounded-full text-xs font-semibold bg-red-100 text-red-800 border border-red-200">
-                                    <i class="fas fa-circle mr-1" style="font-size: 6px;"></i>
-                                    Inactive
-                                </span>
-                            @endif
-                        </td>
-
-                        <!-- Actions -->
-                        <td class="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
-                            <div class="flex justify-end space-x-2 opacity-0 group-hover:opacity-100 transition-opacity duration-200">
-                                <!-- View -->
-                                <a href="{{ route('admin.ministries.show', $ministry) }}"
-                                   class="text-blue-600 hover:text-blue-900 p-2 rounded-lg hover:bg-blue-100 transition-colors"
-                                   title="View Ministry">
-                                    <i class="fas fa-eye"></i>
-                                </a>
-
-                                <!-- Edit -->
-                                <a href="{{ route('admin.ministries.edit', $ministry) }}"
-                                   class="text-green-600 hover:text-green-900 p-2 rounded-lg hover:bg-green-100 transition-colors"
-                                   title="Edit Ministry">
-                                    <i class="fas fa-edit"></i>
-                                </a>
-
-                                <!-- Delete -->
-                                <form action="{{ route('admin.ministries.destroy', $ministry) }}"
-                                      method="POST"
-                                      class="inline"
-                                      onsubmit="return confirm('Are you sure you want to delete this ministry? This action cannot be undone.')">
-                                    @csrf
-                                    @method('DELETE')
-                                    <button type="submit"
-                                            class="text-red-600 hover:text-red-900 p-2 rounded-lg hover:bg-red-100 transition-colors"
-                                            title="Delete Ministry">
-                                        <i class="fas fa-trash"></i>
-                                    </button>
-                                </form>
-                            </div>
-                        </td>
-                    </tr>
-                    @endforeach
-                </tbody>
-            </table>
-        </div>
-
-        <!-- Table Footer -->
-        <div class="px-6 py-4 border-t border-gray-100 bg-gray-50">
-            <div class="flex items-center justify-between">
-                <p class="text-sm text-gray-600">
-                    Showing {{ $ministries->firstItem() }} to {{ $ministries->lastItem() }} of {{ $ministries->total() }} results
-                </p>
                 
                 <!-- Pagination -->
                 @if($ministries->hasPages())
-                    <div class="flex space-x-2">
+                    <div class="px-6 py-4 border-t border-slate-200 dark:border-white/5">
                         {{ $ministries->links() }}
                     </div>
                 @endif
             </div>
         </div>
-    </div>
-
-    <!-- Empty State -->
-    @if($ministries->isEmpty())
-    <div class="text-center py-12">
-        <div class="bg-gradient-to-br from-gray-50 to-gray-100 rounded-2xl p-12 border-2 border-dashed border-gray-200">
-            <i class="fas fa-hands-helping text-gray-300 text-6xl mb-4"></i>
-            <h3 class="text-xl font-semibold text-gray-600 mb-2">No Ministries Yet</h3>
-            <p class="text-gray-500 mb-6">Get started by creating your first ministry</p>
-            <a href="{{ route('admin.ministries.create') }}"
-               class="inline-flex items-center px-6 py-3 bg-gradient-to-r from-blue-600 to-blue-700 hover:from-blue-700 hover:to-blue-800 text-white font-semibold rounded-lg shadow-lg transition-all duration-200">
-                <i class="fas fa-plus-circle mr-2"></i>
-                Create First Ministry
-            </a>
+        
+        <!-- Upcoming Events & Quick Actions -->
+        <div class="space-y-6">
+            <!-- Upcoming Events -->
+            <div class="bg-white dark:bg-surface-dark rounded-xl border border-slate-200 dark:border-white/5 shadow-sm overflow-hidden">
+                <div class="px-5 py-4 border-b border-slate-200 dark:border-white/5">
+                    <h2 class="text-lg font-semibold text-secondary dark:text-white">Upcoming Events</h2>
+                    <p class="text-sm text-slate-500 dark:text-slate-400 mt-1">Events across all ministries</p>
+                </div>
+                
+                <div class="divide-y divide-slate-200 dark:divide-white/5">
+                    @forelse($upcomingEvents as $event)
+                        <a href="{{ route('admin.events.show', $event) }}" 
+                           class="block p-5 hover:bg-slate-50 dark:hover:bg-white/2.5 transition-colors">
+                            <div class="flex items-start justify-between">
+                                <div>
+                                    <h3 class="font-medium text-secondary dark:text-white">{{ $event->title }}</h3>
+                                    <div class="flex items-center mt-2 text-sm text-slate-500 dark:text-slate-400">
+                                        <span class="material-symbols-outlined text-[16px] mr-1">calendar_month</span>
+                                        {{ $event->start_time->format('M j, Y') }}
+                                        <span class="mx-2">•</span>
+                                        <span class="material-symbols-outlined text-[16px] mr-1">schedule</span>
+                                        {{ $event->start_time->format('g:i A') }}
+                                    </div>
+                                    @if($event->ministry)
+                                        <div class="flex items-center mt-1 text-sm text-primary">
+                                            <span class="material-symbols-outlined text-[16px] mr-1">diversity_3</span>
+                                            {{ $event->ministry->name }}
+                                        </div>
+                                    @endif
+                                </div>
+                                <span class="text-xs font-medium px-2 py-1 rounded-full {{ $event->is_public ? 'bg-blue-100 text-blue-800 dark:bg-blue-900/30 dark:text-blue-400' : 'bg-slate-100 text-slate-800 dark:bg-white/5 dark:text-slate-400' }}">
+                                    {{ $event->is_public ? 'Public' : 'Private' }}
+                                </span>
+                            </div>
+                        </a>
+                    @empty
+                        <div class="p-6 text-center">
+                            <div class="w-12 h-12 mx-auto mb-3 rounded-full bg-slate-100 dark:bg-white/5 flex items-center justify-center">
+                                <span class="material-symbols-outlined text-xl text-slate-400">event_upcoming</span>
+                            </div>
+                            <p class="text-slate-500 dark:text-slate-400">No upcoming events</p>
+                        </div>
+                    @endforelse
+                </div>
+                
+                <div class="px-5 py-4 border-t border-slate-200 dark:border-white/5">
+                    <a href="{{ route('admin.events.index') }}" 
+                       class="text-sm font-medium text-primary hover:text-secondary flex items-center justify-center">
+                        View All Events
+                        <span class="material-symbols-outlined ml-1 text-[18px]">arrow_forward</span>
+                    </a>
+                </div>
+            </div>
+            
+            <!-- Quick Actions -->
+            <div class="bg-white dark:bg-surface-dark rounded-xl border border-slate-200 dark:border-white/5 shadow-sm overflow-hidden">
+                <div class="px-5 py-4 border-b border-slate-200 dark:border-white/5">
+                    <h2 class="text-lg font-semibold text-secondary dark:text-white">Quick Actions</h2>
+                </div>
+                
+                <div class="p-5">
+                    <!-- Register Ministry for Event -->
+                    <div class="mb-5">
+                        <h3 class="text-sm font-medium text-secondary dark:text-white mb-3">Register Ministry for Event</h3>
+                        <form action="#" method="POST" class="space-y-3">
+                            @csrf
+                            <div>
+                                <label class="block text-xs font-medium text-slate-700 dark:text-slate-300 mb-1">
+                                    Select Ministry
+                                </label>
+                               <select
+    class="w-full px-3 py-2 border border-[#197b3b] rounded-lg
+           bg-white text-black text-sm
+           focus:outline-none focus:ring-2 focus:ring-[#197b3b] focus:border-black
+           hover:border-black transition"
+>
+    <option value="">Choose Ministry</option>
+    @foreach($allMinistries as $ministry)
+        <option value="{{ $ministry->id }}">
+            {{ $ministry->name }}
+        </option>
+    @endforeach
+</select>
+                            </div>
+                            
+                            <div>
+                                <label class="block text-xs font-medium text-slate-700 dark:text-slate-300 mb-1">
+                                    Select Event
+                                </label>
+                                <select class="w-full px-3 py-2 border border-slate-300 dark:border-white/10 rounded-lg bg-white dark:bg-white/5 focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent text-sm">
+                                    <option value="">Choose Event</option>
+                                    @foreach($upcomingEvents as $event)
+                                        <option value="{{ $event->id }}">{{ $event->title }} ({{ $event->start_time->format('M j') }})</option>
+                                    @endforeach
+                                </select>
+                            </div>
+                            
+                            <button type="button" 
+                                    class="w-full py-2 bg-primary text-white rounded-lg font-medium hover:bg-secondary focus:outline-none focus:ring-2 focus:ring-primary focus:ring-offset-2 text-sm">
+                                Register Ministry
+                            </button>
+                        </form>
+                    </div>
+                    
+                    <!-- Add New Member -->
+                    <div class="pt-5 border-t border-slate-200 dark:border-white/5">
+                        <h3 class="text-sm font-medium text-secondary dark:text-white mb-3">Add Member to Ministry</h3>
+                        <form action="#" method="POST" class="space-y-3">
+                            @csrf
+                            <div>
+                                <label class="block text-xs font-medium text-slate-700 dark:text-slate-300 mb-1">
+                                    Select Ministry
+                                </label>
+                                <select class="w-full px-3 py-2 border border-slate-300 dark:border-white/10 rounded-lg bg-white dark:bg-white/5 focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent text-sm">
+                                    <option value="">Choose Ministry</option>
+                                    @foreach($ministries as $ministry)
+                                        <option value="{{ $ministry->id }}">{{ $ministry->name }}</option>
+                                    @endforeach
+                                </select>
+                            </div>
+                            
+                            <div>
+                                <label class="block text-xs font-medium text-slate-700 dark:text-slate-300 mb-1">
+                                    Select Role
+                                </label>
+                                <select class="w-full px-3 py-2 border border-slate-300 dark:border-white/10 rounded-lg bg-white dark:bg-white/5 focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent text-sm">
+                                    <option value="member">Member</option>
+                                    <option value="leader">Leader</option>
+                                    <option value="assistant_leader">Assistant Leader</option>
+                                    <option value="coordinator">Coordinator</option>
+                                    <option value="volunteer">Volunteer</option>
+                                </select>
+                            </div>
+                            
+                            <button type="button" 
+                                    class="w-full py-2 bg-primary text-white rounded-lg font-medium hover:bg-secondary focus:outline-none focus:ring-2 focus:ring-primary focus:ring-offset-2 text-sm">
+                                Add Member
+                            </button>
+                        </form>
+                    </div>
+                </div>
+            </div>
         </div>
     </div>
-    @endif
-
 </div>
-
-<style>
-    .line-clamp-1 {
-        display: -webkit-box;
-        -webkit-line-clamp: 1;
-        -webkit-box-orient: vertical;
-        overflow: hidden;
-    }
-    
-    .bg-gradient-to-br {
-        background-image: linear-gradient(to bottom right, var(--tw-gradient-stops));
-    }
-</style>
 @endsection

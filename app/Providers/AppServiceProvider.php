@@ -1,9 +1,10 @@
 <?php
 
 namespace App\Providers;
-use Illuminate\Support\Facades\View;
-use Illuminate\Support\Facades\Auth;
+
 use Illuminate\Support\ServiceProvider;
+use Illuminate\Support\Facades\Route; // ADD THIS IMPORT
+use App\Models\Member;
 
 class AppServiceProvider extends ServiceProvider
 {
@@ -20,10 +21,14 @@ class AppServiceProvider extends ServiceProvider
      */
     public function boot(): void
     {
-        View::composer('*', function ($view) {
-        $user = Auth::user();
-        $member = $user ? $user->member : null;
-        $view->with(compact('user', 'member'));
-    });
+        // Explicit route model binding for 'member' parameter
+        Route::model('member', Member::class);
+        
+        // Optional: Custom binding with eager loading
+         Route::bind('member', function ($value) {
+         return Member::with(['user', 'parish'])
+                ->where('id', $value)
+                ->firstOrFail();
+        });
     }
 }
