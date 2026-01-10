@@ -14,7 +14,7 @@
                     <i class="fas fa-arrow-left mr-2"></i> Back to Ministries
                 </a>
                 <div>
-                    <h1 class="text-3xl font-bold text-gray-900">{{ $ministry->name ?? 'Ministry Details' }}</h1>
+                    <h1 class="text-3xl font-bold text-white">{{ $ministry->name ?? 'Ministry Details' }}</h1>
                     <p class="text-gray-600 mt-1">Ministry Details & Information</p>
                 </div>
             </div>
@@ -22,7 +22,7 @@
             <!-- Action Buttons -->
             <div class="flex space-x-3 mt-4 md:mt-0">
                 <a href="{{ route('admin.ministries.edit', $ministry) }}"
-                   class="inline-flex items-center px-6 py-3 bg-gradient-to-r from-green-600 to-green-700 hover:from-green-700 hover:to-green-800 text-white font-semibold rounded-lg shadow-lg transition-all duration-200 transform hover:-translate-y-0.5">
+                   class="inline-flex items-center px-6 py-3 bg-gradient-to-r from-[#197b3b] to-green-800 hover:from-green-800 hover:to-green-900 text-white font-semibold rounded-lg shadow-lg transition-all duration-200 transform hover:-translate-y-0.5">
                     <i class="fas fa-edit mr-2"></i>
                     Edit Ministry
                 </a>
@@ -65,7 +65,7 @@
         <div class="lg:col-span-2">
             <!-- Ministry Information Card -->
             <div class="bg-white rounded-2xl shadow-xl border border-gray-100 overflow-hidden">
-                <div class="bg-gradient-to-r from-blue-600 to-blue-700 px-6 py-4">
+                <div class="bg-gradient-to-r from-black to-gray-800 px-6 py-4">
                     <h2 class="text-xl font-semibold text-white">Ministry Information</h2>
                 </div>
                 <div class="p-6">
@@ -81,8 +81,8 @@
                                 <label class="block text-sm font-medium text-gray-500 mb-2">Leader</label>
                                 @if($ministry->leader_name)
                                     <div class="flex items-center space-x-3">
-                                        <div class="w-10 h-10 bg-blue-100 rounded-full flex items-center justify-center">
-                                            <i class="fas fa-user text-blue-600"></i>
+                                        <div class="w-10 h-10 bg-green-100 rounded-full flex items-center justify-center">
+                                            <i class="fas fa-user text-[#197b3b]"></i>
                                         </div>
                                         <span class="text-lg font-semibold text-gray-900">{{ $ministry->leader_name }}</span>
                                     </div>
@@ -96,7 +96,7 @@
                                 @if($ministry->contact_email)
                                     <div class="flex items-center space-x-3">
                                         <i class="fas fa-envelope text-gray-400"></i>
-                                        <a href="mailto:{{ $ministry->contact_email }}" class="text-blue-600 hover:text-blue-800 font-semibold">
+                                        <a href="mailto:{{ $ministry->contact_email }}" class="text-[#197b3b] hover:text-green-800 font-semibold">
                                             {{ $ministry->contact_email }}
                                         </a>
                                     </div>
@@ -135,16 +135,7 @@
                                 @endif
                             </div>
                             
-                            <div>
-                                <label class="block text-sm font-medium text-gray-500 mb-2">Created</label>
-                                <div class="flex items-center space-x-3">
-                                    <i class="fas fa-calendar-plus text-gray-400"></i>
-                                    <p class="text-gray-900">
-                                        {{ $ministry->created_at?->format('F j, Y') ?? 'N/A' }}<br>
-                                        <span class="text-sm text-gray-500">{{ $ministry->created_at?->diffForHumans() ?? 'N/A' }}</span>
-                                    </p>
-                                </div>
-                            </div>
+                          
                         </div>
                     </div>
                     
@@ -164,15 +155,15 @@
             
             <!-- Quick Actions Card -->
             <div class="bg-white rounded-2xl shadow-xl border border-gray-100 mt-6">
-                <div class="bg-gradient-to-r from-purple-600 to-purple-700 px-6 py-4">
+                <div class="bg-gradient-to-r from-[#197b3b] to-green-700 px-6 py-4">
                     <h2 class="text-xl font-semibold text-white">Quick Actions</h2>
                 </div>
                 <div class="p-6">
                     <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
                         <a href="mailto:{{ $ministry->contact_email ?? '#' }}" 
-                           class="flex items-center p-4 border border-gray-200 rounded-lg hover:bg-purple-50 transition-colors {{ !$ministry->contact_email ? 'opacity-50 cursor-not-allowed' : '' }}">
-                            <div class="w-12 h-12 bg-purple-100 rounded-lg flex items-center justify-center mr-4">
-                                <i class="fas fa-envelope text-purple-600 text-xl"></i>
+                           class="flex items-center p-4 border border-gray-200 rounded-lg hover:bg-green-50 transition-colors {{ !$ministry->contact_email ? 'opacity-50 cursor-not-allowed' : '' }}">
+                            <div class="w-12 h-12 bg-green-100 rounded-lg flex items-center justify-center mr-4">
+                                <i class="fas fa-envelope text-[#197b3b] text-xl"></i>
                             </div>
                             <div>
                                 <h3 class="font-semibold text-gray-900">Send Email</h3>
@@ -183,7 +174,7 @@
                         <a href="{{ route('admin.ministries.edit', $ministry) }}" 
                            class="flex items-center p-4 border border-gray-200 rounded-lg hover:bg-green-50 transition-colors">
                             <div class="w-12 h-12 bg-green-100 rounded-lg flex items-center justify-center mr-4">
-                                <i class="fas fa-edit text-green-600 text-xl"></i>
+                                <i class="fas fa-edit text-[#197b3b] text-xl"></i>
                             </div>
                             <div>
                                 <h3 class="font-semibold text-gray-900">Edit Details</h3>
@@ -203,13 +194,13 @@
                         </a>
                         
                         <a href="#" 
-                           class="flex items-center p-4 border border-gray-200 rounded-lg hover:bg-orange-50 transition-colors">
-                            <div class="w-12 h-12 bg-orange-100 rounded-lg flex items-center justify-center mr-4">
-                                <i class="fas fa-chart-bar text-orange-600 text-xl"></i>
+                           class="flex items-center p-4 border border-gray-200 rounded-lg hover:bg-gray-50 transition-colors">
+                            <div class="w-12 h-12 bg-gray-100 rounded-lg flex items-center justify-center mr-4">
+                                <i class="fas fa-bell text-gray-600 text-xl"></i>
                             </div>
                             <div>
-                                <h3 class="font-semibold text-gray-900">Generate Report</h3>
-                                <p class="text-sm text-gray-600">Ministry activity summary</p>
+                                <h3 class="font-semibold text-gray-900">Notify Members</h3>
+                                <p class="text-sm text-gray-600">Send announcements</p>
                             </div>
                         </a>
                     </div>
@@ -218,7 +209,7 @@
 
             <!-- Recent Activity Section -->
             <div class="bg-white rounded-2xl shadow-xl border border-gray-100 mt-6">
-                <div class="bg-gradient-to-r from-gray-600 to-gray-700 px-6 py-4">
+                <div class="bg-gradient-to-r from-black to-gray-800 px-6 py-4">
                     <h2 class="text-xl font-semibold text-white">Recent Activity</h2>
                 </div>
                 <div class="p-6">
@@ -235,24 +226,22 @@
         <div class="space-y-6">
             <!-- Ministry Image Card -->
             <div class="bg-white rounded-2xl shadow-xl border border-gray-100 overflow-hidden">
-                <div class="bg-gradient-to-r from-gray-600 to-gray-700 px-6 py-4">
+                <div class="bg-gradient-to-r from-black to-gray-800 px-6 py-4">
                     <h2 class="text-xl font-semibold text-white">Ministry Profile</h2>
                 </div>
                 <div class="p-6">
                     <div class="flex flex-col items-center text-center">
                         @if($ministry->image_url)
-                            <img src="{{ asset('images/gallery/' . $ministry->image_url) }}" 
+                           <img src="{{ $ministry->banner_url }}" 
                                  alt="{{ $ministry->name }}"
                                  class="w-32 h-32 rounded-2xl object-cover border-4 border-white shadow-lg mb-4">
                         @else
                             @php
                                 $colors = [
-                                    'bg-gradient-to-br from-blue-500 to-blue-600',
-                                    'bg-gradient-to-br from-green-500 to-green-600', 
-                                    'bg-gradient-to-br from-purple-500 to-purple-600',
-                                    'bg-gradient-to-br from-red-500 to-red-600',
-                                    'bg-gradient-to-br from-orange-500 to-orange-600',
-                                    'bg-gradient-to-br from-teal-500 to-teal-600'
+                                    'bg-gradient-to-br from-black to-gray-800',
+                                    'bg-gradient-to-br from-[#197b3b] to-green-700',
+                                    'bg-gradient-to-br from-gray-800 to-black',
+                                    'bg-gradient-to-br from-green-700 to-[#197b3b]'
                                 ];
                                 $colorIndex = $ministry->id ? crc32($ministry->name) % count($colors) : 0;
                                 $bgGradient = $colors[$colorIndex];
@@ -263,7 +252,7 @@
                         @endif
                         
                         <h3 class="text-lg font-bold text-gray-900">{{ $ministry->name ?? 'Ministry' }}</h3>
-                        <p class="text-gray-600 mt-1">Church Ministry</p>
+                        <p class="text-gray-600 mt-1">ELCK Church Ministry</p>
                         
                         @if($ministry->is_active)
                             <div class="mt-3 inline-flex items-center px-3 py-1 rounded-full text-sm font-semibold bg-green-100 text-green-800">
@@ -282,43 +271,50 @@
             
             <!-- Ministry Stats Card -->
             <div class="bg-white rounded-2xl shadow-xl border border-gray-100">
-                <div class="bg-gradient-to-r from-indigo-600 to-indigo-700 px-6 py-4">
+                <div class="bg-gradient-to-r from-[#197b3b] to-green-700 px-6 py-4">
                     <h2 class="text-xl font-semibold text-white">Ministry Stats</h2>
                 </div>
                 <div class="p-6">
                     <div class="space-y-4">
+                        @php
+                            $membersCount = $ministry->members()->where('is_active', true)->count();
+                            $activeEvents = $ministry->events()->where('start_time', '>=', now())->count();
+                            $upcomingMeetings = 0; // You can implement meeting logic
+                            $lastActivity = $ministry->updated_at?->diffForHumans() ?? 'Never';
+                        @endphp
+                        
                         <div class="flex justify-between items-center">
                             <span class="text-gray-600">Members Count</span>
-                            <span class="font-semibold text-gray-900">0</span>
+                            <span class="font-semibold text-gray-900">{{ $membersCount }}</span>
                         </div>
                         <div class="flex justify-between items-center">
                             <span class="text-gray-600">Active Events</span>
-                            <span class="font-semibold text-gray-900">0</span>
+                            <span class="font-semibold text-gray-900">{{ $activeEvents }}</span>
                         </div>
                         <div class="flex justify-between items-center">
                             <span class="text-gray-600">Upcoming Meetings</span>
-                            <span class="font-semibold text-gray-900">0</span>
+                            <span class="font-semibold text-gray-900">{{ $upcomingMeetings }}</span>
                         </div>
                         <div class="flex justify-between items-center">
                             <span class="text-gray-600">Last Activity</span>
-                            <span class="text-sm text-gray-500">Never</span>
+                            <span class="text-sm text-gray-500">{{ $lastActivity }}</span>
                         </div>
                     </div>
                     
                     <div class="mt-6 pt-4 border-t border-gray-200">
                         <h4 class="font-semibold text-gray-900 mb-3">Quick Links</h4>
                         <div class="space-y-2">
-                            <a href="#" class="flex items-center text-blue-600 hover:text-blue-800 text-sm transition-colors">
+                            <a href="{{ route('admin.ministries.members', $ministry) }}" class="flex items-center text-[#197b3b] hover:text-green-800 text-sm transition-colors">
                                 <i class="fas fa-list mr-2"></i> View All Members
                             </a>
-                            <a href="#" class="flex items-center text-blue-600 hover:text-blue-800 text-sm transition-colors">
+                            <a href="#" class="flex items-center text-[#197b3b] hover:text-green-800 text-sm transition-colors">
                                 <i class="fas fa-calendar-plus mr-2"></i> Schedule Event
                             </a>
-                            <a href="#" class="flex items-center text-blue-600 hover:text-blue-800 text-sm transition-colors">
-                                <i class="fas fa-file-pdf mr-2"></i> Export Report
-                            </a>
-                            <a href="#" class="flex items-center text-blue-600 hover:text-blue-800 text-sm transition-colors">
+                            <a href="#" class="flex items-center text-[#197b3b] hover:text-green-800 text-sm transition-colors">
                                 <i class="fas fa-bell mr-2"></i> Notify Members
+                            </a>
+                            <a href="{{ route('admin.ministries.events', $ministry) }}" class="flex items-center text-[#197b3b] hover:text-green-800 text-sm transition-colors">
+                                <i class="fas fa-calendar-check mr-2"></i> Ministry Events
                             </a>
                         </div>
                     </div>
@@ -327,7 +323,7 @@
             
             <!-- System Information -->
             <div class="bg-white rounded-2xl shadow-xl border border-gray-100">
-                <div class="bg-gradient-to-r from-gray-600 to-gray-700 px-6 py-4">
+                <div class="bg-gradient-to-r from-black to-gray-800 px-6 py-4">
                     <h2 class="text-xl font-semibold text-white">System Information</h2>
                 </div>
                 <div class="p-6">
@@ -356,36 +352,31 @@
                 </div>
             </div>
 
-            <!-- Export Options -->
+            <!-- Manage Members Section -->
             <div class="bg-white rounded-2xl shadow-xl border border-gray-100">
-                <div class="bg-gradient-to-r from-blue-600 to-blue-700 px-6 py-4">
-                    <h2 class="text-xl font-semibold text-white">Export Data</h2>
+                <div class="bg-gradient-to-r from-[#197b3b] to-green-700 px-6 py-4">
+                    <h2 class="text-xl font-semibold text-white">Manage Members</h2>
                 </div>
                 <div class="p-6">
-                    <div class="space-y-3">
-                        <button class="w-full flex items-center justify-between p-3 border border-gray-200 rounded-lg hover:bg-blue-50 transition-colors">
-                            <div class="flex items-center">
-                                <i class="fas fa-file-pdf text-red-500 mr-3"></i>
-                                <span class="font-medium text-gray-900">PDF Report</span>
-                            </div>
-                            <i class="fas fa-download text-gray-400"></i>
-                        </button>
+                    <div class="space-y-4">
+                        <div class="text-center">
+                            <div class="text-3xl font-bold text-gray-900">{{ $membersCount }}</div>
+                            <p class="text-gray-600 text-sm">Total Members</p>
+                        </div>
                         
-                        <button class="w-full flex items-center justify-between p-3 border border-gray-200 rounded-lg hover:bg-green-50 transition-colors">
-                            <div class="flex items-center">
-                                <i class="fas fa-file-excel text-green-500 mr-3"></i>
-                                <span class="font-medium text-gray-900">Excel Sheet</span>
-                            </div>
-                            <i class="fas fa-download text-gray-400"></i>
-                        </button>
-                        
-                        <button class="w-full flex items-center justify-between p-3 border border-gray-200 rounded-lg hover:bg-gray-50 transition-colors">
-                            <div class="flex items-center">
-                                <i class="fas fa-file-csv text-gray-500 mr-3"></i>
-                                <span class="font-medium text-gray-900">CSV Data</span>
-                            </div>
-                            <i class="fas fa-download text-gray-400"></i>
-                        </button>
+                        <div class="space-y-3">
+                            <a href="#" class="block w-full text-center px-4 py-3 bg-[#197b3b] hover:bg-green-800 text-white font-medium rounded-lg transition-colors">
+                                <i class="fas fa-user-plus mr-2"></i> Add New Member
+                            </a>
+                            
+                            <a href="#" class="block w-full text-center px-4 py-3 border border-[#197b3b] text-[#197b3b] hover:bg-green-50 font-medium rounded-lg transition-colors">
+                                <i class="fas fa-users mr-2"></i> View All Members
+                            </a>
+                            
+                            <a href="#" class="block w-full text-center px-4 py-3 border border-gray-300 text-gray-700 hover:bg-gray-50 font-medium rounded-lg transition-colors">
+                                <i class="fas fa-user-check mr-2"></i> Verify Attendance
+                            </a>
+                        </div>
                     </div>
                 </div>
             </div>

@@ -37,6 +37,8 @@ Route::delete('ministries/{ministry}/remove-member/{ministryMember}', [MinistryC
 Route::post('ministries/{ministry}/register-event', [MinistryController::class, 'registerForEvent'])->name('ministries.register-event');
 Route::get('ministries/{ministry}/events', [MinistryController::class, 'events'])->name('ministries.events');
 Route::put('ministries/{ministry}/update-role/{ministryMember}', [MinistryController::class, 'updateMemberRole'])->name('ministries.update-role');
+Route::get('ministries/{ministry}/members', [MinistryController::class, 'members'])->name('ministries.members');
+
 
     // Sermons Management
     Route::resource('sermons', AdminSermonController::class);

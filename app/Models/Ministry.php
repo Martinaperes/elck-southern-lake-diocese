@@ -131,4 +131,30 @@ class Ministry extends Model
         }
         return 'Schedule not set';
     }
+    // Add this method to your Ministry model
+public function getBannerUrlAttribute()
+{
+    if (!$this->image_url) {
+        return null;
+    }
+    
+    // Check if it's an uploaded file (starts with 'ministries/banners/')
+    if (strpos($this->image_url, 'ministries/banners/') === 0) {
+        return Storage::url($this->image_url);
+    }
+    
+    // Check if it's a full URL
+    if (filter_var($this->image_url, FILTER_VALIDATE_URL)) {
+        return $this->image_url;
+    }
+    
+    // Assume it's a gallery image filename
+    return asset('images/gallery/' . $this->image_url);
+}
+
+// Optional: Check if banner is uploaded file
+public function getHasUploadedBannerAttribute()
+{
+    return $this->image_url && strpos($this->image_url, 'ministries/banners/') === 0;
+}
 }
