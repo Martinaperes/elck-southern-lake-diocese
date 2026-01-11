@@ -69,4 +69,17 @@ public function scopeIsCurrentWeek($query)
         
         return "{$minutes}m";
     }
+    // Add this scope to your existing Sermon model
+public function scopeThisWeek($query)
+{
+    return $query->whereBetween('sermon_date', [
+        now()->startOfWeek(),
+        now()->endOfWeek()
+    ]);
+}
+
+public function scopeFeatured($query)
+{
+    return $query->where('featured', true);
+}
 }

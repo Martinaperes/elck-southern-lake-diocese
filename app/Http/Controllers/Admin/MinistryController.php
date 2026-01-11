@@ -229,29 +229,36 @@ public function members(Ministry $ministry)
     }
     
     // Add member to ministry
-    public function addMember(Request $request, Ministry $ministry)
-    {
-        $request->validate([
-            'member_id' => 'required|exists:members,id',
-            'role' => 'required|string|max:255',
-            'joined_at' => 'nullable|date',
-        ]);
-        
-        MinistryMember::updateOrCreate(
-            [
-                'ministry_id' => $ministry->id,
-                'member_id' => $request->member_id,
-            ],
-            [
-                'role' => $request->role,
-                'joined_at' => $request->joined_at ?? now(),
-                'is_active' => true,
-            ]
-        );
-        
-        return back()->with('success', 'Member added to ministry successfully!');
-    }
+   // Update your addMember method in MinistryController
+public function addMember(Request $request, Ministry $ministry)
+{
+    // Debug the incoming request
+    \Log::info('Add Member Request:', $request->all());
     
+    $request->validate([
+        'member_id' => 'required|exists:members,id',
+        'role' => 'required|string|max:255',
+        'joined_at' => 'nullable|date',
+    ]);
+    
+    \Log::info('Creating ministry member for ministry: ' . $ministry->id . ', member: ' . $request->member_id);
+    
+    $ministryMember = MinistryMember::updateOrCreate(
+        [
+            'ministry_id' => $ministry->id,
+            'member_id' => $request->member_id,
+        ],
+        [
+            'role' => $request->role,
+            'joined_at' => $request->joined_at ?: now(),
+            'is_active' => true,
+        ]
+    );
+    
+    \Log::info('Ministry member created:', ['id' => $ministryMember->id]);
+    
+    return back()->with('success', 'Member added to ministry successfully!');
+}
     // Remove member from ministry
     public function removeMember(Ministry $ministry, MinistryMember $ministryMember)
     {

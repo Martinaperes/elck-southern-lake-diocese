@@ -17,12 +17,17 @@ class NewsletterCampaign extends Model
         'sent_at',
         'sent_count',
         'opened_count',
-        'clicked_count'
+        'clicked_count',
+        'category', 
+        'featured_image', 
+        'is_featured', 
+        'excerpt' 
     ];
 
     protected $casts = [
         'scheduled_at' => 'datetime',
-        'sent_at' => 'datetime'
+        'sent_at' => 'datetime',
+        'is_featured' => 'boolean'
     ];
 
     public function creator()
@@ -43,5 +48,20 @@ class NewsletterCampaign extends Model
     public function scopeScheduled($query)
     {
         return $query->where('status', 'scheduled');
+    }
+
+    public function scopeFeatured($query)
+    {
+        return $query->where('is_featured', true);
+    }
+    
+    public function scopePublished($query)
+    {
+        return $query->where('status', 'sent');
+    }
+    
+    public function scopeDraft($query)
+    {
+        return $query->where('status', 'draft');
     }
 }

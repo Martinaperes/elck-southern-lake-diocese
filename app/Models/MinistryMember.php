@@ -69,7 +69,31 @@ class MinistryMember extends Model
      */
     public function getJoinedAtFormattedAttribute()
     {
-        return $this->joined_at ? $this->joined_at->format('F j, Y') : 'N/A';
+        if (!$this->joined_at) {
+            return 'N/A';
+        }
+        
+        try {
+            return $this->joined_at->format('M d, Y');
+        } catch (\Exception $e) {
+            return 'N/A';
+        }
+    }
+
+    /**
+     * Accessor for relative joined date
+     */
+    public function getJoinedAtRelativeAttribute()
+    {
+        if (!$this->joined_at) {
+            return 'Not specified';
+        }
+        
+        try {
+            return $this->joined_at->diffForHumans();
+        } catch (\Exception $e) {
+            return 'Not specified';
+        }
     }
 
     /**

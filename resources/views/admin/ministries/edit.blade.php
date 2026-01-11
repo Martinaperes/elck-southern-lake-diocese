@@ -130,26 +130,38 @@
                                 </label>
                                 
                                 <!-- Current Banner Preview -->
-                                @if($ministry->banner_url)
+                                @if($ministry->image_url)
                                 <div class="mb-3">
                                     <p class="text-sm text-gray-600 mb-2">Current Banner:</p>
                                     <div class="relative">
-                                        <img src="{{ $ministry->banner_url }}" 
-                                             alt="{{ $ministry->name }} banner"
-                                             class="w-full h-32 object-cover rounded-lg border border-gray-200">
-                                        @if($ministry->hasUploadedBanner)
-                                        <button type="button"
-                                                onclick="if(confirm('Remove uploaded banner?')) { document.getElementById('remove_banner').value = '1'; this.classList.add('hidden'); }"
-                                                class="absolute top-2 right-2 bg-red-500 text-white rounded-full w-6 h-6 flex items-center justify-center hover:bg-red-600 transition-colors text-xs"
-                                                title="Remove uploaded banner">
-                                            <i class="fas fa-trash"></i>
-                                        </button>
+                                        @if(strpos($ministry->image_url, 'http') === 0)
+                                            <img src="{{ $ministry->image_url }}" 
+                                                 alt="{{ $ministry->name }} banner"
+                                                 class="w-full h-32 object-cover rounded-lg border border-gray-200">
+                                        @elseif(strpos($ministry->image_url, 'storage/') !== false || strpos($ministry->image_url, 'ministries/banners/') !== false)
+                                            <img src="{{ Storage::url($ministry->image_url) }}" 
+                                                 alt="{{ $ministry->name }} banner"
+                                                 class="w-full h-32 object-cover rounded-lg border border-gray-200">
+                                            <button type="button"
+                                                    onclick="if(confirm('Remove uploaded banner?')) { document.getElementById('remove_banner').value = '1'; this.closest('.relative').classList.add('hidden'); }"
+                                                    class="absolute top-2 right-2 bg-red-500 text-white rounded-full w-6 h-6 flex items-center justify-center hover:bg-red-600 transition-colors text-xs"
+                                                    title="Remove uploaded banner">
+                                                <i class="fas fa-trash"></i>
+                                            </button>
+                                        @elseif(file_exists(public_path('images/gallery/' . $ministry->image_url)))
+                                            <img src="{{ asset('images/gallery/' . $ministry->image_url) }}" 
+                                                 alt="{{ $ministry->name }} banner"
+                                                 class="w-full h-32 object-cover rounded-lg border border-gray-200">
+                                        @else
+                                            <div class="w-full h-32 bg-gray-100 rounded-lg border border-gray-200 flex items-center justify-center">
+                                                <p class="text-gray-500 text-sm">Image not found</p>
+                                            </div>
                                         @endif
                                     </div>
                                     <p class="text-xs text-gray-500 mt-1">
-                                        @if($ministry->hasUploadedBanner)
+                                        @if(strpos($ministry->image_url, 'storage/') !== false || strpos($ministry->image_url, 'ministries/banners/') !== false)
                                             Uploaded file
-                                        @elseif(filter_var($ministry->image_url, FILTER_VALIDATE_URL))
+                                        @elseif(strpos($ministry->image_url, 'http') === 0)
                                             External URL
                                         @else
                                             Gallery image: {{ $ministry->image_url }}
@@ -213,33 +225,35 @@
                         </div>
 
                         <!-- Gallery Images Quick Select -->
+                        @if(isset($galleryImages) && count($galleryImages) > 0)
                         <div class="mt-4">
                             <p class="text-sm font-medium text-gray-700 mb-2">Available Gallery Images:</p>
                             <div class="grid grid-cols-4 gap-2">
-                                @if(isset($galleryImages) && count($galleryImages) > 0)
-                                    @foreach($galleryImages as $image)
-                                        <div class="cursor-pointer group" 
-                                             onclick="selectGalleryImage('{{ $image }}')"
-                                             title="Click to use: {{ $image }}">
-                                            <div class="relative">
+                                @foreach($galleryImages as $image)
+                                    <div class="cursor-pointer group" 
+                                         onclick="selectGalleryImage('{{ $image }}')"
+                                         title="Click to use: {{ $image }}">
+                                        <div class="relative">
+                                            @if(file_exists(public_path('images/gallery/' . $image)))
                                                 <img src="{{ asset('images/gallery/' . $image) }}" 
                                                      alt="{{ $image }}"
                                                      class="w-full h-16 object-cover rounded border border-gray-200 group-hover:border-[#197b3b] transition-colors">
-                                                <div class="absolute inset-0 bg-black bg-opacity-0 group-hover:bg-opacity-20 transition-opacity rounded"></div>
-                                            </div>
-                                            <p class="text-xs text-gray-600 truncate mt-1">{{ \Illuminate\Support\Str::limit($image, 10) }}</p>
+                                            @else
+                                                <div class="w-full h-16 bg-gray-100 rounded border border-gray-200 flex items-center justify-center">
+                                                    <i class="fas fa-image text-gray-400"></i>
+                                                </div>
+                                            @endif
+                                            <div class="absolute inset-0 bg-black bg-opacity-0 group-hover:bg-opacity-20 transition-opacity rounded"></div>
                                         </div>
-                                    @endforeach
-                                @else
-                                    <div class="col-span-4 text-center py-4">
-                                        <p class="text-gray-500 text-sm">No gallery images found</p>
+                                        <p class="text-xs text-gray-600 truncate mt-1">{{ \Illuminate\Support\Str::limit($image, 10) }}</p>
                                     </div>
-                                @endif
+                                @endforeach
                             </div>
                             <p class="text-xs text-gray-500 mt-2 text-center">
                                 Click any image to automatically fill the filename
                             </p>
                         </div>
+                        @endif
 
                         <!-- Leader Photo -->
                         <div>
@@ -248,16 +262,22 @@
                             </label>
                             <div class="flex items-center space-x-6">
                                 @if($ministry->leader_image)
-                                    <div class="relative">
-                                        <img src="{{ Storage::url($ministry->leader_image) }}" 
-                                             alt="Current leader photo"
-                                             class="w-20 h-20 rounded-lg object-cover border border-gray-200">
-                                        <button type="button"
-                                                onclick="if(confirm('Remove leader photo?')) { document.getElementById('remove_leader_image').value = '1'; this.parentElement.classList.add('hidden'); }"
-                                                class="absolute -top-2 -right-2 bg-red-500 text-white rounded-full w-6 h-6 flex items-center justify-center hover:bg-red-600 transition-colors text-xs"
-                                                title="Remove photo">
-                                            <i class="fas fa-times"></i>
-                                        </button>
+                                    <div class="relative" id="leaderPhotoContainer">
+                                        @if(Storage::exists($ministry->leader_image))
+                                            <img src="{{ Storage::url($ministry->leader_image) }}" 
+                                                 alt="Current leader photo"
+                                                 class="w-20 h-20 rounded-lg object-cover border border-gray-200">
+                                            <button type="button"
+                                                    onclick="if(confirm('Remove leader photo?')) { document.getElementById('remove_leader_image').value = '1'; document.getElementById('leaderPhotoContainer').classList.add('hidden'); }"
+                                                    class="absolute -top-2 -right-2 bg-red-500 text-white rounded-full w-6 h-6 flex items-center justify-center hover:bg-red-600 transition-colors text-xs"
+                                                    title="Remove photo">
+                                                <i class="fas fa-times"></i>
+                                            </button>
+                                        @else
+                                            <div class="w-20 h-20 rounded-lg bg-gray-100 border border-gray-200 flex items-center justify-center">
+                                                <i class="fas fa-user text-gray-400"></i>
+                                            </div>
+                                        @endif
                                     </div>
                                     <div class="text-sm">
                                         <p class="text-gray-600">Current photo</p>
@@ -356,10 +376,24 @@
                 </div>
                 <div class="p-6">
                     <div class="flex flex-col items-center text-center mb-6">
-                        @if($ministry->banner_url)
-                            <img src="{{ $ministry->banner_url }}" 
-                                 alt="{{ $ministry->name }}"
-                                 class="w-20 h-20 rounded-2xl object-cover border-4 border-white shadow-lg mb-3">
+                        @if($ministry->image_url)
+                            @if(strpos($ministry->image_url, 'http') === 0)
+                                <img src="{{ $ministry->image_url }}" 
+                                     alt="{{ $ministry->name }}"
+                                     class="w-20 h-20 rounded-2xl object-cover border-4 border-white shadow-lg mb-3">
+                            @elseif(strpos($ministry->image_url, 'storage/') !== false || strpos($ministry->image_url, 'ministries/banners/') !== false)
+                                <img src="{{ Storage::url($ministry->image_url) }}" 
+                                     alt="{{ $ministry->name }}"
+                                     class="w-20 h-20 rounded-2xl object-cover border-4 border-white shadow-lg mb-3">
+                            @elseif(file_exists(public_path('images/gallery/' . $ministry->image_url)))
+                                <img src="{{ asset('images/gallery/' . $ministry->image_url) }}" 
+                                     alt="{{ $ministry->name }}"
+                                     class="w-20 h-20 rounded-2xl object-cover border-4 border-white shadow-lg mb-3">
+                            @else
+                                <div class="w-20 h-20 rounded-2xl bg-gradient-to-br from-[#197b3b] to-green-700 flex items-center justify-center text-white font-bold text-2xl shadow-lg mb-3">
+                                    {{ strtoupper(substr($ministry->name, 0, 1)) }}
+                                </div>
+                            @endif
                         @else
                             <div class="w-20 h-20 rounded-2xl bg-gradient-to-br from-[#197b3b] to-green-700 flex items-center justify-center text-white font-bold text-2xl shadow-lg mb-3">
                                 {{ strtoupper(substr($ministry->name, 0, 1)) }}
@@ -394,14 +428,22 @@
 
                         <div>
                             <h4 class="text-sm font-medium text-gray-500 mb-2">Created Date</h4>
-                            <p class="text-gray-900">{{ $ministry->created_at->format('F j, Y') }}</p>
-                            <p class="text-sm text-gray-500">{{ $ministry->created_at->diffForHumans() }}</p>
+                            @if($ministry->created_at)
+                                <p class="text-gray-900">{{ $ministry->created_at->format('F j, Y') }}</p>
+                                <p class="text-sm text-gray-500">{{ $ministry->created_at->diffForHumans() }}</p>
+                            @else
+                                <p class="text-gray-900">Not recorded</p>
+                            @endif
                         </div>
 
                         <div>
                             <h4 class="text-sm font-medium text-gray-500 mb-2">Last Updated</h4>
-                            <p class="text-gray-900">{{ $ministry->updated_at->format('F j, Y') }}</p>
-                            <p class="text-sm text-gray-500">{{ $ministry->updated_at->diffForHumans() }}</p>
+                            @if($ministry->updated_at)
+                                <p class="text-gray-900">{{ $ministry->updated_at->format('F j, Y') }}</p>
+                                <p class="text-sm text-gray-500">{{ $ministry->updated_at->diffForHumans() }}</p>
+                            @else
+                                <p class="text-gray-900">Not recorded</p>
+                            @endif
                         </div>
                     </div>
                 </div>
@@ -436,7 +478,7 @@
                             </div>
                         </a>
 
-                        <a href="#"
+                        <a href="{{ route('admin.ministries.members', $ministry) }}"
                            class="flex items-center p-3 border border-gray-200 rounded-lg hover:bg-purple-50 transition-colors">
                             <div class="w-10 h-10 bg-purple-100 rounded-lg flex items-center justify-center mr-3">
                                 <i class="fas fa-users text-purple-600"></i>
@@ -447,13 +489,7 @@
                             </div>
                         </a>
 
-                        <a href="#"
-                           class="flex items-center p-3 border border-gray-200 rounded-lg hover:bg-orange-50 transition-colors">
-                            <div class="w-10 h-10 bg-orange-100 rounded-lg flex items-center justify-center mr-3">
-                                <i class="fas fa-chart-bar text-orange-600"></i>
-                            </div>
-                           
-                        </a>
+                       
                     </div>
                 </div>
             </div>

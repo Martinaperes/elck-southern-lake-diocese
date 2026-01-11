@@ -182,7 +182,7 @@
                             </div>
                         </a>
                         
-                        <a href="#" 
+                        <a href="{{ route('admin.ministries.members', $ministry) }}" 
                            class="flex items-center p-4 border border-gray-200 rounded-lg hover:bg-blue-50 transition-colors">
                             <div class="w-12 h-12 bg-blue-100 rounded-lg flex items-center justify-center mr-4">
                                 <i class="fas fa-users text-blue-600 text-xl"></i>
@@ -193,16 +193,7 @@
                             </div>
                         </a>
                         
-                        <a href="#" 
-                           class="flex items-center p-4 border border-gray-200 rounded-lg hover:bg-gray-50 transition-colors">
-                            <div class="w-12 h-12 bg-gray-100 rounded-lg flex items-center justify-center mr-4">
-                                <i class="fas fa-bell text-gray-600 text-xl"></i>
-                            </div>
-                            <div>
-                                <h3 class="font-semibold text-gray-900">Notify Members</h3>
-                                <p class="text-sm text-gray-600">Send announcements</p>
-                            </div>
-                        </a>
+                        
                     </div>
                 </div>
             </div>
@@ -307,11 +298,8 @@
                             <a href="{{ route('admin.ministries.members', $ministry) }}" class="flex items-center text-[#197b3b] hover:text-green-800 text-sm transition-colors">
                                 <i class="fas fa-list mr-2"></i> View All Members
                             </a>
-                            <a href="#" class="flex items-center text-[#197b3b] hover:text-green-800 text-sm transition-colors">
+                            <a href="{{ route('admin.ministries.events', $ministry) }}" class="flex items-center text-[#197b3b] hover:text-green-800 text-sm transition-colors">
                                 <i class="fas fa-calendar-plus mr-2"></i> Schedule Event
-                            </a>
-                            <a href="#" class="flex items-center text-[#197b3b] hover:text-green-800 text-sm transition-colors">
-                                <i class="fas fa-bell mr-2"></i> Notify Members
                             </a>
                             <a href="{{ route('admin.ministries.events', $ministry) }}" class="flex items-center text-[#197b3b] hover:text-green-800 text-sm transition-colors">
                                 <i class="fas fa-calendar-check mr-2"></i> Ministry Events
@@ -365,16 +353,12 @@
                         </div>
                         
                         <div class="space-y-3">
-                            <a href="#" class="block w-full text-center px-4 py-3 bg-[#197b3b] hover:bg-green-800 text-white font-medium rounded-lg transition-colors">
+                            <a href="{{ route('admin.ministries.members', $ministry) }}" class="block w-full text-center px-4 py-3 bg-[#197b3b] hover:bg-green-800 text-white font-medium rounded-lg transition-colors">
                                 <i class="fas fa-user-plus mr-2"></i> Add New Member
                             </a>
                             
-                            <a href="#" class="block w-full text-center px-4 py-3 border border-[#197b3b] text-[#197b3b] hover:bg-green-50 font-medium rounded-lg transition-colors">
+                            <a href="{{ route('admin.ministries.members', $ministry) }}" class="block w-full text-center px-4 py-3 border border-[#197b3b] text-[#197b3b] hover:bg-green-50 font-medium rounded-lg transition-colors">
                                 <i class="fas fa-users mr-2"></i> View All Members
-                            </a>
-                            
-                            <a href="#" class="block w-full text-center px-4 py-3 border border-gray-300 text-gray-700 hover:bg-gray-50 font-medium rounded-lg transition-colors">
-                                <i class="fas fa-user-check mr-2"></i> Verify Attendance
                             </a>
                         </div>
                     </div>

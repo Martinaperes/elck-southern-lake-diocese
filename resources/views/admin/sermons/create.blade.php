@@ -1,510 +1,253 @@
 @extends('admin.layouts.app')
 
-@section('title', 'Create Sermon')
+@section('title', 'Upload Sermon')
 
 @section('content')
-<style>
-    :root {
-        --primary: #4361ee;
-        --secondary: #3f37c9;
-        --success: #4cc9f0;
-        --info: #4895ef;
-        --warning: #f72585;
-        --light: #f8f9fa;
-        --dark: #212529;
-        --card-bg: #ffffff;
-        --text-light: #6c757d;
-        --gradient-primary: linear-gradient(135deg, #4361ee 0%, #3a0ca3 100%);
-        --shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
-        --shadow-lg: 0 10px 40px rgba(0, 0, 0, 0.12);
-    }
+<div class="p-6">
+    <!-- Success/Error Messages -->
+    @if(session('success'))
+        <div class="mb-4 bg-green-100 border border-green-400 text-green-700 px-4 py-3 rounded-lg">
+            <i class="fas fa-check-circle mr-2"></i> {{ session('success') }}
+        </div>
+    @endif
 
-    .dashboard-container {
-        min-height: 100vh;
-        background-color: #f5f7fb;
-    }
+    @if($errors->any())
+        <div class="mb-4 bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded-lg">
+            <i class="fas fa-exclamation-triangle mr-2"></i>
+            <ul class="list-disc ml-4">
+                @foreach($errors->all() as $error)
+                    <li>{{ $error }}</li>
+                @endforeach
+            </ul>
+        </div>
+    @endif
 
-    .main-content {
-        padding: 1.5rem 2rem;
-    }
-
-    .form-container {
-        display: grid;
-        grid-template-columns: 2fr 1fr;
-        gap: 2rem;
-    }
-
-    .form-card, .sidebar-card {
-        background: var(--card-bg);
-        border-radius: 12px;
-        padding: 2rem;
-        box-shadow: var(--shadow);
-        margin-bottom: 1.5rem;
-        border: none;
-    }
-
-    .card-header {
-        display: flex;
-        align-items: center;
-        margin-bottom: 1.5rem;
-        padding-bottom: 1rem;
-        border-bottom: 1px solid #eee;
-    }
-
-    .card-header i {
-        margin-right: 0.75rem;
-        font-size: 1.4rem;
-    }
-
-    .form-group {
-        margin-bottom: 1.5rem;
-    }
-
-    .form-label {
-        font-weight: 500;
-        display: block;
-        margin-bottom: 0.5rem;
-        color: var(--dark);
-    }
-
-    .input-with-icon {
-        position: relative;
-    }
-
-    .input-with-icon i {
-        position: absolute;
-        left: 12px;
-        top: 50%;
-        transform: translateY(-50%);
-        color: var(--text-light);
-    }
-
-    .input-with-icon .form-control {
-        padding-left: 40px;
-        border: 2px solid #e9ecef;
-        border-radius: 8px;
-        height: 50px;
-        transition: all 0.3s ease;
-    }
-
-    .input-with-icon .form-control:focus {
-        border-color: var(--primary);
-        box-shadow: 0 0 0 0.2rem rgba(67, 97, 238, 0.25);
-    }
-
-    .btn-submit {
-        background: var(--gradient-primary);
-        color: white;
-        border: none;
-        padding: 0.85rem 2rem;
-        border-radius: 8px;
-        font-weight: 500;
-        width: 100%;
-        margin-top: 1rem;
-        transition: 0.3s ease;
-        font-size: 1.1rem;
-    }
-
-    .btn-submit:hover {
-        transform: translateY(-2px);
-        box-shadow: var(--shadow-lg);
-    }
-
-    .tips-list {
-        list-style: none;
-        padding: 0;
-    }
-
-    .tips-list li {
-        display: flex;
-        align-items: flex-start;
-        gap: 0.7rem;
-        padding-bottom: 1rem;
-        margin-bottom: 1rem;
-        border-bottom: 1px solid #f1f1f1;
-    }
-
-    .tip-icon {
-        width: 32px;
-        height: 32px;
-        border-radius: 50%;
-        background: rgba(67, 97, 238, 0.1);
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        color: var(--primary);
-        flex-shrink: 0;
-        margin-top: 0.2rem;
-    }
-
-    .is-invalid {
-        border-color: #dc3545 !important;
-    }
-
-    .invalid-feedback {
-        display: block;
-        width: 100%;
-        margin-top: 0.25rem;
-        font-size: 0.875em;
-        color: #dc3545;
-    }
-
-    .form-check-input:checked {
-        background-color: var(--primary);
-        border-color: var(--primary);
-    }
-
-    @media (max-width: 992px) {
-        .form-container {
-            grid-template-columns: 1fr;
-        }
-        
-        .main-content {
-            padding: 1rem;
-        }
-    }
-</style>
-
-<div class="dashboard-container">
-    <div class="main-content">
-        <!-- Success Message -->
-        @if(session('success'))
-            <div class="alert alert-success alert-dismissible fade show" role="alert">
-                <i class="fas fa-check-circle me-2"></i>
-                {{ session('success') }}
-                <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
-            </div>
-        @endif
-
-        <!-- Error Messages -->
-        @if($errors->any())
-            <div class="alert alert-danger alert-dismissible fade show" role="alert">
-                <i class="fas fa-exclamation-triangle me-2"></i>
-                Please fix the following errors:
-                <ul class="mb-0 mt-1">
-                    @foreach($errors->all() as $error)
-                        <li>{{ $error }}</li>
-                    @endforeach
-                </ul>
-                <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
-            </div>
-        @endif
-
-        <div class="form-container">
-            <!-- FORM STARTS HERE -->
-            <form action="{{ route('admin.sermons.store') }}" method="POST" id="sermonForm">
-                @csrf
-
-                <!-- LEFT SIDE FORM -->
+    <!-- Header -->
+    <div class="mb-8">
+        <div class="flex flex-col md:flex-row md:items-center md:justify-between">
+            <div class="flex items-center space-x-4">
+                <a href="{{ route('admin.sermons.index') }}" 
+                   class="inline-flex items-center px-4 py-2 text-gray-600 hover:text-gray-900 bg-white border border-gray-300 rounded-lg shadow-sm hover:bg-gray-50 transition-colors">
+                    <i class="fas fa-arrow-left mr-2"></i> Back to Sermons
+                </a>
                 <div>
-                    <!-- Basic Information Card -->
-                    <div class="form-card">
-                        <div class="card-header">
-                            <i class="fas fa-info-circle text-primary"></i>
-                            <h3 class="mb-0">Basic Information</h3>
-                        </div>
-
-                        <!-- Sermon Title -->
-                        <div class="form-group">
-                            <label class="form-label" for="title">Sermon Title *</label>
-                            <div class="input-with-icon">
-                                <i class="fas fa-heading"></i>
-                                <input type="text" id="title" name="title" 
-                                       class="form-control @error('title') is-invalid @enderror" 
-                                       value="{{ old('title') }}" 
-                                       placeholder="Enter sermon title" 
-                                       required>
-                            </div>
-                            @error('title')
-                                <div class="invalid-feedback">{{ $message }}</div>
-                            @enderror
-                        </div>
-
-                        <!-- Preacher & Date -->
-                        <div class="row">
-                            <div class="col-md-6">
-                                <div class="form-group">
-                                    <label class="form-label">Preacher *</label>
-                                    <div class="input-with-icon">
-                                        <i class="fas fa-user"></i>
-                                        <input type="text" name="preacher" 
-                                               class="form-control @error('preacher') is-invalid @enderror" 
-                                               value="{{ old('preacher') }}" 
-                                               placeholder="Preacher's name" 
-                                               required>
-                                    </div>
-                                    @error('preacher')
-                                        <div class="invalid-feedback">{{ $message }}</div>
-                                    @enderror
-                                </div>
-                            </div>
-
-                            <div class="col-md-6">
-                                <div class="form-group">
-                                    <label class="form-label">Sermon Date *</label>
-                                    <div class="input-with-icon">
-                                        <i class="fas fa-calendar"></i>
-                                        <input type="date" name="sermon_date" 
-                                               class="form-control @error('sermon_date') is-invalid @enderror" 
-                                               value="{{ old('sermon_date', date('Y-m-d')) }}" 
-                                               required>
-                                    </div>
-                                    @error('sermon_date')
-                                        <div class="invalid-feedback">{{ $message }}</div>
-                                    @enderror
-                                </div>
-                            </div>
-                        </div>
-
-                        <!-- Scripture References -->
-                        <div class="form-group">
-                            <label class="form-label">Scripture References</label>
-                            <div class="input-with-icon">
-                                <i class="fas fa-book-bible"></i>
-                                <input type="text" name="scripture_references" 
-                                       class="form-control @error('scripture_references') is-invalid @enderror" 
-                                       value="{{ old('scripture_references') }}" 
-                                       placeholder="e.g., John 3:16, Romans 8:28">
-                            </div>
-                            <small class="text-muted">Separate multiple references with commas</small>
-                            @error('scripture_references')
-                                <div class="invalid-feedback">{{ $message }}</div>
-                            @enderror
-                        </div>
-
-                        <!-- Duration -->
-                        <div class="form-group">
-                            <label class="form-label">Duration (minutes)</label>
-                            <div class="input-with-icon">
-                                <i class="fas fa-clock"></i>
-                                <input type="number" name="duration_minutes" 
-                                       class="form-control @error('duration_minutes') is-invalid @enderror" 
-                                       value="{{ old('duration_minutes') }}" 
-                                       placeholder="45" 
-                                       min="1">
-                            </div>
-                            @error('duration_minutes')
-                                <div class="invalid-feedback">{{ $message }}</div>
-                            @enderror
-                        </div>
-
-                        <!-- Description -->
-                        <div class="form-group">
-                            <label class="form-label">Sermon Description</label>
-                            <textarea name="description" 
-                                      class="form-control @error('description') is-invalid @enderror" 
-                                      rows="5" 
-                                      placeholder="Share the key message and biblical insights...">{{ old('description') }}</textarea>
-                            <div class="d-flex justify-content-between align-items-center mt-2">
-                                <small class="text-muted">Describe the main themes and takeaways</small>
-                                <span id="charCount" class="badge bg-light text-muted">0/2000</span>
-                            </div>
-                            @error('description')
-                                <div class="invalid-feedback">{{ $message }}</div>
-                            @enderror
-                        </div>
-                    </div>
-
-                    <!-- Media Links Card -->
-                    <div class="form-card">
-                        <div class="card-header">
-                            <i class="fas fa-photo-video text-success"></i>
-                            <h3 class="mb-0">Media Links</h3>
-                        </div>
-
-                        <!-- Audio URL -->
-                        <div class="form-group">
-                            <label class="form-label">Audio Link</label>
-                            <div class="input-with-icon">
-                                <i class="fas fa-music"></i>
-                                <input type="url" name="audio_url" 
-                                       class="form-control @error('audio_url') is-invalid @enderror" 
-                                       value="{{ old('audio_url') }}" 
-                                       placeholder="https://example.com/audio/sermon.mp3">
-                            </div>
-                            <small class="text-muted">Link to audio recording (MP3, etc.)</small>
-                            @error('audio_url')
-                                <div class="invalid-feedback">{{ $message }}</div>
-                            @enderror
-                        </div>
-
-                        <!-- Video URL -->
-                        <div class="form-group">
-                            <label class="form-label">Video Link</label>
-                            <div class="input-with-icon">
-                                <i class="fas fa-video"></i>
-                                <input type="url" name="video_url" 
-                                       class="form-control @error('video_url') is-invalid @enderror" 
-                                       value="{{ old('video_url') }}" 
-                                       placeholder="https://youtube.com/watch?v=...">
-                            </div>
-                            <small class="text-muted">Link to video recording (YouTube, Vimeo, etc.)</small>
-                            @error('video_url')
-                                <div class="invalid-feedback">{{ $message }}</div>
-                            @enderror
-                        </div>
-
-                        <!-- Document URL -->
-                        <div class="form-group">
-                            <label class="form-label">Document Link</label>
-                            <div class="input-with-icon">
-                                <i class="fas fa-file-pdf"></i>
-                                <input type="url" name="document_url" 
-                                       class="form-control @error('document_url') is-invalid @enderror" 
-                                       value="{{ old('document_url') }}" 
-                                       placeholder="https://example.com/docs/sermon-notes.pdf">
-                            </div>
-                            <small class="text-muted">Link to sermon notes, slides, or PDF</small>
-                            @error('document_url')
-                                <div class="invalid-feedback">{{ $message }}</div>
-                            @enderror
-                        </div>
-                    </div>
-
-                    <!-- Publish Options -->
-                    <div class="form-card">
-                        <div class="form-group">
-                            <div class="form-check form-switch">
-                                <input class="form-check-input" type="checkbox" name="is_published" id="is_published" value="1" 
-                                       {{ old('is_published') ? 'checked' : '' }}>
-                                <label class="form-check-label fw-semibold" for="is_published">
-                                    Publish Sermon Immediately
-                                </label>
-                            </div>
-                            <small class="text-muted">When published, this sermon will be visible to all users</small>
-                        </div>
-                    </div>
-
-                    <!-- Submit Button -->
-                    <button type="submit" class="btn-submit">
-                        <i class="fas fa-save me-2"></i> Create Sermon
-                    </button>
-                </div>
-            </form>
-
-            <!-- RIGHT SIDEBAR -->
-            <div>
-                <!-- Tips Card -->
-                <div class="sidebar-card">
-                    <div class="card-header">
-                        <i class="fas fa-lightbulb text-warning"></i>
-                        <h3 class="mb-0">Tips & Best Practices</h3>
-                    </div>
-                    <ul class="tips-list">
-                        <li>
-                            <div class="tip-icon"><i class="fas fa-check"></i></div>
-                            <div>
-                                <h5 class="fw-semibold mb-1">Clear Titles</h5>
-                                <p class="text-muted mb-0">Use engaging, descriptive sermon titles</p>
-                            </div>
-                        </li>
-                        <li>
-                            <div class="tip-icon"><i class="fas fa-check"></i></div>
-                            <div>
-                                <h5 class="fw-semibold mb-1">Scripture References</h5>
-                                <p class="text-muted mb-0">Include relevant Bible passages</p>
-                            </div>
-                        </li>
-                        <li>
-                            <div class="tip-icon"><i class="fas fa-check"></i></div>
-                            <div>
-                                <h5 class="fw-semibold mb-1">Media Links</h5>
-                                <p class="text-muted mb-0">Add audio, video or documents when available</p>
-                            </div>
-                        </li>
-                        <li>
-                            <div class="tip-icon"><i class="fas fa-check"></i></div>
-                            <div>
-                                <h5 class="fw-semibold mb-1">Descriptions</h5>
-                                <p class="text-muted mb-0">Provide key themes and takeaways</p>
-                            </div>
-                        </li>
-                    </ul>
-                </div>
-
-                <!-- Stats Card -->
-                <div class="sidebar-card">
-                    <div class="card-header">
-                        <i class="fas fa-chart-bar text-info"></i>
-                        <h3 class="mb-0">Sermon Stats</h3>
-                    </div>
-                    <div class="mt-3">
-                        <div class="d-flex justify-content-between align-items-center mb-3">
-                            <span class="text-muted">Total Sermons</span>
-                            <span class="fw-bold text-primary">{{ $totalSermons ?? 0 }}</span>
-                        </div>
-                        <div class="d-flex justify-content-between align-items-center mb-3">
-                            <span class="text-muted">Published</span>
-                            <span class="fw-bold text-success">{{ $publishedSermons ?? 0 }}</span>
-                        </div>
-                        <div class="d-flex justify-content-between align-items-center">
-                            <span class="text-muted">This Month</span>
-                            <span class="fw-bold text-warning">{{ $thisMonthSermons ?? 0 }}</span>
-                        </div>
-                    </div>
+                    <h1 class="text-3xl font-bold text-white">Upload New Sermon</h1>
+                    <p class="text-gray-300 mt-1">Share sermons, scriptures, and spiritual content</p>
                 </div>
             </div>
         </div>
     </div>
+
+    <!-- Form -->
+    <div class="bg-white rounded-2xl shadow-xl border border-gray-100 overflow-hidden">
+        <div class="bg-gradient-to-r from-black to-gray-800 px-6 py-4">
+            <h2 class="text-xl font-semibold text-white">Sermon Details</h2>
+        </div>
+        
+        <form action="{{ route('admin.sermons.store') }}" method="POST" class="p-6">
+            @csrf
+            
+            <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+                <!-- Left Column -->
+                <div class="lg:col-span-2 space-y-6">
+                    <!-- Title -->
+                    <div>
+                        <label for="title" class="block text-sm font-medium text-gray-700 mb-2">
+                            Sermon Title *
+                        </label>
+                        <input type="text" 
+                               name="title" 
+                               id="title" 
+                               value="{{ old('title') }}"
+                               required
+                               class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#197b3b] focus:border-[#197b3b] transition-colors text-black"
+                               placeholder="Enter sermon title">
+                    </div>
+
+                    <!-- Description (Using for spiritual notes) -->
+                    <div>
+                        <label for="description" class="block text-sm font-medium text-gray-700 mb-2">
+                            Spiritual Notes & Reflection
+                        </label>
+                        <textarea name="description" 
+                                  id="description" 
+                                  rows="6"
+                                  class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#197b3b] focus:border-[#197b3b] transition-colors text-black"
+                                  placeholder="Share spiritual insights, devotional thoughts, or reflection questions...">{{ old('description') }}</textarea>
+                        <p class="mt-1 text-xs text-gray-500">This nourishes members spiritually</p>
+                    </div>
+
+                    <!-- Scripture References -->
+                    <div>
+                        <label for="scripture_references" class="block text-sm font-medium text-gray-700 mb-2">
+                            Scripture References *
+                        </label>
+                        <input type="text" 
+                               name="scripture_references" 
+                               id="scripture_references" 
+                               value="{{ old('scripture_references') }}"
+                               required
+                               class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#197b3b] focus:border-[#197b3b] transition-colors text-black"
+                               placeholder="e.g., John 3:16, Romans 8:28, Philippians 4:13">
+                        <p class="mt-1 text-xs text-gray-500">Separate multiple scriptures with commas</p>
+                    </div>
+                </div>
+
+                <!-- Right Column -->
+                <div class="space-y-6">
+                    <!-- Preacher -->
+                    <div>
+                        <label for="preacher" class="block text-sm font-medium text-gray-700 mb-2">
+                            Preacher/Speaker *
+                        </label>
+                        <input type="text" 
+                               name="preacher" 
+                               id="preacher" 
+                               value="{{ old('preacher') }}"
+                               required
+                               class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#197b3b] focus:border-[#197b3b] transition-colors text-black"
+                               placeholder="Enter preacher's name">
+                    </div>
+
+                    <!-- Sermon Date -->
+                    <div>
+                        <label for="sermon_date" class="block text-sm font-medium text-gray-700 mb-2">
+                            Sermon Date *
+                        </label>
+                        <input type="date" 
+                               name="sermon_date" 
+                               id="sermon_date" 
+                               value="{{ old('sermon_date', date('Y-m-d')) }}"
+                               required
+                               class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#197b3b] focus:border-[#197b3b] transition-colors text-black">
+                    </div>
+
+                    <!-- Duration -->
+                    <div>
+                        <label for="duration_minutes" class="block text-sm font-medium text-gray-700 mb-2">
+                            Duration (minutes)
+                        </label>
+                        <input type="number" 
+                               name="duration_minutes" 
+                               id="duration_minutes" 
+                               value="{{ old('duration_minutes') }}"
+                               min="1"
+                               class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#197b3b] focus:border-[#197b3b] transition-colors text-black"
+                               placeholder="e.g., 45">
+                    </div>
+
+                    <!-- Scripture of the Week (Using featured field) -->
+                    <div class="p-4 bg-yellow-50 border border-yellow-200 rounded-lg">
+                        <div class="flex items-center">
+                            <input type="checkbox" 
+                                   name="featured" 
+                                   id="featured"
+                                   value="1"
+                                   class="w-4 h-4 text-[#197b3b] border-gray-300 rounded focus:ring-[#197b3b] focus:ring-2">
+                            <div class="ml-3">
+                                <label for="featured" class="text-sm font-medium text-gray-700">
+                                    Set as "Scripture of the Week"
+                                </label>
+                                <p class="text-xs text-gray-500">
+                                    Featured for members' daily spiritual nourishment
+                                </p>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Media URLs -->
+                    <div class="space-y-4">
+                        <div>
+                            <label for="video_url" class="block text-sm font-medium text-gray-700 mb-2">
+                                Video URL (YouTube/Vimeo)
+                            </label>
+                            <input type="url" 
+                                   name="video_url" 
+                                   id="video_url" 
+                                   value="{{ old('video_url') }}"
+                                   class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#197b3b] focus:border-[#197b3b] transition-colors text-black"
+                                   placeholder="https://youtube.com/watch?v=...">
+                        </div>
+
+                        <div>
+                            <label for="audio_url" class="block text-sm font-medium text-gray-700 mb-2">
+                                Audio URL
+                            </label>
+                            <input type="url" 
+                                   name="audio_url" 
+                                   id="audio_url" 
+                                   value="{{ old('audio_url') }}"
+                                   class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#197b3b] focus:border-[#197b3b] transition-colors text-black"
+                                   placeholder="https://example.com/audio.mp3">
+                        </div>
+
+                        <div>
+                            <label for="document_url" class="block text-sm font-medium text-gray-700 mb-2">
+                                Document URL (PDF/Notes)
+                            </label>
+                            <input type="url" 
+                                   name="document_url" 
+                                   id="document_url" 
+                                   value="{{ old('document_url') }}"
+                                   class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#197b3b] focus:border-[#197b3b] transition-colors text-black"
+                                   placeholder="https://example.com/notes.pdf">
+                        </div>
+                    </div>
+
+                    <!-- Publish Status -->
+                    <div class="flex items-center p-4 bg-gray-50 border border-gray-200 rounded-lg">
+                        <input type="checkbox" 
+                               name="is_published" 
+                               id="is_published"
+                               value="1"
+                               checked
+                               class="w-4 h-4 text-[#197b3b] border-gray-300 rounded focus:ring-[#197b3b] focus:ring-2">
+                        <div class="ml-3">
+                            <label for="is_published" class="text-sm font-medium text-gray-700">
+                                Publish Immediately
+                            </label>
+                            <p class="text-xs text-gray-500">Visible to members on the website</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Form Actions -->
+            <div class="mt-8 pt-6 border-t border-gray-200 flex justify-end space-x-4">
+                <a href="{{ route('admin.sermons.index') }}" 
+                   class="px-6 py-3 border border-gray-300 text-gray-700 hover:bg-gray-50 font-medium rounded-lg shadow-sm transition-colors">
+                    Cancel
+                </a>
+                <button type="submit" 
+                        class="inline-flex items-center px-6 py-3 bg-gradient-to-r from-[#197b3b] to-green-800 hover:from-green-800 hover:to-green-900 text-white font-semibold rounded-lg shadow-lg transition-all duration-200 transform hover:-translate-y-0.5">
+                    <i class="fas fa-save mr-2"></i> Upload Sermon
+                </button>
+            </div>
+        </form>
+    </div>
 </div>
 
 <script>
-    document.addEventListener('DOMContentLoaded', function() {
-        // Character count for description
-        const descInput = document.querySelector('textarea[name="description"]');
-        const charDisplay = document.getElementById('charCount');
-        
-        if (descInput && charDisplay) {
-            descInput.addEventListener('input', function() {
-                const len = this.value.length;
-                charDisplay.textContent = len + '/2000';
-                
-                if (len > 1900) {
-                    charDisplay.className = 'badge bg-danger';
-                } else if (len > 1500) {
-                    charDisplay.className = 'badge bg-warning';
-                } else {
-                    charDisplay.className = 'badge bg-light text-muted';
-                }
-            });
-
-            // Initialize character count
-            charDisplay.textContent = descInput.value.length + '/2000';
-        }
-
-        // Form validation
-        const form = document.getElementById('sermonForm');
-        form.addEventListener('submit', function(e) {
-            const requiredFields = form.querySelectorAll('[required]');
-            let isValid = true;
-
-            requiredFields.forEach(field => {
-                if (!field.value.trim()) {
-                    isValid = false;
-                    field.classList.add('is-invalid');
-                }
-            });
-
-            if (!isValid) {
-                e.preventDefault();
-                // Scroll to first error
-                const firstError = form.querySelector('.is-invalid');
-                if (firstError) {
-                    firstError.scrollIntoView({ behavior: 'smooth', block: 'center' });
-                    firstError.focus();
+document.addEventListener('DOMContentLoaded', function() {
+    // Auto-focus title field
+    document.getElementById('title').focus();
+    
+    // Set default time if not provided
+    if (!document.getElementById('sermon_date').value) {
+        document.getElementById('sermon_date').value = new Date().toISOString().split('T')[0];
+    }
+    
+    // Scripture of the week explanation
+    const featuredCheckbox = document.getElementById('featured');
+    if (featuredCheckbox) {
+        featuredCheckbox.addEventListener('change', function() {
+            if (this.checked) {
+                if (!confirm('Setting this as "Scripture of the Week" will replace any current featured scripture for this week. Continue?')) {
+                    this.checked = false;
                 }
             }
         });
-
-        // Remove invalid class when user starts typing
-        const inputs = form.querySelectorAll('input, textarea');
-        inputs.forEach(input => {
-            input.addEventListener('input', function() {
-                if (this.classList.contains('is-invalid')) {
-                    this.classList.remove('is-invalid');
-                }
-            });
-        });
-    });
+    }
+});
 </script>
 @endsection

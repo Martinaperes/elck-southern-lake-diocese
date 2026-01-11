@@ -150,7 +150,32 @@ class EventController extends Controller
         return redirect()->route('admin.events.index')
             ->with('success', 'Event updated successfully!');
     }
-
+public function ajaxEdit(Event $event)
+{
+    try {
+        return response()->json([
+            'success' => true,
+            'event' => [
+                'id' => $event->id,
+                'title' => $event->title,
+                'description' => $event->description,
+                'start_time' => $event->start_time,
+                'start_time_formatted' => $event->start_time->format('Y-m-d\TH:i'),
+                'end_time' => $event->end_time,
+                'end_time_formatted' => $event->end_time ? $event->end_time->format('Y-m-d\TH:i') : null,
+                'location' => $event->location,
+                'event_type' => $event->event_type,
+                'poster' => $event->poster,
+                'is_public' => $event->is_public,
+            ]
+        ]);
+    } catch (\Exception $e) {
+        return response()->json([
+            'success' => false,
+            'message' => 'Failed to load event details'
+        ], 500);
+    }
+}
 
     public function destroy(Event $event)
     {

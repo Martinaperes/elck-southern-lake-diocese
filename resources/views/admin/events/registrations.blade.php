@@ -1,681 +1,513 @@
-{{-- resources/views/admin/events/registrations.blade.php --}}
 @extends('admin.layouts.app')
 
-@section('title', 'Event Registrations - ELCT Southern Lake Diocese')
+@section('title', $event->title . ' - Registrations')
 
 @section('content')
-<div class="container-fluid px-4">
-    <!-- Page Header -->
-    <div class="page-header-bg">
-        <div class="d-sm-flex align-items-center justify-content-between py-4">
-            <div>
-                <h1 class="page-title">Event Registrations</h1>
-                <p class="page-subtitle">Manage registrations for: <strong>{{ $event->title }}</strong></p>
-                <div class="event-details mt-2">
-                    <span class="event-date">
-                        <i class="fas fa-calendar"></i>
-                        {{ $event->start_time->format('M d, Y') }}
-                    </span>
-                    <span class="event-location">
-                        <i class="fas fa-map-marker-alt"></i>
-                        {{ $event->location }}
-                    </span>
-                    <span class="event-type event-type-{{ $event->event_type }}">
-                        {{ ucfirst($event->event_type) }}
-                    </span>
+<div class="p-6">
+    <!-- Success/Error Messages -->
+    @if(session('success'))
+        <div class="mb-4 bg-[#197b3b] bg-opacity-10 border border-[#197b3b] text-[#197b3b] px-4 py-3 rounded-lg">
+            <i class="fas fa-check-circle mr-2"></i>
+            {{ session('success') }}
+        </div>
+    @endif
+
+    @if(session('error'))
+        <div class="mb-4 bg-red-900 bg-opacity-10 border border-red-900 text-red-900 px-4 py-3 rounded-lg">
+            <i class="fas fa-exclamation-circle mr-2"></i>
+            {{ session('error') }}
+        </div>
+    @endif
+
+    <!-- Header Section -->
+    <div class="mb-8">
+        <div class="flex flex-col md:flex-row md:items-center md:justify-between">
+            <div class="flex items-center space-x-4">
+                <a href="{{ route('admin.ministries.events', $event->ministry) }}" 
+                   class="inline-flex items-center px-4 py-2 text-black hover:text-[#197b3b] bg-white border border-black hover:border-[#197b3b] rounded-lg shadow-sm hover:bg-gray-50 transition-colors">
+                    <i class="fas fa-arrow-left mr-2"></i> Back to Events
+                </a>
+                <div>
+                    <h1 class="text-3xl font-bold text-white">{{ $event->title }} - Registrations</h1>
+                    <p class="text-gray-300 mt-1">Manage event registrations and attendance</p>
                 </div>
             </div>
-            <div class="header-actions">
-                <a href="{{ route('admin.events.index') }}" class="btn-back">
-                    <i class="fas fa-arrow-left"></i>
-                    <span>Back to Events</span>
-                </a>
-                <a href="{{ route('admin.events.edit', $event->id) }}" class="btn-edit-event">
-                    <i class="fas fa-edit"></i>
-                    <span>Edit Event</span>
-                </a>
+            
+            <!-- Event Info Card -->
+            <div class="mt-4 md:mt-0">
+                <div class="bg-white rounded-lg border border-gray-200 p-4 shadow-sm">
+                    <div class="flex items-center space-x-3">
+                        @if($event->poster)
+                            <img src="{{ Storage::url($event->poster) }}" 
+                                 alt="{{ $event->title }}"
+                                 class="w-12 h-12 object-cover rounded-lg border border-gray-200">
+                        @else
+                            <div class="w-12 h-12 bg-gray-100 rounded-lg flex items-center justify-center border border-gray-200">
+                                <i class="fas fa-calendar-alt text-gray-400"></i>
+                            </div>
+                        @endif
+                        <div>
+                            <h3 class="font-semibold text-black text-sm">{{ $event->title }}</h3>
+                            <p class="text-xs text-gray-600">{{ $event->start_time->format('M d, Y h:i A') }}</p>
+                        </div>
+                    </div>
+                </div>
             </div>
         </div>
     </div>
 
-    <!-- Statistics Cards -->
-    <div class="stats-grid">
-        <div class="stat-card">
-            <div class="stat-icon-wrapper">
-                <div class="stat-icon bg-primary">
-                    <i class="fas fa-users"></i>
+    <!-- Stats Cards -->
+    <div class="grid grid-cols-1 md:grid-cols-4 gap-6 mb-8">
+        <div class="bg-white rounded-xl shadow-md border border-gray-200 p-6">
+            <div class="flex items-center">
+                <div class="w-12 h-12 bg-[#197b3b] bg-opacity-10 rounded-lg flex items-center justify-center mr-4">
+                    <i class="fas fa-users text-[#197b3b] text-xl"></i>
                 </div>
-            </div>
-            <div class="stat-content">
-                <h3 class="stat-number">{{ $registrations->total() }}</h3>
-                <p class="stat-label">Total Registrations</p>
+                <div>
+                    <p class="text-sm text-gray-600">Total Registrations</p>
+                    <p class="text-2xl font-bold text-black">{{ $registrations->total() }}</p>
+                </div>
             </div>
         </div>
-
-        <div class="stat-card">
-            <div class="stat-icon-wrapper">
-                <div class="stat-icon bg-success">
-                    <i class="fas fa-check-circle"></i>
+        
+        <div class="bg-white rounded-xl shadow-md border border-gray-200 p-6">
+            <div class="flex items-center">
+                <div class="w-12 h-12 bg-[#197b3b] bg-opacity-10 rounded-lg flex items-center justify-center mr-4">
+                    <i class="fas fa-check-circle text-[#197b3b] text-xl"></i>
                 </div>
-            </div>
-            <div class="stat-content">
-                <h3 class="stat-number">{{ $registrations->where('status', 'confirmed')->count() }}</h3>
-                <p class="stat-label">Confirmed</p>
+                <div>
+                    <p class="text-sm text-gray-600">Confirmed</p>
+                    <p class="text-2xl font-bold text-black">
+                        {{ $registrations->where('status', 'confirmed')->count() }}
+                    </p>
+                </div>
             </div>
         </div>
-
-        <div class="stat-card">
-            <div class="stat-icon-wrapper">
-                <div class="stat-icon bg-info">
-                    <i class="fas fa-user-clock"></i>
+        
+        <div class="bg-white rounded-xl shadow-md border border-gray-200 p-6">
+            <div class="flex items-center">
+                <div class="w-12 h-12 bg-[#197b3b] bg-opacity-10 rounded-lg flex items-center justify-center mr-4">
+                    <i class="fas fa-user-check text-[#197b3b] text-xl"></i>
                 </div>
-            </div>
-            <div class="stat-content">
-                <h3 class="stat-number">{{ $registrations->where('status', 'registered')->count() }}</h3>
-                <p class="stat-label">Registered</p>
+                <div>
+                    <p class="text-sm text-gray-600">Attended</p>
+                    <p class="text-2xl font-bold text-black">
+                        {{ $registrations->where('status', 'attended')->count() }}
+                    </p>
+                </div>
             </div>
         </div>
-
-        <div class="stat-card">
-            <div class="stat-icon-wrapper">
-                <div class="stat-icon bg-warning">
-                    <i class="fas fa-user-check"></i>
+        
+        <div class="bg-white rounded-xl shadow-md border border-gray-200 p-6">
+            <div class="flex items-center">
+                <div class="w-12 h-12 bg-[#197b3b] bg-opacity-10 rounded-lg flex items-center justify-center mr-4">
+                    <i class="fas fa-user-plus text-[#197b3b] text-xl"></i>
+                </div>
+                <div>
+                    <p class="text-sm text-gray-600">Total Guests</p>
+                    <p class="text-2xl font-bold text-black">
+                        {{ $registrations->sum('number_of_guests') }}
+                    </p>
                 </div>
             </div>
-            <div class="stat-content">
-                <h3 class="stat-number">{{ $registrations->where('status', 'attended')->count() }}</h3>
-                <p class="stat-label">Attended</p>
+        </div>
+    </div>
+
+    <!-- Registration Status Summary -->
+    <div class="bg-white rounded-2xl shadow-xl border border-gray-200 overflow-hidden mb-8">
+        <div class="bg-[#197b3b] px-6 py-4">
+            <h2 class="text-xl font-semibold text-white">Registration Status Summary</h2>
+        </div>
+        
+        <div class="p-6">
+            <div class="grid grid-cols-2 md:grid-cols-4 gap-4">
+                @php
+                    $statuses = [
+                        'registered' => ['name' => 'Registered', 'color' => 'bg-blue-100 text-blue-800 border-blue-200'],
+                        'confirmed' => ['name' => 'Confirmed', 'color' => 'bg-green-100 text-green-800 border-green-200'],
+                        'attended' => ['name' => 'Attended', 'color' => 'bg-purple-100 text-purple-800 border-purple-200'],
+                        'cancelled' => ['name' => 'Cancelled', 'color' => 'bg-red-100 text-red-800 border-red-200'],
+                    ];
+                @endphp
+                
+                @foreach($statuses as $statusKey => $statusInfo)
+                <div class="border rounded-lg p-4 text-center {{ $statusInfo['color'] }}">
+                    <div class="text-2xl font-bold">{{ $registrations->where('status', $statusKey)->count() }}</div>
+                    <div class="text-sm font-medium">{{ $statusInfo['name'] }}</div>
+                    @if($registrations->total() > 0)
+                    <div class="text-xs mt-1">
+                        {{ round(($registrations->where('status', $statusKey)->count() / $registrations->total()) * 100, 1) }}%
+                    </div>
+                    @endif
+                </div>
+                @endforeach
             </div>
         </div>
     </div>
 
     <!-- Registrations Table -->
-    <div class="main-card">
-        <div class="card-header-custom">
-            <div class="header-left">
-                <h2 class="card-title">Registrations List</h2>
-                <p class="card-subtitle">{{ $registrations->total() }} people registered for this event</p>
-            </div>
-            <div class="header-actions">
-                <div class="search-box">
-                    <i class="fas fa-search"></i>
-                    <input type="text" placeholder="Search registrations..." class="search-input" id="searchRegistrations">
-                </div>
-                <div class="filter-dropdown">
-                    <button class="filter-btn">
-                        <i class="fas fa-filter"></i>
-                        Filter by Status
-                        <i class="fas fa-chevron-down"></i>
-                    </button>
-                    <div class="filter-menu">
-                        <a href="{{ request()->fullUrlWithQuery(['status' => 'all']) }}" class="filter-item">
-                            <i class="fas fa-list"></i>
-                            All Registrations
-                        </a>
-                        <a href="{{ request()->fullUrlWithQuery(['status' => 'registered']) }}" class="filter-item">
-                            <i class="fas fa-user-clock"></i>
-                            Registered
-                        </a>
-                        <a href="{{ request()->fullUrlWithQuery(['status' => 'confirmed']) }}" class="filter-item">
-                            <i class="fas fa-check-circle"></i>
-                            Confirmed
-                        </a>
-                        <a href="{{ request()->fullUrlWithQuery(['status' => 'attended']) }}" class="filter-item">
-                            <i class="fas fa-user-check"></i>
-                            Attended
-                        </a>
-                        <a href="{{ request()->fullUrlWithQuery(['status' => 'cancelled']) }}" class="filter-item">
-                            <i class="fas fa-times-circle"></i>
-                            Cancelled
-                        </a>
-                    </div>
+    <div class="bg-white rounded-2xl shadow-xl border border-gray-200 overflow-hidden">
+        <div class="bg-black px-6 py-4">
+            <div class="flex flex-col md:flex-row md:items-center md:justify-between">
+                <h2 class="text-xl font-semibold text-white">All Registrations</h2>
+                <div class="mt-2 md:mt-0">
+                    <span class="text-gray-300 text-sm">
+                        {{ $registrations->total() }} total registrations
+                    </span>
                 </div>
             </div>
         </div>
-
-        <div class="card-body">
-            @if(session('success'))
-                <div class="alert-success-custom">
-                    <div class="alert-content">
-                        <i class="fas fa-check-circle"></i>
-                        <span>{{ session('success') }}</span>
+        
+        <div class="p-6">
+            @if($registrations->isEmpty())
+                <div class="text-center py-12">
+                    <i class="fas fa-user-slash text-gray-300 text-5xl mb-4"></i>
+                    <h3 class="text-xl font-semibold text-gray-700 mb-2">No Registrations Yet</h3>
+                    <p class="text-gray-500 mb-6">No one has registered for this event yet.</p>
+                    <a href="{{ route('admin.ministries.events', $event->ministry) }}"
+                       class="inline-flex items-center px-6 py-3 bg-[#197b3b] hover:bg-[#15632f] text-white font-semibold rounded-lg shadow-md transition-colors">
+                        <i class="fas fa-calendar mr-2"></i>
+                        Back to Events
+                    </a>
+                </div>
+            @else
+                <!-- Filter and Search -->
+                <div class="mb-6">
+                    <div class="flex flex-col md:flex-row md:items-center md:justify-between space-y-4 md:space-y-0">
+                        <!-- Search -->
+                        <div class="flex-1">
+                            <div class="relative max-w-md">
+                                <input type="text" 
+                                       id="searchInput"
+                                       placeholder="Search by name or email..." 
+                                       class="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#197b3b] focus:border-[#197b3b] transition-colors text-black"
+                                       onkeyup="filterRegistrations()">
+                                <i class="fas fa-search absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400"></i>
+                            </div>
+                        </div>
+                        
+                        <!-- Status Filter -->
+                        <div class="flex space-x-2">
+                            <select id="statusFilter" 
+                                    class="border border-gray-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-[#197b3b] focus:border-[#197b3b] text-black text-sm"
+                                    onchange="filterRegistrations()">
+                                <option value="">All Status</option>
+                                <option value="registered">Registered</option>
+                                <option value="confirmed">Confirmed</option>
+                                <option value="attended">Attended</option>
+                                <option value="cancelled">Cancelled</option>
+                            </select>
+                            
+                            <button onclick="resetFilters()"
+                                    class="px-3 py-2 border border-gray-300 text-gray-700 hover:bg-gray-50 font-medium rounded-lg transition-colors text-sm">
+                                <i class="fas fa-redo-alt mr-1"></i> Reset
+                            </button>
+                        </div>
                     </div>
-                    <button class="alert-close">
-                        <i class="fas fa-times"></i>
-                    </button>
                 </div>
-            @endif
-
-            <div class="table-container">
-                <table class="modern-table">
-                    <thead>
-                        <tr>
-                            <th class="table-member">Member</th>
-                            <th class="table-contact">Contact Info</th>
-                            <th class="table-guests">Guests</th>
-                            <th class="table-requirements">Special Requirements</th>
-                            <th class="table-status">Status</th>
-                            <th class="table-date">Registered On</th>
-                            <th class="table-actions">Actions</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        @forelse($registrations as $registration)
-                        <tr class="table-row registration-row" data-status="{{ $registration->status }}">
-                            <td class="table-member">
-                                <div class="member-info">
-                                    <div class="member-avatar">
-                                        {{ substr($registration->member->first_name, 0, 1) }}{{ substr($registration->member->last_name, 0, 1) }}
+                
+                <div class="overflow-x-auto">
+                    <table class="min-w-full divide-y divide-gray-200">
+                        <thead>
+                            <tr>
+                                <th class="px-6 py-3 bg-gray-50 text-left text-xs font-medium text-gray-700 uppercase tracking-wider">
+                                    Member
+                                </th>
+                                <th class="px-6 py-3 bg-gray-50 text-left text-xs font-medium text-gray-700 uppercase tracking-wider">
+                                    Contact
+                                </th>
+                                <th class="px-6 py-3 bg-gray-50 text-left text-xs font-medium text-gray-700 uppercase tracking-wider">
+                                    Guests
+                                </th>
+                                <th class="px-6 py-3 bg-gray-50 text-left text-xs font-medium text-gray-700 uppercase tracking-wider">
+                                    Registered On
+                                </th>
+                                <th class="px-6 py-3 bg-gray-50 text-left text-xs font-medium text-gray-700 uppercase tracking-wider">
+                                    Status
+                                </th>
+                                <th class="px-6 py-3 bg-gray-50 text-left text-xs font-medium text-gray-700 uppercase tracking-wider">
+                                    Actions
+                                </th>
+                            </tr>
+                        </thead>
+                        <tbody class="bg-white divide-y divide-gray-200" id="registrationsTableBody">
+                            @foreach($registrations as $registration)
+                            <tr class="registration-row hover:bg-gray-50 transition-colors"
+                                data-name="{{ strtolower(($registration->member->first_name ?? '') . ' ' . ($registration->member->last_name ?? '')) }}"
+                                data-email="{{ strtolower($registration->member->email ?? '') }}"
+                                data-status="{{ $registration->status }}">
+                                <td class="px-6 py-4 whitespace-nowrap">
+                                    <div class="flex items-center">
+                                        <div class="w-10 h-10 rounded-full bg-gradient-to-br from-[#197b3b] to-green-700 flex items-center justify-center mr-3">
+                                            <span class="text-white font-bold text-sm">
+                                                {{ strtoupper(substr($registration->member->first_name ?? 'M', 0, 1)) }}
+                                            </span>
+                                        </div>
+                                        <div>
+                                            <div class="font-semibold text-black">
+                                                {{ $registration->member->first_name ?? 'Unknown' }} {{ $registration->member->last_name ?? '' }}
+                                            </div>
+                                            <div class="text-sm text-gray-600">
+                                                ID: {{ $registration->member->membership_number ?? 'N/A' }}
+                                            </div>
+                                        </div>
                                     </div>
-                                    <div class="member-details">
-                                        <h4 class="member-name">
-                                            {{ $registration->member->first_name }} {{ $registration->member->last_name }}
-                                        </h4>
-                                        <p class="member-id">ID: {{ $registration->member->id }}</p>
-                                    </div>
-                                </div>
-                            </td>
-                            <td class="table-contact">
-                                <div class="contact-info">
-                                    <div class="contact-email">
-                                        <i class="fas fa-envelope"></i>
-                                        {{ $registration->member->email }}
-                                    </div>
-                                    @if($registration->member->phone)
-                                    <div class="contact-phone">
-                                        <i class="fas fa-phone"></i>
-                                        {{ $registration->member->phone }}
-                                    </div>
-                                    @endif
-                                </div>
-                            </td>
-                            <td class="table-guests">
-                                <div class="guests-count">
-                                    <span class="guests-number">{{ $registration->number_of_guests }}</span>
-                                    <span class="guests-label">guest(s)</span>
-                                </div>
-                            </td>
-                            <td class="table-requirements">
-                                @if($registration->special_requirements)
-                                <div class="requirements-info">
-                                    <i class="fas fa-info-circle"></i>
-                                    <span class="requirements-text" title="{{ $registration->special_requirements }}">
-                                        {{ Str::limit($registration->special_requirements, 50) }}
+                                </td>
+                                <td class="px-6 py-4 whitespace-nowrap">
+                                    <div class="text-sm text-black">{{ $registration->member->email ?? 'N/A' }}</div>
+                                    <div class="text-sm text-gray-600">{{ $registration->member->phone ?? 'N/A' }}</div>
+                                </td>
+                                <td class="px-6 py-4 whitespace-nowrap">
+                                    <div class="text-lg font-semibold text-black">{{ $registration->number_of_guests }}</div>
+                                    <div class="text-xs text-gray-600">additional guests</div>
+                                </td>
+                                <td class="px-6 py-4 whitespace-nowrap">
+                                    <div class="text-sm text-black">{{ $registration->created_at->format('M d, Y') }}</div>
+                                    <div class="text-xs text-gray-600">{{ $registration->created_at->format('h:i A') }}</div>
+                                </td>
+                                <td class="px-6 py-4 whitespace-nowrap">
+                                    @php
+                                        $statusColors = [
+                                            'registered' => 'bg-blue-100 text-blue-800 border-blue-200',
+                                            'confirmed' => 'bg-green-100 text-green-800 border-green-200',
+                                            'attended' => 'bg-purple-100 text-purple-800 border-purple-200',
+                                            'cancelled' => 'bg-red-100 text-red-800 border-red-200',
+                                        ];
+                                        $statusColor = $statusColors[$registration->status] ?? 'bg-gray-100 text-gray-800 border-gray-200';
+                                    @endphp
+                                    <span class="inline-flex items-center px-3 py-1 rounded-full text-sm font-medium border {{ $statusColor }}">
+                                        {{ ucfirst($registration->status) }}
                                     </span>
-                                </div>
-                                @else
-                                <span class="no-requirements">—</span>
-                                @endif
-                            </td>
-                            <td class="table-status">
-                                <div class="status-selector">
-                                    <select class="status-select {{ $registration->status }}" 
-                                            data-registration-id="{{ $registration->id }}"
-                                            onchange="updateRegistrationStatus(this)">
-                                        <option value="registered" {{ $registration->status == 'registered' ? 'selected' : '' }}>Registered</option>
-                                        <option value="confirmed" {{ $registration->status == 'confirmed' ? 'selected' : '' }}>Confirmed</option>
-                                        <option value="attended" {{ $registration->status == 'attended' ? 'selected' : '' }}>Attended</option>
-                                        <option value="cancelled" {{ $registration->status == 'cancelled' ? 'selected' : '' }}>Cancelled</option>
-                                    </select>
-                                </div>
-                            </td>
-                            <td class="table-date">
-                                <div class="date-info">
-                                    <div class="date-main">{{ $registration->created_at->format('M d, Y') }}</div>
-                                    <div class="date-time">{{ $registration->created_at->format('h:i A') }}</div>
-                                </div>
-                            </td>
-                            <td class="table-actions">
-                                <div class="action-buttons">
-                                    <button class="action-btn view-btn" title="View Details" onclick="viewRegistration({{ $registration->id }})">
-                                        <i class="fas fa-eye"></i>
-                                    </button>
-                                    <button class="action-btn delete-btn" title="Delete Registration" onclick="confirmDelete({{ $registration->id }})">
-                                        <i class="fas fa-trash"></i>
-                                    </button>
-                                </div>
-                                
-                                <!-- Delete Form -->
-                                <form id="delete-form-{{ $registration->id }}" 
-                                      action="{{ route('admin.events.registrations.destroy', ['event' => $event->id, 'registration' => $registration->id]) }}" 
-                                      method="POST" class="d-none">
-                                    @csrf
-                                    @method('DELETE')
-                                </form>
-                            </td>
-                        </tr>
-                        @empty
-                        <tr>
-                            <td colspan="7" class="empty-state">
-                                <div class="empty-content">
-                                    <i class="fas fa-users-slash empty-icon"></i>
-                                    <h3>No Registrations Yet</h3>
-                                    <p>No one has registered for this event yet.</p>
-                                </div>
-                            </td>
-                        </tr>
-                        @endforelse
-                    </tbody>
-                </table>
-            </div>
-
-            <!-- Pagination -->
-            @if($registrations->hasPages())
-            <div class="pagination-container">
-                <div class="pagination-info">
-                    Showing <strong>{{ $registrations->firstItem() }}</strong> to <strong>{{ $registrations->lastItem() }}</strong> of <strong>{{ $registrations->total() }}</strong> registrations
+                                </td>
+                                <td class="px-6 py-4 whitespace-nowrap text-sm font-medium">
+                                    <div class="flex space-x-2">
+                                        <!-- Update Status Dropdown -->
+                                        <div class="relative" x-data="{ open: false }">
+                                            <button @click="open = !open"
+                                                    class="text-[#197b3b] hover:text-[#15632f] transition-colors"
+                                                    title="Update Status">
+                                                <i class="fas fa-sync-alt"></i>
+                                            </button>
+                                            
+                                            <div x-show="open" 
+                                                 @click.away="open = false"
+                                                 class="absolute right-0 mt-2 w-48 bg-white rounded-lg shadow-xl border border-gray-200 z-10"
+                                                 style="display: none;">
+                                                <div class="py-1">
+                                                    <form action="{{ route('admin.events.registrations.status', [$event, $registration]) }}" method="POST">
+                                                        @csrf
+                                                        <button type="submit" name="status" value="registered"
+                                                                class="block w-full text-left px-4 py-2 text-sm text-blue-700 hover:bg-blue-50 transition-colors">
+                                                            <i class="fas fa-user-clock mr-2"></i>Mark as Registered
+                                                        </button>
+                                                        <button type="submit" name="status" value="confirmed"
+                                                                class="block w-full text-left px-4 py-2 text-sm text-green-700 hover:bg-green-50 transition-colors">
+                                                            <i class="fas fa-check-circle mr-2"></i>Mark as Confirmed
+                                                        </button>
+                                                        <button type="submit" name="status" value="attended"
+                                                                class="block w-full text-left px-4 py-2 text-sm text-purple-700 hover:bg-purple-50 transition-colors">
+                                                            <i class="fas fa-user-check mr-2"></i>Mark as Attended
+                                                        </button>
+                                                        <button type="submit" name="status" value="cancelled"
+                                                                class="block w-full text-left px-4 py-2 text-sm text-red-700 hover:bg-red-50 transition-colors">
+                                                            <i class="fas fa-times-circle mr-2"></i>Mark as Cancelled
+                                                        </button>
+                                                    </form>
+                                                </div>
+                                            </div>
+                                        </div>
+                                        
+                                        <!-- View Details Button -->
+                                        <button type="button"
+                                                onclick="viewRegistrationDetails({{ $registration->id }})"
+                                                class="text-black hover:text-gray-800 transition-colors"
+                                                title="View Details">
+                                            <i class="fas fa-eye"></i>
+                                        </button>
+                                        
+                                        <!-- Delete Registration -->
+                                        <form action="{{ route('admin.events.registrations.destroy', [$event, $registration]) }}" 
+                                              method="POST" 
+                                              class="inline"
+                                              onsubmit="return confirm('Are you sure you want to remove this registration?');">
+                                            @csrf
+                                            @method('DELETE')
+                                            <button type="submit"
+                                                    class="text-red-900 hover:text-red-700 transition-colors"
+                                                    title="Remove Registration">
+                                                <i class="fas fa-trash"></i>
+                                            </button>
+                                        </form>
+                                    </div>
+                                </td>
+                            </tr>
+                            @endforeach
+                        </tbody>
+                    </table>
                 </div>
-                <div class="pagination">
+                
+                <!-- Pagination -->
+                <div class="mt-6">
                     {{ $registrations->links() }}
                 </div>
-            </div>
+                
+                <!-- Results Count -->
+                <div class="mt-4 text-sm text-gray-600">
+                    Showing {{ $registrations->firstItem() }} to {{ $registrations->lastItem() }} of {{ $registrations->total() }} registrations
+                </div>
             @endif
         </div>
     </div>
 </div>
 
 <!-- Registration Details Modal -->
-<div class="modal fade" id="registrationModal" tabindex="-1" aria-hidden="true">
-    <div class="modal-dialog modal-lg">
-        <div class="modal-content">
-            <div class="modal-header">
-                <h5 class="modal-title">Registration Details</h5>
-                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
-                    <i class="fas fa-times"></i>
+<div id="registrationDetailsModal" class="hidden fixed inset-0 bg-black bg-opacity-50 overflow-y-auto h-full w-full z-50">
+    <div class="relative top-4 mx-auto p-5 border w-full max-w-lg shadow-lg rounded-2xl bg-white max-h-[90vh] flex flex-col">
+        <div class="flex justify-between items-center mb-6">
+            <h3 class="text-xl font-bold text-black">Registration Details</h3>
+            <button type="button" onclick="closeRegistrationDetailsModal()" class="text-gray-500 hover:text-black">
+                <i class="fas fa-times text-xl"></i>
+            </button>
+        </div>
+        
+        <!-- Content loaded via AJAX -->
+        <div id="registrationDetailsContent" class="flex-grow overflow-y-auto pr-2 mb-4">
+            <!-- Details will be loaded here -->
+        </div>
+        
+        <!-- Close Button -->
+        <div class="flex-shrink-0 pt-4 mt-4 border-t border-gray-200">
+            <div class="flex justify-end">
+                <button type="button"
+                        onclick="closeRegistrationDetailsModal()"
+                        class="px-6 py-3 border border-gray-300 text-gray-700 hover:bg-gray-50 font-medium rounded-lg transition-colors">
+                    Close
                 </button>
-            </div>
-            <div class="modal-body" id="registrationDetails">
-                <!-- Content will be loaded via AJAX -->
             </div>
         </div>
     </div>
 </div>
-@endsection
 
-@push('styles')
-<style>
-/* Event Details in Header */
-.event-details {
-    display: flex;
-    gap: 1.5rem;
-    flex-wrap: wrap;
-}
-
-.event-details span {
-    display: flex;
-    align-items: center;
-    gap: 0.5rem;
-    background: rgba(99, 102, 241, 0.1);
-    padding: 0.5rem 1rem;
-    border-radius: 20px;
-    font-size: 0.9rem;
-    color: var(--primary);
-    font-weight: 500;
-}
-
-.event-type {
-    background: rgba(139, 92, 246, 0.1) !important;
-    color: var(--secondary) !important;
-}
-
-/* Header Actions */
-.btn-edit-event {
-    background: var(--info);
-    color: white;
-    border: none;
-    padding: 1rem 1.5rem;
-    border-radius: var(--radius);
-    font-weight: 600;
-    display: flex;
-    align-items: center;
-    gap: 0.75rem;
-    text-decoration: none;
-    transition: all 0.3s ease;
-}
-
-.btn-edit-event:hover {
-    background: #0891b2;
-    color: white;
-    transform: translateY(-2px);
-}
-
-/* Member Info */
-.member-info {
-    display: flex;
-    align-items: center;
-    gap: 1rem;
-}
-
-.member-avatar {
-    width: 50px;
-    height: 50px;
-    border-radius: 50%;
-    background: linear-gradient(135deg, var(--primary), var(--secondary));
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    color: white;
-    font-weight: 700;
-    font-size: 1.1rem;
-}
-
-.member-name {
-    font-weight: 600;
-    color: var(--dark);
-    margin: 0 0 0.25rem 0;
-    font-size: 1rem;
-}
-
-.member-id {
-    color: var(--gray-500);
-    font-size: 0.8rem;
-    margin: 0;
-}
-
-/* Contact Info */
-.contact-info {
-    display: flex;
-    flex-direction: column;
-    gap: 0.5rem;
-}
-
-.contact-email,
-.contact-phone {
-    display: flex;
-    align-items: center;
-    gap: 0.5rem;
-    font-size: 0.9rem;
-    color: var(--gray-700);
-}
-
-.contact-email i {
-    color: var(--primary);
-}
-
-.contact-phone i {
-    color: var(--success);
-}
-
-/* Guests Count */
-.guests-count {
-    text-align: center;
-}
-
-.guests-number {
-    display: block;
-    font-size: 1.5rem;
-    font-weight: 700;
-    color: var(--primary);
-    line-height: 1;
-}
-
-.guests-label {
-    font-size: 0.8rem;
-    color: var(--gray-500);
-    text-transform: uppercase;
-    letter-spacing: 0.5px;
-}
-
-/* Requirements */
-.requirements-info {
-    display: flex;
-    align-items: flex-start;
-    gap: 0.5rem;
-}
-
-.requirements-info i {
-    color: var(--warning);
-    margin-top: 0.2rem;
-    flex-shrink: 0;
-}
-
-.requirements-text {
-    font-size: 0.85rem;
-    color: var(--gray-700);
-    line-height: 1.4;
-}
-
-.no-requirements {
-    color: var(--gray-400);
-    font-style: italic;
-}
-
-/* Status Selector */
-.status-selector {
-    position: relative;
-}
-
-.status-select {
-    width: 100%;
-    padding: 0.5rem 2rem 0.5rem 1rem;
-    border: 2px solid var(--gray-200);
-    border-radius: var(--radius);
-    font-size: 0.8rem;
-    font-weight: 600;
-    cursor: pointer;
-    appearance: none;
-    background: white;
-    transition: all 0.3s ease;
-    position: relative;
-}
-
-.status-select:focus {
-    outline: none;
-    border-color: var(--primary);
-}
-
-/* Status Colors */
-.status-select.registered {
-    background: rgba(59, 130, 246, 0.1);
-    border-color: rgba(59, 130, 246, 0.3);
-    color: #3b82f6;
-}
-
-.status-select.confirmed {
-    background: rgba(16, 185, 129, 0.1);
-    border-color: rgba(16, 185, 129, 0.3);
-    color: #10b981;
-}
-
-.status-select.attended {
-    background: rgba(139, 92, 246, 0.1);
-    border-color: rgba(139, 92, 246, 0.3);
-    color: #8b5cf6;
-}
-
-.status-select.cancelled {
-    background: rgba(239, 68, 68, 0.1);
-    border-color: rgba(239, 68, 68, 0.3);
-    color: #ef4444;
-}
-
-/* Date Info */
-.date-info {
-    text-align: center;
-}
-
-.date-main {
-    font-weight: 600;
-    color: var(--dark);
-    margin-bottom: 0.25rem;
-}
-
-.date-time {
-    color: var(--gray-500);
-    font-size: 0.8rem;
-}
-
-/* Modal */
-.modal-content {
-    border: none;
-    border-radius: var(--radius-xl);
-    box-shadow: var(--shadow-xl);
-}
-
-.modal-header {
-    background: linear-gradient(135deg, var(--primary), var(--secondary));
-    color: white;
-    border: none;
-    border-radius: var(--radius-xl) var(--radius-xl) 0 0;
-    padding: 1.5rem 2rem;
-}
-
-.modal-title {
-    font-weight: 700;
-    margin: 0;
-}
-
-.modal-header .close {
-    color: white;
-    opacity: 0.8;
-    border: none;
-    background: none;
-    font-size: 1.5rem;
-    transition: opacity 0.3s ease;
-}
-
-.modal-header .close:hover {
-    opacity: 1;
-}
-
-.modal-body {
-    padding: 2rem;
-}
-
-/* Responsive */
-@media (max-width: 768px) {
-    .event-details {
-        flex-direction: column;
-        gap: 0.5rem;
-    }
-    
-    .member-info {
-        flex-direction: column;
-        text-align: center;
-        gap: 0.5rem;
-    }
-    
-    .contact-info {
-        align-items: center;
-    }
-    
-    .header-actions {
-        flex-direction: column;
-        gap: 1rem;
-    }
-}
-</style>
-@endpush
-
-@push('scripts')
 <script>
-// Update registration status
-function updateRegistrationStatus(select) {
-    const registrationId = select.dataset.registrationId;
-    const newStatus = select.value;
-    
+// Registration Details Modal Functions
+function viewRegistrationDetails(registrationId) {
     // Show loading state
-    select.disabled = true;
+    document.getElementById('registrationDetailsContent').innerHTML = `
+        <div class="flex items-center justify-center h-32">
+            <i class="fas fa-spinner fa-spin text-gray-400 text-xl"></i>
+            <span class="ml-2 text-gray-600">Loading details...</span>
+        </div>
+    `;
     
-    fetch(`/admin/events/{{ $event->id }}/registrations/${registrationId}/status`, {
-        method: 'POST',
-        headers: {
-            'Content-Type': 'application/json',
-            'X-CSRF-TOKEN': '{{ csrf_token() }}'
-        },
-        body: JSON.stringify({
-            status: newStatus
-        })
-    })
-    .then(response => response.json())
-    .then(data => {
-        if (data.success) {
-            // Update select class
-            select.className = `status-select ${newStatus}`;
-            
-            // Show success message
-            Swal.fire({
-                title: 'Success!',
-                text: 'Registration status updated successfully',
-                icon: 'success',
-                confirmButtonColor: 'var(--primary)',
-                timer: 2000
-            });
-        }
-    })
-    .catch(error => {
-        console.error('Error:', error);
-        Swal.fire({
-            title: 'Error!',
-            text: 'Failed to update status',
-            icon: 'error',
-            confirmButtonColor: 'var(--danger)'
-        });
-    })
-    .finally(() => {
-        select.disabled = false;
-    });
-}
-
-// View registration details
-function viewRegistration(registrationId) {
+    // Load registration details via AJAX
     fetch(`/admin/events/{{ $event->id }}/registrations/${registrationId}/details`)
         .then(response => response.text())
         .then(html => {
-            document.getElementById('registrationDetails').innerHTML = html;
-            $('#registrationModal').modal('show');
+            document.getElementById('registrationDetailsContent').innerHTML = html;
+            document.getElementById('registrationDetailsModal').classList.remove('hidden');
+            document.body.classList.add('overflow-hidden');
         })
         .catch(error => {
-            console.error('Error:', error);
-            Swal.fire({
-                title: 'Error!',
-                text: 'Failed to load registration details',
-                icon: 'error',
-                confirmButtonColor: 'var(--danger)'
-            });
+            console.error('Error loading registration details:', error);
+            document.getElementById('registrationDetailsContent').innerHTML = `
+                <div class="text-center py-8">
+                    <i class="fas fa-exclamation-triangle text-red-500 text-3xl mb-3"></i>
+                    <p class="text-red-600">Error loading details</p>
+                </div>
+            `;
+            document.getElementById('registrationDetailsModal').classList.remove('hidden');
+            document.body.classList.add('overflow-hidden');
         });
 }
 
-// Delete confirmation
-function confirmDelete(registrationId) {
-    Swal.fire({
-        title: 'Are you sure?',
-        text: "This registration will be permanently deleted!",
-        icon: 'warning',
-        showCancelButton: true,
-        confirmButtonColor: 'var(--danger)',
-        cancelButtonColor: 'var(--gray-600)',
-        confirmButtonText: 'Yes, delete it!',
-        cancelButtonText: 'Cancel',
-        background: 'white',
-        borderRadius: '20px',
-        padding: '2rem'
-    }).then((result) => {
-        if (result.isConfirmed) {
-            document.getElementById(`delete-form-${registrationId}`).submit();
+function closeRegistrationDetailsModal() {
+    document.getElementById('registrationDetailsModal').classList.add('hidden');
+    document.body.classList.remove('overflow-hidden');
+}
+
+// Filter Functions
+function filterRegistrations() {
+    const searchTerm = document.getElementById('searchInput').value.toLowerCase();
+    const statusFilter = document.getElementById('statusFilter').value;
+    const rows = document.querySelectorAll('.registration-row');
+    
+    let visibleCount = 0;
+    
+    rows.forEach(row => {
+        const name = row.getAttribute('data-name');
+        const email = row.getAttribute('data-email');
+        const status = row.getAttribute('data-status');
+        
+        const matchesSearch = !searchTerm || 
+                             name.includes(searchTerm) || 
+                             email.includes(searchTerm);
+        
+        const matchesStatus = !statusFilter || status === statusFilter;
+        
+        if (matchesSearch && matchesStatus) {
+            row.style.display = '';
+            visibleCount++;
+        } else {
+            row.style.display = 'none';
+        }
+    });
+    
+    // Update results count
+    const resultsCount = document.getElementById('resultsCount');
+    if (resultsCount) {
+        resultsCount.textContent = `Showing ${visibleCount} registrations`;
+    }
+}
+
+function resetFilters() {
+    document.getElementById('searchInput').value = '';
+    document.getElementById('statusFilter').value = '';
+    filterRegistrations();
+}
+
+// Initialize Alpine.js for dropdowns
+document.addEventListener('alpine:init', () => {
+    Alpine.data('dropdown', () => ({
+        open: false,
+        toggle() {
+            this.open = !this.open;
+        },
+        close() {
+            this.open = false;
+        }
+    }));
+});
+
+// Close modals on Escape key
+document.addEventListener('keydown', function(e) {
+    if (e.key === 'Escape') {
+        closeRegistrationDetailsModal();
+    }
+});
+
+// Close modal when clicking outside
+const registrationModal = document.getElementById('registrationDetailsModal');
+if (registrationModal) {
+    registrationModal.addEventListener('click', function(e) {
+        if (e.target === this) {
+            closeRegistrationDetailsModal();
         }
     });
 }
 
-// Search functionality
+// Initialize filters on page load
 document.addEventListener('DOMContentLoaded', function() {
-    const searchInput = document.getElementById('searchRegistrations');
-    const tableRows = document.querySelectorAll('.registration-row');
-    
-    searchInput.addEventListener('input', function(e) {
-        const searchTerm = e.target.value.toLowerCase();
-        
-        tableRows.forEach(row => {
-            const memberName = row.querySelector('.member-name').textContent.toLowerCase();
-            const memberEmail = row.querySelector('.contact-email').textContent.toLowerCase();
-            
-            if (memberName.includes(searchTerm) || memberEmail.includes(searchTerm)) {
-                row.style.display = '';
-            } else {
-                row.style.display = 'none';
-            }
-        });
-    });
+    // Initialize any filters if needed
 });
 </script>
-@endpush
+
+<style>
+.fixed.inset-0 {
+    backdrop-filter: blur(4px);
+}
+
+[x-cloak] {
+    display: none;
+}
+</style>
+@endsection

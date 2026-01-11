@@ -136,7 +136,7 @@
         <!-- Icons Grid -->
         <div class="p-6 grid grid-cols-4 gap-4">
             <!-- NEWSLETTER -->
-            <a href="{{ route('admin.newsletter.subscribers') }}" 
+            <a href="{{ route('admin.newsletter.campaigns') }}" 
                class="flex flex-col items-center justify-center p-4 rounded-xl bg-slate-50 dark:bg-white/5 hover:bg-slate-100 dark:hover:bg-white/10 border border-slate-200 dark:border-white/5 transition-all hover:scale-105 active:scale-95">
                 <span class="material-symbols-outlined text-[32px] text-primary">campaign</span>
                 <span class="text-xs font-medium mt-2 text-slate-700 dark:text-slate-300">Newsletter</span>
