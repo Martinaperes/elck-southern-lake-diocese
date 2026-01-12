@@ -1,6 +1,7 @@
 <?php
-// app/Models/NewsletterCampaign.php
+
 namespace App\Models;
+
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 
@@ -18,16 +19,16 @@ class NewsletterCampaign extends Model
         'sent_count',
         'opened_count',
         'clicked_count',
-        'category', 
+        'excerpt',        
+        'category',       
         'featured_image', 
-        'is_featured', 
-        'excerpt' 
+        'is_featured'    
     ];
 
     protected $casts = [
         'scheduled_at' => 'datetime',
         'sent_at' => 'datetime',
-        'is_featured' => 'boolean'
+        'is_featured' => 'boolean' 
     ];
 
     public function creator()

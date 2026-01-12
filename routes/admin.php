@@ -8,7 +8,7 @@ use App\Http\Controllers\Admin\EventController;
 use App\Http\Controllers\Admin\GalleryController as AdminGalleryController;
 use App\Http\Controllers\Admin\SermonController as AdminSermonController;
 use App\Http\Controllers\Admin\DonationController as AdminDonationController;
-use App\Http\Controllers\Admin\NewsletterController as AdminNewsletterController;
+use App\Http\Controllers\Admin\NewsletterController ;
 
 Route::middleware(['auth', 'admin'])->prefix('admin')->name('admin.')->group(function () {
     
@@ -63,34 +63,14 @@ Route::middleware(['auth', 'admin'])->prefix('admin')->name('admin.')->group(fun
     
     // Gallery Management
     Route::resource('gallery', AdminGalleryController::class);
-    
-    // Newsletter Management
-    Route::prefix('newsletter')->name('newsletter.')->group(function () {
-        Route::get('/subscribers', [AdminNewsletterController::class, 'subscribers'])->name('subscribers');
-        Route::get('/campaigns', [AdminNewsletterController::class, 'campaigns'])->name('campaigns');
-        Route::get('/create', [AdminNewsletterController::class, 'createCampaign'])->name('create');
-        Route::post('/', [AdminNewsletterController::class, 'storeCampaign'])->name('store');
-        Route::get('/analytics/{campaign}', [AdminNewsletterController::class, 'analytics'])->name('analytics');
-        Route::post('/send/{campaign}', [AdminNewsletterController::class, 'sendCampaign'])->name('send');
-        
-        // Donations routes
-        Route::prefix('donations')->name('donations.')->group(function () {
-            Route::get('/', function () {
-                return view('admin.coming-soon');
-            })->name('index');
-        });
-        
-        // Admin Newsletter Routes
-Route::prefix('admin')->middleware(['auth', 'admin'])->group(function () {
-    // Newsletter Routes
-    Route::prefix('newsletter')->name('admin.newsletter.')->group(function () {
+     Route::prefix('newsletter')->name('newsletter.')->group(function () {
         // Campaigns
         Route::get('/campaigns', [NewsletterController::class, 'campaigns'])->name('campaigns');
         Route::get('/create', [NewsletterController::class, 'create'])->name('create');
-        Route::post('/store', [NewsletterController::class, 'store'])->name('store');
+        Route::post('/', [NewsletterController::class, 'store'])->name('store');
         Route::get('/{campaign}', [NewsletterController::class, 'show'])->name('show');
         Route::get('/{campaign}/edit', [NewsletterController::class, 'edit'])->name('edit');
-        Route::put('/{campaign}/update', [NewsletterController::class, 'update'])->name('update');
+        Route::put('/{campaign}', [NewsletterController::class, 'update'])->name('update');
         Route::post('/{campaign}/send', [NewsletterController::class, 'send'])->name('send');
         Route::get('/{campaign}/analytics', [NewsletterController::class, 'analytics'])->name('analytics');
         Route::post('/{campaign}/duplicate', [NewsletterController::class, 'duplicate'])->name('duplicate');
@@ -100,7 +80,6 @@ Route::prefix('admin')->middleware(['auth', 'admin'])->group(function () {
         Route::get('/subscribers', [NewsletterController::class, 'subscribers'])->name('subscribers');
         Route::post('/subscribers/{subscriber}/resubscribe', [NewsletterController::class, 'resubscribe'])->name('resubscribe');
         Route::delete('/subscribers/{subscriber}', [NewsletterController::class, 'destroySubscriber'])->name('destroySubscriber');
-    });
-});
-    });
+     });
+    
 });

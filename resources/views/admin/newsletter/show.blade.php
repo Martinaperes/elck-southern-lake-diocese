@@ -1,193 +1,178 @@
 @extends('admin.layouts.app')
 
-@section('title', 'Newsletter Details')
-
-@section('content')
-<div class="container-fluid">
-    <div class="row mb-4">
-        <div class="col-12">
-            <div class="d-flex justify-content-between align-items-center">
-                <h1 class="h3 mb-0">Newsletter Details</h1>
-                <div>
-                    @if($campaign->status === 'draft')
-                        <a href="{{ route('admin.newsletter.edit', $campaign) }}" class="btn btn-warning">
-                            <i class="fas fa-edit"></i> Edit
-                        </a>
-                        <form action="{{ route('admin.newsletter.send', $campaign) }}" 
-                              method="POST" 
-                              class="d-inline"
-                              onsubmit="return confirm('Send this newsletter now?')">
-                            @csrf
-                            <button type="submit" class="btn btn-primary">
-                                <i class="fas fa-paper-plane"></i> Send Now
-                            </button>
-                        </form>
-                    @endif
-                    @if($campaign->status === 'scheduled')
-                        <form action="{{ route('admin.newsletter.cancel', $campaign) }}" 
-                              method="POST" 
-                              class="d-inline"
-                              onsubmit="return confirm('Cancel this scheduled newsletter?')">
-                            @csrf
-                            @method('PUT')
-                            <button type="submit" class="btn btn-danger">
-                                <i class="fas fa-times"></i> Cancel Schedule
-                            </button>
-                        </form>
-                    @endif
+@section('newsletter-content')
+<div class="row">
+    <div class="col-md-8">
+        <div class="card shadow-sm border-0 mb-4">
+            <div class="card-header bg-white d-flex justify-content-between align-items-center">
+                <h5 class="mb-0">Campaign Preview</h5>
+                <span class="badge bg-{{ $campaign->status === 'draft' ? 'warning' : ($campaign->status === 'sent' ? 'success' : 'info') }}">
+                    {{ ucfirst($campaign->status) }}
+                </span>
+            </div>
+            <div class="card-body">
+                @if($campaign->featured_image)
+                <div class="mb-4 text-center">
+                    <img src="{{ asset('storage/' . $campaign->featured_image) }}" 
+                         alt="{{ $campaign->subject }}" class="img-fluid rounded">
+                </div>
+                @endif
+                
+                <h1 class="h3 mb-3">{{ $campaign->subject }}</h1>
+                
+                @if($campaign->excerpt)
+                <div class="alert alert-light mb-4">
+                    {{ $campaign->excerpt }}
+                </div>
+                @endif
+                
+                <div class="campaign-content mb-4">
+                    {!! $campaign->content !!}
+                </div>
+                
+                <hr>
+                
+                <div class="text-muted small">
+                    <p>
+                        <i class="fas fa-user"></i> Created by: {{ $campaign->creator->name ?? 'System' }}
+                        <br>
+                        <i class="fas fa-calendar"></i> Created: {{ $campaign->created_at->format('F d, Y \a\t h:i A') }}
+                        @if($campaign->scheduled_at)
+                        <br>
+                        <i class="fas fa-clock"></i> Scheduled: {{ $campaign->scheduled_at->format('F d, Y \a\t h:i A') }}
+                        @endif
+                        @if($campaign->sent_at)
+                        <br>
+                        <i class="fas fa-paper-plane"></i> Sent: {{ $campaign->sent_at->format('F d, Y \a\t h:i A') }}
+                        @endif
+                    </p>
                 </div>
             </div>
         </div>
     </div>
-
-    <div class="row">
-        <div class="col-md-8">
-            <div class="card">
-                <div class="card-header">
-                    <h5 class="card-title mb-0">Content Preview</h5>
-                </div>
-                <div class="card-body">
-                    @if($campaign->featured_image)
-                        <div class="mb-4">
-                            <img src="{{ asset('storage/' . $campaign->featured_image) }}" 
-                                 alt="{{ $campaign->subject }}" 
-                                 class="img-fluid rounded">
-                        </div>
+    
+    <div class="col-md-4">
+        <!-- Campaign Actions -->
+        <div class="card shadow-sm border-0 mb-4">
+            <div class="card-header bg-white">
+                <h6 class="mb-0">Campaign Actions</h6>
+            </div>
+            <div class="card-body">
+                <div class="d-grid gap-2">
+                    @if($campaign->status === 'draft')
+                    <a href="{{ route('admin.newsletter.edit', $campaign) }}" 
+                       class="btn btn-primary">
+                        <i class="fas fa-edit"></i> Edit Campaign
+                    </a>
+                    
+                    <form action="{{ route('admin.newsletter.send', $campaign) }}" method="POST">
+                        @csrf
+                        <button type="submit" class="btn btn-success w-100" 
+                                onclick="return confirm('Send this campaign to all active subscribers?')">
+                            <i class="fas fa-paper-plane"></i> Send Now
+                        </button>
+                    </form>
                     @endif
                     
-                    <h2 class="mb-3">{{ $campaign->subject }}</h2>
-                    
-                    @if($campaign->category)
-                        <div class="mb-3">
-                            <span class="badge bg-info">{{ $campaign->category }}</span>
-                            @if($campaign->is_featured)
-                                <span class="badge bg-warning">Featured</span>
-                            @endif
-                        </div>
+                    @if($campaign->status === 'scheduled')
+                    <form action="{{ route('admin.newsletter.cancel', $campaign) }}" method="POST">
+                        @csrf
+                        @method('PUT')
+                        <button type="submit" class="btn btn-warning w-100" 
+                                onclick="return confirm('Cancel this scheduled campaign?')">
+                            <i class="fas fa-ban"></i> Cancel Schedule
+                        </button>
+                    </form>
                     @endif
                     
-                    @if($campaign->excerpt)
-                        <div class="alert alert-light border">
-                            <p class="mb-0"><strong>Summary:</strong> {{ $campaign->excerpt }}</p>
-                        </div>
-                    @endif
+                    <a href="{{ route('admin.newsletter.analytics', $campaign) }}" 
+                       class="btn btn-dark">
+                        <i class="fas fa-chart-bar"></i> View Analytics
+                    </a>
                     
-                    <div class="newsletter-content">
-                        {!! $campaign->content !!}
-                    </div>
+                    <form action="{{ route('admin.newsletter.duplicate', $campaign) }}" method="POST">
+                        @csrf
+                        <button type="submit" class="btn btn-secondary w-100" 
+                                onclick="return confirm('Duplicate this campaign?')">
+                            <i class="fas fa-copy"></i> Duplicate Campaign
+                        </button>
+                    </form>
+                    
+                    <a href="{{ route('admin.newsletter.campaigns') }}" 
+                       class="btn btn-outline-secondary">
+                        <i class="fas fa-arrow-left"></i> Back to Campaigns
+                    </a>
                 </div>
             </div>
         </div>
         
-        <div class="col-md-4">
-            <div class="card">
-                <div class="card-header">
-                    <h5 class="card-title mb-0">Campaign Details</h5>
-                </div>
-                <div class="card-body">
-                    <table class="table table-sm">
-                        <tr>
-                            <th>Status:</th>
-                            <td>
-                                @switch($campaign->status)
-                                    @case('draft')
-                                        <span class="badge bg-secondary">Draft</span>
-                                        @break
-                                    @case('scheduled')
-                                        <span class="badge bg-info">Scheduled</span>
-                                        @break
-                                    @case('sent')
-                                        <span class="badge bg-success">Sent</span>
-                                        @break
-                                    @case('cancelled')
-                                        <span class="badge bg-danger">Cancelled</span>
-                                        @break
-                                @endswitch
-                            </td>
-                        </tr>
-                        <tr>
-                            <th>Created By:</th>
-                            <td>{{ $campaign->creator->name ?? 'N/A' }}</td>
-                        </tr>
-                        <tr>
-                            <th>Created At:</th>
-                            <td>{{ $campaign->created_at->format('M d, Y H:i') }}</td>
-                        </tr>
-                        @if($campaign->scheduled_at)
-                            <tr>
-                                <th>Scheduled For:</th>
-                                <td>{{ $campaign->scheduled_at->format('M d, Y H:i') }}</td>
-                            </tr>
-                        @endif
-                        @if($campaign->sent_at)
-                            <tr>
-                                <th>Sent At:</th>
-                                <td>{{ $campaign->sent_at->format('M d, Y H:i') }}</td>
-                            </tr>
-                        @endif
-                        <tr>
-                            <th>Sent Count:</th>
-                            <td>{{ $campaign->sent_count ?? 0 }}</td>
-                        </tr>
-                        <tr>
-                            <th>Opened:</th>
-                            <td>{{ $campaign->opened_count ?? 0 }}</td>
-                        </tr>
-                        <tr>
-                            <th>Clicked:</th>
-                            <td>{{ $campaign->clicked_count ?? 0 }}</td>
-                        </tr>
-                    </table>
-                    
-                    @if($campaign->status === 'sent')
-                        <div class="d-grid gap-2">
-                            <a href="{{ route('admin.newsletter.analytics', $campaign) }}" 
-                               class="btn btn-success">
-                                <i class="fas fa-chart-bar"></i> View Analytics
-                            </a>
-                        </div>
-                    @endif
-                </div>
+        <!-- Campaign Stats -->
+        <div class="card shadow-sm border-0">
+            <div class="card-header bg-white">
+                <h6 class="mb-0">Campaign Statistics</h6>
             </div>
-            
-            <div class="card mt-3">
-                <div class="card-header">
-                    <h5 class="card-title mb-0">Quick Actions</h5>
-                </div>
-                <div class="card-body">
-                    <div class="d-grid gap-2">
-                        <form action="{{ route('admin.newsletter.duplicate', $campaign) }}" method="POST">
-                            @csrf
-                            <button type="submit" class="btn btn-secondary btn-block">
-                                <i class="fas fa-copy"></i> Duplicate Campaign
-                            </button>
-                        </form>
+            <div class="card-body">
+                <div class="row text-center">
+                    <div class="col-6 mb-3">
+                        <div class="card bg-light">
+                            <div class="card-body p-3">
+                                <h3 class="text-success">{{ $campaign->sent_count }}</h3>
+                                <small class="text-muted">Sent</small>
+                            </div>
+                        </div>
                     </div>
+                    <div class="col-6 mb-3">
+                        <div class="card bg-light">
+                            <div class="card-body p-3">
+                                <h3 class="text-info">{{ $campaign->opened_count }}</h3>
+                                <small class="text-muted">Opened</small>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-6">
+                        <div class="card bg-light">
+                            <div class="card-body p-3">
+                                <h3 class="text-primary">{{ $campaign->clicked_count }}</h3>
+                                <small class="text-muted">Clicked</small>
+                            </div>
+                        </div>
+                    </div>
+                    @if($campaign->sent_count > 0)
+                    <div class="col-6">
+                        <div class="card bg-light">
+                            <div class="card-body p-3">
+                                <h3 class="text-warning">
+                                    {{ number_format(($campaign->opened_count / $campaign->sent_count) * 100, 1) }}%
+                                </h3>
+                                <small class="text-muted">Open Rate</small>
+                            </div>
+                        </div>
+                    </div>
+                    @endif
                 </div>
             </div>
         </div>
     </div>
 </div>
 
+@push('styles')
 <style>
-.newsletter-content img {
-    max-width: 100%;
-    height: auto;
-}
-.newsletter-content table {
-    width: 100%;
-    margin-bottom: 1rem;
-    border-collapse: collapse;
-}
-.newsletter-content table, 
-.newsletter-content th, 
-.newsletter-content td {
-    border: 1px solid #dee2e6;
-}
-.newsletter-content th,
-.newsletter-content td {
-    padding: 0.75rem;
-}
+    .campaign-content img {
+        max-width: 100%;
+        height: auto;
+    }
+    
+    .campaign-content table {
+        width: 100%;
+        margin-bottom: 1rem;
+        border-collapse: collapse;
+    }
+    
+    .campaign-content table th,
+    .campaign-content table td {
+        padding: 0.75rem;
+        border: 1px solid #dee2e6;
+    }
 </style>
 @endpush
 @endsection

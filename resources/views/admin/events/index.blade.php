@@ -1,277 +1,284 @@
 @extends('admin.layouts.app')
 
-@section('title', 'Events Management - ELCT Southern Lake Diocese')
-
 @section('content')
-<div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-  <!-- Header -->
-  <div class="flex items-center justify-between mb-6">
-    <div>
-      <h1 class="text-3xl font-extrabold text-gray-900">Events Management</h1>
-      <p class="mt-1 text-sm text-gray-500">Manage all church events and activities for the diocese.</p>
-    </div>
-    <a href="{{ route('admin.events.create') }}" class="inline-flex items-center gap-3 bg-gradient-to-r from-indigo-600 to-purple-600 text-white px-4 py-2 rounded-lg shadow-md hover:shadow-lg transition">
-      <i class="fas fa-plus"></i>
-      <span class="font-semibold">Create New Event</span>
-    </a>
-  </div>
-
-  <!-- Success -->
-  @if(session('success'))
-  <div class="mb-6">
-    <div class="flex items-center justify-between bg-green-50 border border-green-200 rounded-lg p-4">
-      <div class="flex items-center gap-3">
-        <div class="text-green-600 text-xl"><i class="fas fa-check-circle"></i></div>
-        <p class="text-sm text-green-800">{{ session('success') }}</p>
-      </div>
-      <button type="button" onclick="this.parentElement.parentElement.remove()" class="text-green-600 hover:bg-green-100 rounded p-1">
-        <i class="fas fa-times"></i>
-      </button>
-    </div>
-  </div>
-  @endif
-
-  <!-- Stats -->
-  <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
-    <div class="bg-white/80 backdrop-blur rounded-xl p-4 shadow">
-      <div class="flex items-center justify-between">
-        <div>
-          <p class="text-xs font-semibold text-gray-500 uppercase">Total Events</p>
-          <p class="text-2xl font-bold text-gray-900">{{ $totalEvents }}</p>
+<div class="relative flex h-screen w-full flex-col overflow-hidden bg-background-light dark:bg-background-dark">
+    <!-- TopAppBar -->
+    <header class="flex items-center bg-background-light dark:bg-background-dark p-4 pb-2 justify-between sticky top-0 z-10 border-b border-gray-200 dark:border-gray-800">
+        <a href="{{ route('admin.dashboard') }}" class="text-gray-900 dark:text-white flex size-12 shrink-0 items-center justify-start cursor-pointer">
+            <span class="material-symbols-outlined">chevron_left</span>
+        </a>
+        <h2 class="text-gray-900 dark:text-white text-lg font-bold leading-tight tracking-[-0.015em] flex-1 text-center uppercase tracking-widest">Events Calendar</h2>
+        <div class="flex w-12 items-center justify-end">
+            <button class="flex size-10 cursor-pointer items-center justify-center overflow-hidden rounded-full bg-transparent text-gray-900 dark:text-white">
+                <span class="material-symbols-outlined">search</span>
+            </button>
         </div>
-        <div class="h-12 w-12 rounded-lg flex items-center justify-center bg-gradient-to-br from-indigo-500 to-indigo-700 text-white shadow-sm">
-          <i class="fas fa-calendar-alt"></i>
+    </header>
+
+    <!-- Stats Summary -->
+    <div class="px-4 py-3">
+        <div class="grid grid-cols-4 gap-2">
+            <div class="bg-white dark:bg-[#1c2620] rounded-lg p-3 text-center">
+                <div class="text-2xl font-bold text-primary">{{ $totalEvents }}</div>
+                <div class="text-xs text-gray-500 dark:text-gray-400 mt-1">Total</div>
+            </div>
+            <div class="bg-white dark:bg-[#1c2620] rounded-lg p-3 text-center">
+                <div class="text-2xl font-bold text-emerald-600">{{ $upcomingEvents }}</div>
+                <div class="text-xs text-gray-500 dark:text-gray-400 mt-1">Upcoming</div>
+            </div>
+            <div class="bg-white dark:bg-[#1c2620] rounded-lg p-3 text-center">
+                <div class="text-2xl font-bold text-blue-600">{{ $publicEvents }}</div>
+                <div class="text-xs text-gray-500 dark:text-gray-400 mt-1">Public</div>
+            </div>
+            <div class="bg-white dark:bg-[#1c2620] rounded-lg p-3 text-center">
+                <div class="text-2xl font-bold text-amber-600">{{ $thisMonthEvents }}</div>
+                <div class="text-xs text-gray-500 dark:text-gray-400 mt-1">This Month</div>
+            </div>
         </div>
-      </div>
     </div>
 
-    <div class="bg-white/80 backdrop-blur rounded-xl p-4 shadow">
-      <div class="flex items-center justify-between">
-        <div>
-          <p class="text-xs font-semibold text-gray-500 uppercase">Upcoming</p>
-          <p class="text-2xl font-bold text-gray-900">{{ $upcomingEvents }}</p>
+    <!-- Calendar Section -->
+    <div class="p-4">
+        <div class="flex flex-col gap-2">
+            <!-- Calendar Header -->
+            <div class="flex items-center p-1 justify-between mb-2">
+                <button class="text-gray-900 dark:text-white opacity-50 hover:opacity-100">
+                    <span class="material-symbols-outlined">chevron_left</span>
+                </button>
+                <p class="text-gray-900 dark:text-white text-lg font-bold flex-1 text-center">
+                    {{ now()->format('F Y') }}
+                </p>
+                <button class="text-gray-900 dark:text-white opacity-50 hover:opacity-100">
+                    <span class="material-symbols-outlined">chevron_right</span>
+                </button>
+            </div>
+            
+            <!-- Days of Week -->
+            <div class="grid grid-cols-7 gap-1 mb-2">
+                <div class="text-primary text-[11px] font-bold uppercase flex h-10 w-full items-center justify-center">S</div>
+                <div class="text-primary text-[11px] font-bold uppercase flex h-10 w-full items-center justify-center">M</div>
+                <div class="text-primary text-[11px] font-bold uppercase flex h-10 w-full items-center justify-center">T</div>
+                <div class="text-primary text-[11px] font-bold uppercase flex h-10 w-full items-center justify-center">W</div>
+                <div class="text-primary text-[11px] font-bold uppercase flex h-10 w-full items-center justify-center">T</div>
+                <div class="text-primary text-[11px] font-bold uppercase flex h-10 w-full items-center justify-center">F</div>
+                <div class="text-primary text-[11px] font-bold uppercase flex h-10 w-full items-center justify-center">S</div>
+            </div>
+            
+            <!-- Calendar Grid -->
+            <div class="grid grid-cols-7 gap-1">
+                @php
+                    $firstDay = now()->startOfMonth()->startOfWeek();
+                    $lastDay = now()->endOfMonth()->endOfWeek();
+                    $currentDay = $firstDay->copy();
+                @endphp
+                
+                @for($i = 0; $i < 42; $i++)
+                    @php
+                        $isCurrentMonth = $currentDay->month == now()->month;
+                        $isToday = $currentDay->isToday();
+                        $dayEvents = $events->filter(function($event) use ($currentDay) {
+                            return $event->start_time->format('Y-m-d') == $currentDay->format('Y-m-d');
+                        });
+                        $hasEvents = $dayEvents->count() > 0;
+                    @endphp
+                    
+                    <a href="{{ route('admin.events.index') }}?date={{ $currentDay->format('Y-m-d') }}" 
+                       class="h-12 w-full flex flex-col items-center justify-center relative {{ $isCurrentMonth ? 'text-gray-900 dark:text-white' : 'text-gray-400' }}">
+                        @if($isToday)
+                            <div class="flex size-9 items-center justify-center rounded-full bg-primary text-white text-sm font-bold shadow-lg shadow-primary/30">
+                                {{ $currentDay->format('j') }}
+                            </div>
+                        @else
+                            <span class="text-sm">{{ $currentDay->format('j') }}</span>
+                            @if($hasEvents)
+                            <div class="absolute bottom-1.5 size-1 rounded-full bg-primary"></div>
+                            @endif
+                        @endif
+                    </a>
+                    
+                    @php
+                        $currentDay->addDay();
+                    @endphp
+                @endfor
+            </div>
         </div>
-        <div class="h-12 w-12 rounded-lg flex items-center justify-center bg-gradient-to-br from-green-400 to-green-600 text-white shadow-sm">
-          <i class="fas fa-rocket"></i>
-        </div>
-      </div>
     </div>
 
-    <div class="bg-white/80 backdrop-blur rounded-xl p-4 shadow">
-      <div class="flex items-center justify-between">
-        <div>
-          <p class="text-xs font-semibold text-gray-500 uppercase">Public Events</p>
-          <p class="text-2xl font-bold text-gray-900">{{ $publicEvents }}</p>
-        </div>
-        <div class="h-12 w-12 rounded-lg flex items-center justify-center bg-gradient-to-br from-cyan-400 to-sky-600 text-white shadow-sm">
-          <i class="fas fa-eye"></i>
-        </div>
-      </div>
+    <div class="w-full h-[1px] bg-gray-200 dark:bg-gray-800 my-2"></div>
+
+    <!-- Today's Events Section -->
+    <div class="px-4 pt-4 pb-2">
+        <h3 class="text-gray-900 dark:text-white text-lg font-bold leading-tight tracking-[-0.015em]">
+            Today's Events - {{ now()->format('M d') }}
+        </h3>
+        <p class="text-gray-500 text-xs font-medium uppercase tracking-wider mt-1">Today's Schedule</p>
     </div>
 
-    <div class="bg-white/80 backdrop-blur rounded-xl p-4 shadow">
-      <div class="flex items-center justify-between">
-        <div>
-          <p class="text-xs font-semibold text-gray-500 uppercase">This Month</p>
-          <p class="text-2xl font-bold text-gray-900">{{ $thisMonthEvents }}</p>
-        </div>
-        <div class="h-12 w-12 rounded-lg flex items-center justify-center bg-gradient-to-br from-yellow-400 to-orange-500 text-white shadow-sm">
-          <i class="fas fa-star"></i>
-        </div>
-      </div>
-    </div>
-  </div>
-
-  <!-- Main Card -->
-  <div class="bg-white/80 backdrop-blur rounded-2xl shadow-xl overflow-hidden">
-    <div class="flex items-center justify-between px-6 py-5 border-b">
-      <div>
-        <h2 class="text-lg font-semibold text-gray-900">All Events</h2>
-        <p class="text-sm text-gray-500">Manage and organize church events</p>
-      </div>
-
-      <div class="flex items-center gap-3">
-        <div class="relative">
-          <span class="absolute inset-y-0 left-3 flex items-center pointer-events-none text-gray-400"><i class="fas fa-search"></i></span>
-          <input type="text" placeholder="Search events..." class="search-input pl-10 pr-4 py-2 rounded-lg border border-gray-200 focus:outline-none focus:ring-2 focus:ring-indigo-300" />
-        </div>
-
-        <div class="relative group">
-          <button class="inline-flex items-center gap-2 px-3 py-2 rounded-lg border border-gray-200 bg-white hover:shadow">
-            <i class="fas fa-filter"></i>
-            <span class="text-sm">Filter</span>
-            <i class="fas fa-chevron-down text-xs"></i>
-          </button>
-          <div class="absolute right-0 mt-2 w-44 bg-white rounded-lg shadow-lg border hidden group-hover:block z-50">
-            <a href="{{ request()->fullUrlWithQuery(['filter' => 'all']) }}" class="block px-4 py-2 text-sm text-gray-700 hover:bg-indigo-50">All Events</a>
-            <a href="{{ request()->fullUrlWithQuery(['filter' => 'upcoming']) }}" class="block px-4 py-2 text-sm text-gray-700 hover:bg-indigo-50">Upcoming</a>
-            <a href="{{ request()->fullUrlWithQuery(['filter' => 'past']) }}" class="block px-4 py-2 text-sm text-gray-700 hover:bg-indigo-50">Past Events</a>
-            <a href="{{ request()->fullUrlWithQuery(['filter' => 'public']) }}" class="block px-4 py-2 text-sm text-gray-700 hover:bg-indigo-50">Public Only</a>
-            <a href="{{ request()->fullUrlWithQuery(['filter' => 'private']) }}" class="block px-4 py-2 text-sm text-gray-700 hover:bg-indigo-50">Private Only</a>
-          </div>
-        </div>
-      </div>
-    </div>
-
-    <div class="p-4 lg:p-6">
-      <div class="overflow-x-auto">
-        <table class="min-w-full divide-y">
-          <thead>
-            <tr class="text-xs text-gray-500 uppercase tracking-wider">
-              <th class="px-4 py-3"><input type="checkbox" id="select-all" class="accent-indigo-600" /></th>
-              <th class="px-4 py-3 text-left">Event</th>
-              <th class="px-4 py-3 text-left">Type</th>
-              <th class="px-4 py-3 text-left">Date & Time</th>
-              <th class="px-4 py-3 text-left">Location</th>
-              <th class="px-4 py-3 text-left">Ministry</th>
-              <th class="px-4 py-3 text-left">Status</th>
-              <th class="px-4 py-3 text-left">Registrations</th>
-              <th class="px-4 py-3 text-left">Actions</th>
-            </tr>
-          </thead>
-          <tbody class="bg-white divide-y">
-            @forelse($events as $event)
-            <tr class="table-row {{ $event->start_time->isPast() ? 'opacity-60' : '' }}">
-              <td class="px-4 py-4"><input type="checkbox" id="event-{{ $event->id }}" class="accent-indigo-600" /></td>
-              <td class="px-4 py-4">
-                <div class="flex flex-col">
-                  <span class="font-medium text-gray-900">{{ $event->title }}</span>
-                  @if($event->description)
-                  <span class="text-sm text-gray-500">{{ Str::limit($event->description, 80) }}</span>
-                  @endif
+    <!-- Events List -->
+    <main class="flex-1 overflow-y-auto hide-scrollbar pb-24">
+        <div class="space-y-1">
+            @php
+                $todayEvents = $events->filter(function($event) {
+                    return $event->start_time->format('Y-m-d') == now()->format('Y-m-d');
+                })->sortBy('start_time');
+            @endphp
+            
+            @forelse($todayEvents as $event)
+            <a href="{{ route('admin.events.edit', $event) }}" 
+               class="flex gap-4 bg-transparent px-4 py-4 justify-between border-b border-gray-100 dark:border-gray-800 active:bg-gray-800/50 transition-colors">
+                <div class="flex items-start gap-4">
+                    <div class="text-white flex items-center justify-center rounded-xl 
+                        {{ $event->event_type == 'service' ? 'bg-primary' : 'bg-primary/20 text-primary' }} 
+                        shrink-0 size-12 shadow-sm">
+                        <span class="material-symbols-outlined">
+                            @switch($event->event_type)
+                                @case('service') event_available @break
+                                @case('meeting') groups @break
+                                @case('conference') conference_room @break
+                                @case('workshop') construction @break
+                                @default event
+                            @endswitch
+                        </span>
+                    </div>
+                    <div class="flex flex-1 flex-col justify-center">
+                        <p class="text-gray-900 dark:text-white text-base font-semibold leading-tight">
+                            {{ $event->title }}
+                        </p>
+                        <div class="flex items-center gap-1 mt-1 text-gray-500 dark:text-[#a0b6a8]">
+                            <span class="material-symbols-outlined text-sm">location_on</span>
+                            <p class="text-sm font-normal">{{ $event->location }}</p>
+                        </div>
+                        @if($event->description)
+                        <p class="text-gray-500 dark:text-[#a0b6a8]/70 text-xs mt-1 italic">
+                            {{ Str::limit($event->description, 50) }}
+                        </p>
+                        @endif
+                    </div>
                 </div>
-              </td>
-              <td class="px-4 py-4">
-                <span class="inline-flex items-center gap-2 px-2 py-1 rounded-full text-sm font-semibold text-gray-700 bg-gray-100">
-                  <i class="fas 
-                    @if($event->event_type == 'service') fa-church 
-                    @elseif($event->event_type == 'meeting') fa-users 
-                    @elseif($event->event_type == 'conference') fa-microphone 
-                    @elseif($event->event_type == 'workshop') fa-tools 
-                    @else fa-calendar @endif"></i>
-                  {{ ucfirst($event->event_type) }}
-                </span>
-              </td>
-              <td class="px-4 py-4 text-sm text-gray-700">
-                <div class="font-medium">{{ $event->start_time->format('M d, Y') }}</div>
-                <div class="flex items-center gap-2 text-xs text-gray-500">
-                  <i class="fas fa-clock"></i>
-                  <span>{{ $event->start_time->format('h:i A') }}@if($event->end_time) - {{ $event->end_time->format('h:i A') }}@endif</span>
+                <div class="shrink-0 flex flex-col items-end">
+                    <p class="text-primary text-sm font-bold">{{ $event->start_time->format('h:i A') }}</p>
+                    <p class="text-gray-400 text-[10px] uppercase font-bold mt-1">
+                        {{ $event->registrations_count ?? $event->registrations->count() }} registered
+                    </p>
                 </div>
-              </td>
-              <td class="px-4 py-4 text-sm text-gray-700 flex items-center gap-2"><i class="fas fa-map-marker-alt text-red-500"></i> <span>{{ Str::limit($event->location, 30) }}</span></td>
-              <td class="px-4 py-4">
-                @if($event->ministry)
-                <span class="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-gray-100 text-sm text-gray-700"><i class="fas fa-hands-helping"></i> {{ $event->ministry->name }}</span>
-                @else
-                <span class="text-gray-400 italic">—</span>
-                @endif
-              </td>
-              <td class="px-4 py-4">
-                @if($event->start_time->isPast())
-                <span class="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-gray-100 text-sm text-gray-600"><i class="fas fa-check-circle"></i> Completed</span>
-                @else
-                <span class="inline-flex items-center gap-2 px-3 py-1 rounded-full text-sm font-semibold {{ $event->is_public ? 'bg-green-100 text-green-700' : 'bg-gray-100 text-gray-700' }}"><i class="fas {{ $event->is_public ? 'fa-eye' : 'fa-lock' }}"></i> {{ $event->is_public ? 'Active' : 'Private' }}</span>
-                @endif
-              </td>
-              <td class="px-4 py-4">
-                <a href="{{ route('admin.events.registrations', $event->id) }}" class="inline-flex items-center gap-2 px-3 py-1 rounded-lg bg-gray-50 border text-sm text-gray-700 hover:bg-indigo-50">
-                  <i class="fas fa-users"></i>
-                  <span class="font-semibold">{{ $event->registrations_count ?? 0 }}</span>
-                </a>
-              </td>
-              <td class="px-4 py-4">
-                <div class="flex items-center gap-2">
-                  <a href="{{ route('admin.events.registrations', $event->id) }}" class="inline-flex items-center justify-center h-9 w-9 rounded-full bg-sky-500 text-white hover:opacity-90" title="View Registrations"><i class="fas fa-users"></i></a>
-                  <a href="{{ route('admin.events.edit', $event->id) }}" class="inline-flex items-center justify-center h-9 w-9 rounded-full bg-indigo-600 text-white hover:opacity-90" title="Edit"><i class="fas fa-edit"></i></a>
-                  <button onclick="confirmDelete({{ $event->id }})" class="inline-flex items-center justify-center h-9 w-9 rounded-full bg-red-600 text-white hover:opacity-90" title="Delete"><i class="fas fa-trash"></i></button>
-
-                  <form id="delete-form-{{ $event->id }}" action="{{ route('admin.events.destroy', $event->id) }}" method="POST" class="hidden">@csrf @method('DELETE')</form>
-                </div>
-              </td>
-            </tr>
+            </a>
             @empty
-            <tr>
-              <td colspan="9" class="py-12 text-center text-gray-500">
-                <div class="flex flex-col items-center gap-4">
-                  <div class="text-6xl text-gray-300"><i class="fas fa-calendar-plus"></i></div>
-                  <h3 class="text-lg font-semibold">No Events Found</h3>
-                  <p class="text-sm">Start by creating your first event for the diocese.</p>
-                  <a href="{{ route('admin.events.create') }}" class="inline-flex items-center gap-2 mt-3 bg-indigo-600 text-white px-4 py-2 rounded-lg"> <i class="fas fa-plus"></i> Create First Event</a>
-                </div>
-              </td>
-            </tr>
+            <div class="px-4 py-8 text-center">
+                <span class="material-symbols-outlined text-gray-400 text-4xl">event_busy</span>
+                <p class="text-gray-500 dark:text-gray-400 mt-2">No events scheduled for today</p>
+            </div>
             @endforelse
-          </tbody>
-        </table>
-      </div>
-
-      <!-- Pagination -->
-      @if($events->hasPages())
-      <div class="mt-6 flex flex-col sm:flex-row items-center justify-between gap-4">
-        <div class="text-sm text-gray-600">Showing <strong>{{ $events->firstItem() }}</strong> to <strong>{{ $events->lastItem() }}</strong> of <strong>{{ $events->total() }}</strong> results</div>
-        <div>
-          {{ $events->links() }}
         </div>
-      </div>
-      @endif
-    </div>
-  </div>
+
+        <!-- All Upcoming Events -->
+        <div class="px-4 pt-6 pb-2">
+            <h3 class="text-gray-900 dark:text-white text-lg font-bold leading-tight tracking-[-0.015em]">
+                All Upcoming Events
+            </h3>
+            <p class="text-gray-500 text-xs font-medium uppercase tracking-wider mt-1">Next 30 days</p>
+        </div>
+
+        <div class="space-y-1">
+            @php
+                $upcomingEventsList = $events->where('start_time', '>=', now())
+                                              ->where('start_time', '<=', now()->addDays(30))
+                                              ->sortBy('start_time');
+            @endphp
+            
+            @forelse($upcomingEventsList as $event)
+            <a href="{{ route('admin.events.edit', $event) }}" 
+               class="flex gap-4 bg-transparent px-4 py-4 justify-between border-b border-gray-100 dark:border-gray-800 active:bg-gray-800/50 transition-colors">
+                <div class="flex items-start gap-4">
+                    <div class="text-primary flex flex-col items-center justify-center shrink-0 size-12">
+                        <span class="text-lg font-bold">{{ $event->start_time->format('d') }}</span>
+                        <span class="text-[10px] uppercase">{{ $event->start_time->format('M') }}</span>
+                    </div>
+                    <div class="flex flex-1 flex-col justify-center">
+                        <p class="text-gray-900 dark:text-white text-base font-semibold leading-tight">
+                            {{ $event->title }}
+                        </p>
+                        <div class="flex items-center gap-2 mt-1">
+                            <span class="text-xs px-2 py-0.5 rounded-full 
+                                {{ $event->is_public ? 'bg-emerald-100 text-emerald-800' : 'bg-gray-100 text-gray-800' }}">
+                                {{ $event->is_public ? 'Public' : 'Private' }}
+                            </span>
+                            <span class="text-xs px-2 py-0.5 rounded-full bg-primary/10 text-primary">
+                                {{ ucfirst($event->event_type) }}
+                            </span>
+                        </div>
+                    </div>
+                </div>
+                <div class="shrink-0 flex flex-col items-end justify-center">
+                    <p class="text-primary text-sm font-bold">{{ $event->start_time->format('h:i A') }}</p>
+                </div>
+            </a>
+            @empty
+            <div class="px-4 py-8 text-center">
+                <span class="material-symbols-outlined text-gray-400 text-4xl">calendar_today</span>
+                <p class="text-gray-500 dark:text-gray-400 mt-2">No upcoming events</p>
+            </div>
+            @endforelse
+        </div>
+    </main>
+
+    <!-- Floating Action Button -->
+    <a href="{{ route('admin.events.create') }}" 
+       class="absolute bottom-24 right-6 size-14 bg-primary text-white rounded-full shadow-2xl shadow-primary/50 flex items-center justify-center z-20 active:scale-95 transition-transform">
+        <span class="material-symbols-outlined text-3xl">add</span>
+    </a>
+
+    <!-- iOS Bottom Tab Bar -->
+    <nav class="absolute bottom-0 w-full bg-white dark:bg-[#0a120d] border-t border-gray-200 dark:border-gray-800 flex justify-around items-center px-4 pb-8 pt-3 z-30">
+        <a href="{{ route('admin.dashboard') }}" class="flex flex-col items-center gap-1 cursor-pointer opacity-40 hover:opacity-100">
+            <span class="material-symbols-outlined">dashboard</span>
+            <span class="text-[10px] font-bold uppercase">Dashboard</span>
+        </a>
+        <div class="flex flex-col items-center gap-1 cursor-pointer text-primary">
+            <span class="material-symbols-outlined" style="font-variation-settings: 'FILL' 1">calendar_month</span>
+            <span class="text-[10px] font-bold uppercase">Calendar</span>
+        </div>
+        <a href="{{ route('admin.members.index') }}" class="flex flex-col items-center gap-1 cursor-pointer opacity-40 hover:opacity-100">
+            <span class="material-symbols-outlined">group</span>
+            <span class="text-[10px] font-bold uppercase">Members</span>
+        </a>
+        <a href="#" class="flex flex-col items-center gap-1 cursor-pointer opacity-40 hover:opacity-100">
+            <span class="material-symbols-outlined">settings</span>
+            <span class="text-[10px] font-bold uppercase">Settings</span>
+        </a>
+    </nav>
+
+    <!-- iOS Home Indicator -->
+    <div class="absolute bottom-2 left-1/2 -translate-x-1/2 w-32 h-1 bg-gray-300 dark:bg-gray-700 rounded-full z-40"></div>
 </div>
-@endsection
+
+@if(session('success'))
+<script>
+    setTimeout(() => {
+        alert('{{ session('success') }}');
+    }, 100);
+</script>
+@endif
+
+@if(session('error'))
+<script>
+    setTimeout(() => {
+        alert('{{ session('error') }}');
+    }, 100);
+</script>
+@endif
 
 @push('styles')
-<link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
 <style>
-  /* Small custom styles to complement Tailwind */
-  :root { --glass: rgba(255,255,255,0.7); }
-  body { background: linear-gradient(135deg,#eef2ff 0%, #fdf2f8 100%); }
-  .search-input { min-width: 220px; }
-  @media (max-width:640px){ .search-input{ min-width:140px } }
+    .hide-scrollbar::-webkit-scrollbar {
+        display: none;
+    }
+    .hide-scrollbar {
+        -ms-overflow-style: none;
+        scrollbar-width: none;
+    }
+    .material-symbols-outlined {
+        font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+    }
 </style>
 @endpush
-
-@push('scripts')
-<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
-<script>
-  function confirmDelete(eventId) {
-    Swal.fire({
-      title: 'Are you sure?',
-      text: "This event and all its registrations will be permanently deleted!",
-      icon: 'warning',
-      showCancelButton: true,
-      confirmButtonColor: '#ef4444',
-      cancelButtonColor: '#6b7280',
-      confirmButtonText: 'Yes, delete it!'
-    }).then((result) => {
-      if (result.isConfirmed) {
-        document.getElementById('delete-form-' + eventId).submit();
-      }
-    });
-  }
-
-  document.addEventListener('DOMContentLoaded', function(){
-    const searchInput = document.querySelector('.search-input');
-    if (!searchInput) return;
-    const tableRows = document.querySelectorAll('tbody .table-row');
-
-    searchInput.addEventListener('input', function(e){
-      const q = e.target.value.toLowerCase();
-      tableRows.forEach(row => {
-        const title = row.querySelector('td:nth-child(2) .font-medium')?.textContent.toLowerCase() || '';
-        const desc = row.querySelector('td:nth-child(2) span.text-sm')?.textContent.toLowerCase() || '';
-        if (title.includes(q) || desc.includes(q)) row.style.display = '';
-        else row.style.display = 'none';
-      });
-    });
-
-    // Select all checkbox
-    const selectAll = document.getElementById('select-all');
-    if (selectAll) {
-      selectAll.addEventListener('change', function(){
-        document.querySelectorAll('tbody input[type="checkbox"]').forEach(cb => cb.checked = this.checked);
-      });
-    }
-  });
-</script>
-@endpush
+@endsection

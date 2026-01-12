@@ -1,4 +1,5 @@
 <?php
+
 namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
@@ -6,9 +7,7 @@ use App\Models\NewsletterSubscriber;
 use App\Models\NewsletterCampaign;
 use App\Models\NewsletterLog;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Mail;
 use Illuminate\Support\Facades\Storage;
-use App\Mail\NewsletterCampaign as CampaignMail;
 
 class NewsletterController extends Controller
 {
@@ -73,8 +72,11 @@ class NewsletterController extends Controller
         $scheduledAt = null;
         
         if ($validated['send_option'] === 'now') {
-            $status = 'scheduled'; // Will be sent immediately
+            $status = 'sent';
             $scheduledAt = now();
+            
+            // For "send now", we'll just mark it as sent without actual email
+            $activeSubscribersCount = NewsletterSubscriber::where('is_active', true)->count();
         } elseif ($validated['send_option'] === 'schedule' && $validated['scheduled_at']) {
             $status = 'scheduled';
             $scheduledAt = $validated['scheduled_at'];
@@ -89,16 +91,34 @@ class NewsletterController extends Controller
             'is_featured' => $request->has('is_featured'),
             'status' => $status,
             'created_by' => auth()->id(),
-            'scheduled_at' => $scheduledAt
+            'scheduled_at' => $scheduledAt,
+            'sent_at' => $status === 'sent' ? now() : null,
+            'sent_count' => $status === 'sent' ? NewsletterSubscriber::where('is_active', true)->count() : 0
         ]);
 
-        // Send immediately if selected
-        if ($validated['send_option'] === 'now') {
-            $this->sendCampaign($campaign);
+        // Create logs for sent campaigns
+        if ($status === 'sent') {
+            $activeSubscribers = NewsletterSubscriber::where('is_active', true)->get();
+            
+            foreach ($activeSubscribers as $subscriber) {
+                NewsletterLog::create([
+                    'campaign_id' => $campaign->id,
+                    'subscriber_id' => $subscriber->id,
+                    'status' => 'sent',
+                    'sent_at' => now()
+                ]);
+            }
         }
 
+        $message = match($status) {
+            'draft' => 'Newsletter saved as draft successfully.',
+            'sent' => 'Newsletter marked as sent to ' . NewsletterSubscriber::where('is_active', true)->count() . ' subscribers.',
+            'scheduled' => 'Newsletter scheduled for ' . \Carbon\Carbon::parse($scheduledAt)->format('M d, Y \a\t h:i A'),
+            default => 'Newsletter created successfully.'
+        };
+
         return redirect()->route('admin.newsletter.show', $campaign)
-            ->with('success', 'Newsletter campaign created successfully.');
+            ->with('success', $message);
     }
 
     // Show campaign details
@@ -165,44 +185,23 @@ class NewsletterController extends Controller
             ->with('success', 'Newsletter updated successfully.');
     }
 
-    // Send campaign manually
+    // Send campaign manually (without actual email)
     public function send(Request $request, NewsletterCampaign $campaign)
     {
         if ($campaign->status !== 'draft' && $campaign->status !== 'scheduled') {
             return back()->with('error', 'Campaign cannot be sent.');
         }
 
-        $this->sendCampaign($campaign);
-
-        return redirect()->route('admin.newsletter.show', $campaign)
-            ->with('success', 'Newsletter sent successfully.');
-    }
-
-    // Send campaign (internal method)
-    public function sendCampaign(NewsletterCampaign $campaign)
-    {
+        // Mark as sent without actual email
         $activeSubscribers = NewsletterSubscriber::where('is_active', true)->get();
-
+        
         foreach ($activeSubscribers as $subscriber) {
-            try {
-                Mail::to($subscriber->email)
-                    ->queue(new CampaignMail($campaign, $subscriber));
-
-                NewsletterLog::create([
-                    'campaign_id' => $campaign->id,
-                    'subscriber_id' => $subscriber->id,
-                    'status' => 'sent',
-                    'sent_at' => now()
-                ]);
-            } catch (\Exception $e) {
-                // Log error but continue with other subscribers
-                NewsletterLog::create([
-                    'campaign_id' => $campaign->id,
-                    'subscriber_id' => $subscriber->id,
-                    'status' => 'failed',
-                    'notes' => $e->getMessage()
-                ]);
-            }
+            NewsletterLog::create([
+                'campaign_id' => $campaign->id,
+                'subscriber_id' => $subscriber->id,
+                'status' => 'sent',
+                'sent_at' => now()
+            ]);
         }
 
         $campaign->update([
@@ -210,13 +209,40 @@ class NewsletterController extends Controller
             'sent_at' => now(),
             'sent_count' => $activeSubscribers->count()
         ]);
+
+        return redirect()->route('admin.newsletter.show', $campaign)
+            ->with('success', 'Newsletter marked as sent to ' . $activeSubscribers->count() . ' subscribers.');
     }
 
     // List campaigns
-    public function campaigns()
+    public function campaigns(Request $request)
     {
-        $campaigns = NewsletterCampaign::with('creator')->latest()->paginate(15);
-        return view('admin.newsletter.campaigns', compact('campaigns'));
+        $query = NewsletterCampaign::query();
+        
+        // Search filter
+        if ($request->has('search') && $request->search) {
+            $query->where('subject', 'like', '%' . $request->search . '%')
+                  ->orWhere('excerpt', 'like', '%' . $request->search . '%');
+        }
+        
+        // Status filter
+        if ($request->has('status') && $request->status) {
+            $query->where('status', $request->status);
+        }
+        
+        $campaigns = $query->with('creator')->latest()->paginate(10);
+        
+        // Get stats for the dashboard
+        $activeSubscribers = NewsletterSubscriber::where('is_active', true)->count();
+        $sentCampaigns = NewsletterCampaign::where('status', 'sent')->count();
+        $draftCampaigns = NewsletterCampaign::where('status', 'draft')->count();
+        
+        return view('admin.newsletter.campaigns', compact(
+            'campaigns',
+            'activeSubscribers',
+            'sentCampaigns',
+            'draftCampaigns'
+        ));
     }
 
     // Campaign analytics

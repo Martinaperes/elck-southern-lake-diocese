@@ -17,8 +17,6 @@ class NewsletterCampaignMail extends Mailable
     public $campaign;
     public $subscriber;
     public $unsubscribeUrl;
-    public $trackingPixel;
-    public $trackingUrl;
 
     /**
      * Create a new message instance.
@@ -27,20 +25,7 @@ class NewsletterCampaignMail extends Mailable
     {
         $this->campaign = $campaign;
         $this->subscriber = $subscriber;
-        $this->unsubscribeUrl = route('newsletter.unsubscribe', $subscriber->subscription_token);
-        
-        // Generate tracking URLs (you'll need to implement tracking endpoints)
-        $this->trackingPixel = route('newsletter.track.open', [
-            'campaign' => $campaign->id,
-            'subscriber' => $subscriber->id,
-            'token' => md5($campaign->id . $subscriber->id . config('app.key'))
-        ]);
-        
-        $this->trackingUrl = route('newsletter.track.click', [
-            'campaign' => $campaign->id,
-            'subscriber' => $subscriber->id,
-            'token' => md5($campaign->id . $subscriber->id . config('app.key'))
-        ]);
+        $this->unsubscribeUrl = route('newsletter.unsubscribe', ['token' => $subscriber->subscription_token]);
     }
 
     /**
@@ -59,7 +44,12 @@ class NewsletterCampaignMail extends Mailable
     public function content(): Content
     {
         return new Content(
-            view: 'emails.newsletter.campaign',
+            view: 'emails.newsletter',
+            with: [
+                'campaign' => $this->campaign,
+                'subscriber' => $this->subscriber,
+                'unsubscribeUrl' => $this->unsubscribeUrl,
+            ],
         );
     }
 
