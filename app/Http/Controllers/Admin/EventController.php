@@ -3,16 +3,37 @@ namespace App\Http\Controllers\Admin;
 use App\Http\Controllers\Controller;
 use App\Models\Event;
 use App\Models\Ministry;
+use App\Models\EventRegistration;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Storage;
 
 class EventController extends Controller
 {
-    public function index(Request $request)
+     public function index(Request $request)
     {
         $query = Event::with(['ministry', 'registrations']);
+        
+        // Get month and year from request with validation
+        $currentMonth = $request->get('month', now()->month);
+        $currentYear = $request->get('year', now()->year);
+        
+        // Validate and create date
+        try {
+            $selectedDate = now()->setYear((int) $currentYear)->setMonth((int) $currentMonth)->startOfMonth();
+        } catch (\Exception $e) {
+            // If invalid date, default to current month
+            $selectedDate = now()->startOfMonth();
+            $currentMonth = $selectedDate->month;
+            $currentYear = $selectedDate->year;
+        }
+        
+        // Get events for the selected month
+        $monthEvents = Event::whereYear('start_time', $selectedDate->year)
+            ->whereMonth('start_time', $selectedDate->month)
+            ->orderBy('start_time')
+            ->get();
 
-        // Apply filters
+        // Apply filters for the list view
         switch ($request->filter) {
             case 'upcoming':
                 $query->where('start_time', '>=', now());
@@ -28,9 +49,10 @@ class EventController extends Controller
                 break;
         }
 
+        // For the event list (paginated)
         $events = $query->latest()->paginate(10);
 
-        // Statistics
+        // Statistics (for current month's calendar view)
         $totalEvents = Event::count();
         $upcomingEvents = Event::where('start_time', '>=', now())->count();
         $publicEvents = Event::where('is_public', true)->count();
@@ -38,12 +60,24 @@ class EventController extends Controller
                                ->whereMonth('start_time', now()->month)
                                ->count();
 
+        // Get all upcoming events (past and future) for sidebar
+        $allEvents = Event::orderBy('start_time', 'desc')
+            ->limit(50)
+            ->get();
+
+        // Get today's date
+        $today = now();
+
         return view('admin.events.index', compact(
             'events', 
             'totalEvents', 
             'upcomingEvents', 
             'publicEvents', 
-            'thisMonthEvents'
+            'thisMonthEvents',
+            'monthEvents',
+            'selectedDate',
+            'allEvents',
+            'today'
         ));
     }
      public function create()
@@ -60,42 +94,63 @@ class EventController extends Controller
         return view('admin.events.create', compact('ministries', 'eventTypes'));
     }
 
-    public function store(Request $request)
-    {
-        $request->validate([
-            'title' => 'required|string|max:255',
-            'description' => 'nullable|string',
-            'start_time' => 'required|date',
-            'end_time' => 'nullable|date|after:start_time',
-            'location' => 'required|string|max:255',
-            'event_type' => 'required|in:service,meeting,conference,workshop,other',
-            'ministry_id' => 'nullable|exists:ministries,id',
-            'is_public' => 'boolean',
-            'poster' => 'nullable|image|mimes:jpeg,png,jpg,gif,webp|max:5120', // 5MB max
-        ]);
-
-        $eventData = [
-            'title' => $request->title,
-            'description' => $request->description,
-            'start_time' => $request->start_time,
-            'end_time' => $request->end_time,
-            'location' => $request->location,
-            'event_type' => $request->event_type,
-            'ministry_id' => $request->ministry_id,
-            'is_public' => $request->has('is_public')
-        ];
-
-        // Handle poster upload
-        if ($request->hasFile('poster')) {
-            $posterPath = $request->file('poster')->store('events/posters', 'public');
-            $eventData['poster'] = $posterPath;
+   public function store(Request $request)
+{
+    // Validate basic fields first
+    $validated = $request->validate([
+        'title' => 'required|string|max:255',
+        'description' => 'nullable|string',
+        'start_date' => 'required|date',
+        'start_time' => 'required',
+        'end_date' => 'nullable|date',
+        'end_time' => 'nullable',
+        'location' => 'required|string|max:255',
+        'event_type' => 'required|in:service,meeting,conference,workshop,other',
+        'ministry_id' => 'nullable|exists:ministries,id',
+        'is_public' => 'nullable|in:0,1,true,false',
+        'poster' => 'nullable|image|mimes:jpeg,png,jpg,gif,webp|max:5120',
+    ]);
+    
+    // Combine date and time
+    $startDateTime = $request->start_date . ' ' . $request->start_time;
+    
+    // Prepare event data
+    $eventData = [
+        'title' => $request->title,
+        'description' => $request->description,
+        'start_time' => $startDateTime,
+        'location' => $request->location,
+        'event_type' => $request->event_type,
+        'ministry_id' => $request->ministry_id,
+        'is_public' => $request->has('is_public')
+    ];
+    
+    // Add end_time if provided
+    if ($request->filled('end_date') && $request->filled('end_time')) {
+        $endDateTime = $request->end_date . ' ' . $request->end_time;
+        
+        // Validate end is after start
+        if (strtotime($endDateTime) <= strtotime($startDateTime)) {
+            return redirect()->back()
+                ->withInput()
+                ->withErrors(['end_time' => 'End time must be after start time']);
         }
-
-        Event::create($eventData);
-
-        return redirect()->route('admin.events.index')
-            ->with('success', 'Event created successfully!');
+        
+        $eventData['end_time'] = $endDateTime;
     }
+    
+    // Handle poster upload
+    if ($request->hasFile('poster')) {
+        $posterPath = $request->file('poster')->store('events/posters', 'public');
+        $eventData['poster'] = $posterPath;
+    }
+    
+    // Create the event
+    Event::create($eventData);
+    
+    return redirect()->route('admin.events.index')
+        ->with('success', 'Event created successfully!');
+}
 
     public function edit(Event $event)
 {
@@ -112,44 +167,66 @@ class EventController extends Controller
 }
 
     public function update(Request $request, Event $event)
-    {
-        $request->validate([
-            'title' => 'required|string|max:255',
-            'description' => 'nullable|string',
-            'start_time' => 'required|date',
-            'end_time' => 'nullable|date|after:start_time',
-            'location' => 'required|string|max:255',
-            'event_type' => 'required|in:service,meeting,conference,workshop,other',
-            'ministry_id' => 'nullable|exists:ministries,id',
-            'is_public' => 'boolean',
-            'poster' => 'nullable|image|mimes:jpeg,png,jpg,gif,webp|max:5120',
-        ]);
-
-        $event->title = $request->title;
-        $event->description = $request->description;
-        $event->start_time = $request->start_time;
-        $event->end_time = $request->end_time;
-        $event->location = $request->location;
-        $event->event_type = $request->event_type;
-        $event->ministry_id = $request->ministry_id;
-        $event->is_public = $request->has('is_public');
-
-        // Handle poster upload
-        if ($request->hasFile('poster')) {
-            // Delete old poster if exists
-            if ($event->poster) {
-                Storage::disk('public')->delete($event->poster);
-            }
-            
-            $posterPath = $request->file('poster')->store('events/posters', 'public');
-            $event->poster = $posterPath;
+{
+    // Validate basic fields
+    $validated = $request->validate([
+        'title' => 'required|string|max:255',
+        'description' => 'nullable|string',
+        'start_date' => 'required|date',
+        'start_time' => 'required',
+        'end_date' => 'nullable|date',
+        'end_time' => 'nullable',
+        'location' => 'required|string|max:255',
+        'event_type' => 'required|in:service,meeting,conference,workshop,other',
+        'ministry_id' => 'nullable|exists:ministries,id',
+        'is_public' => 'boolean',
+        'poster' => 'nullable|image|mimes:jpeg,png,jpg,gif,webp|max:5120',
+    ]);
+    
+    // Combine date and time
+    $startDateTime = $request->start_date . ' ' . $request->start_time;
+    
+    // Update event
+    $event->title = $request->title;
+    $event->description = $request->description;
+    $event->start_time = $startDateTime;
+    $event->location = $request->location;
+    $event->event_type = $request->event_type;
+    $event->ministry_id = $request->ministry_id;
+    $event->is_public = $request->has('is_public');
+    
+    // Add end_time if provided
+    if ($request->filled('end_date') && $request->filled('end_time')) {
+        $endDateTime = $request->end_date . ' ' . $request->end_time;
+        
+        // Validate end is after start
+        if (strtotime($endDateTime) <= strtotime($startDateTime)) {
+            return redirect()->back()
+                ->withInput()
+                ->withErrors(['end_time' => 'End time must be after start time']);
         }
-
-        $event->save();
-
-        return redirect()->route('admin.events.index')
-            ->with('success', 'Event updated successfully!');
+        
+        $event->end_time = $endDateTime;
+    } else {
+        $event->end_time = null;
     }
+    
+    // Handle poster upload
+    if ($request->hasFile('poster')) {
+        // Delete old poster if exists
+        if ($event->poster) {
+            Storage::disk('public')->delete($event->poster);
+        }
+        
+        $posterPath = $request->file('poster')->store('events/posters', 'public');
+        $event->poster = $posterPath;
+    }
+    
+    $event->save();
+    
+    return redirect()->route('admin.events.index')
+        ->with('success', 'Event updated successfully!');
+}
 public function ajaxEdit(Event $event)
 {
     try {
