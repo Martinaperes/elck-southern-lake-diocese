@@ -1,4 +1,8 @@
-﻿<?php\n\nnamespace App\Http\Controllers\Admin;\n\n// app/Http/Controllers/Admin/GalleryController.php
+<?php
+namespace App\Http\Controllers\Admin;
+
+
+// app/Http/Controllers/Admin/GalleryController.php
 
 
 
@@ -9,18 +13,37 @@ use Illuminate\Support\Facades\File;
 
 class GalleryController extends Controller
 {
-    public function index()
-    {
-        $galleries = Gallery::latest()->paginate(10);
-        $totalGalleries = Gallery::count();
-        $activeGalleries = Gallery::where('is_active', true)->count();
-
-        return view('admin.gallery.index', compact(
-            'galleries',
-            'totalGalleries',
-            'activeGalleries'
-        ));
+    public function index(Request $request)
+{
+    $query = Gallery::query();
+    
+    // Search functionality
+    if ($request->has('search') && $request->search) {
+        $query->where('title', 'like', '%' . $request->search . '%')
+              ->orWhere('description', 'like', '%' . $request->search . '%');
     }
+    
+    // Filter by category (if you add category field later)
+    if ($request->has('category') && $request->category) {
+        // Assuming you have a 'category' field
+        // $query->where('category', $request->category);
+    }
+    
+    // Filter by status
+    if ($request->has('status') && $request->status) {
+        $query->where('is_active', $request->status == 'active');
+    }
+    
+    $galleries = $query->latest()->paginate(12);
+    $totalGalleries = Gallery::count();
+    $activeGalleries = Gallery::where('is_active', true)->count();
+
+    return view('admin.gallery.index', compact(
+        'galleries',
+        'totalGalleries',
+        'activeGalleries'
+    ));
+}
 
     public function create()
     {

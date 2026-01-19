@@ -96,6 +96,10 @@ class EventController extends Controller
 
    public function store(Request $request)
 {
+    // Debug: Check what data is coming in - FIXED VERSION
+    \Log::info('Event Store Request Data:', $request->all());
+    \Log::info('Files:', ['files' => $request->file() ?: 'No files']);
+    
     // Validate basic fields first
     $validated = $request->validate([
         'title' => 'required|string|max:255',
@@ -111,8 +115,11 @@ class EventController extends Controller
         'poster' => 'nullable|image|mimes:jpeg,png,jpg,gif,webp|max:5120',
     ]);
     
+    \Log::info('Validation passed:', ['data' => $validated]);
+    
     // Combine date and time
     $startDateTime = $request->start_date . ' ' . $request->start_time;
+    \Log::info('Start DateTime:', ['start' => $startDateTime]);
     
     // Prepare event data
     $eventData = [
@@ -122,15 +129,19 @@ class EventController extends Controller
         'location' => $request->location,
         'event_type' => $request->event_type,
         'ministry_id' => $request->ministry_id,
-        'is_public' => $request->has('is_public')
+        'is_public' => $request->boolean('is_public'), // Use boolean() method instead
     ];
+    
+    \Log::info('Event data before end time:', ['data' => $eventData]);
     
     // Add end_time if provided
     if ($request->filled('end_date') && $request->filled('end_time')) {
         $endDateTime = $request->end_date . ' ' . $request->end_time;
+        \Log::info('End DateTime:', ['end' => $endDateTime]);
         
         // Validate end is after start
         if (strtotime($endDateTime) <= strtotime($startDateTime)) {
+            \Log::error('End time must be after start time');
             return redirect()->back()
                 ->withInput()
                 ->withErrors(['end_time' => 'End time must be after start time']);
@@ -141,31 +152,43 @@ class EventController extends Controller
     
     // Handle poster upload
     if ($request->hasFile('poster')) {
-        $posterPath = $request->file('poster')->store('events/posters', 'public');
-        $eventData['poster'] = $posterPath;
+        \Log::info('Poster file detected', ['filename' => $request->file('poster')->getClientOriginalName()]);
+        
+        try {
+            $posterPath = $request->file('poster')->store('events/posters', 'public');
+            $eventData['poster'] = $posterPath;
+            \Log::info('Poster stored at:', ['path' => $posterPath]);
+        } catch (\Exception $e) {
+            \Log::error('Error storing poster:', ['error' => $e->getMessage()]);
+            return redirect()->back()
+                ->withInput()
+                ->with('error', 'Error uploading image: ' . $e->getMessage());
+        }
+    } else {
+        \Log::info('No poster file uploaded');
     }
     
-    // Create the event
-    Event::create($eventData);
+    \Log::info('Final event data:', ['data' => $eventData]);
     
-    return redirect()->route('admin.events.index')
-        ->with('success', 'Event created successfully!');
+    try {
+        // Create the event
+        $event = Event::create($eventData);
+        \Log::info('Event created successfully:', ['id' => $event->id, 'title' => $event->title]);
+        
+        return redirect()->route('admin.events.index')
+            ->with('success', 'Event created successfully!');
+            
+    } catch (\Exception $e) {
+        \Log::error('Error creating event:', [
+            'message' => $e->getMessage(),
+            'trace' => $e->getTraceAsString()
+        ]);
+        
+        return redirect()->back()
+            ->withInput()
+            ->with('error', 'Error creating event: ' . $e->getMessage());
+    }
 }
-
-    public function edit(Event $event)
-{
-    $ministries = Ministry::all();
-    $eventTypes = [
-        'service' => 'Church Service',
-        'meeting' => 'Meeting',
-        'conference' => 'Conference',
-        'workshop' => 'Workshop',
-        'other' => 'Other'
-    ];
-
-    return view('admin.events.edit', compact('event', 'ministries', 'eventTypes'));
-}
-
     public function update(Request $request, Event $event)
 {
     // Validate basic fields
@@ -226,6 +249,19 @@ class EventController extends Controller
     
     return redirect()->route('admin.events.index')
         ->with('success', 'Event updated successfully!');
+}
+public function edit(Event $event)
+{
+    $ministries = Ministry::all();
+    $eventTypes = [
+        'service' => 'Church Service',
+        'meeting' => 'Meeting',
+        'conference' => 'Conference',
+        'workshop' => 'Workshop',
+        'other' => 'Other'
+    ];
+
+    return view('admin.events.edit', compact('event', 'ministries', 'eventTypes'));
 }
 public function ajaxEdit(Event $event)
 {

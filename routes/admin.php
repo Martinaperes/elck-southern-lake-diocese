@@ -5,7 +5,8 @@ use App\Http\Controllers\Admin\DashboardController;
 use App\Http\Controllers\Admin\MemberController;
 use App\Http\Controllers\Admin\MinistryController;
 use App\Http\Controllers\Admin\EventController;
-use App\Http\Controllers\Admin\GalleryController as AdminGalleryController;
+use App\Http\Controllers\Admin\GalleryController;
+use App\Http\Controllers\Admin\SettingsController;
 use App\Http\Controllers\Admin\SermonController as AdminSermonController;
 use App\Http\Controllers\Admin\DonationController as AdminDonationController;
 use App\Http\Controllers\Admin\NewsletterController ;
@@ -62,7 +63,10 @@ Route::middleware(['auth', 'admin'])->prefix('admin')->name('admin.')->group(fun
     Route::get('events/{event}/ajax-edit', [EventController::class, 'ajaxEdit'])->name('events.ajax-edit');
     
     // Gallery Management
-    Route::resource('gallery', AdminGalleryController::class);
+    // Gallery Management
+Route::resource('gallery', GalleryController::class);
+Route::post('gallery/{gallery}/toggle-active', [GalleryController::class, 'toggleActive'])->name('gallery.toggle-active');
+//newsletter Management
      Route::prefix('newsletter')->name('newsletter.')->group(function () {
         // Campaigns
         Route::get('/campaigns', [NewsletterController::class, 'campaigns'])->name('campaigns');
@@ -81,5 +85,15 @@ Route::middleware(['auth', 'admin'])->prefix('admin')->name('admin.')->group(fun
         Route::post('/subscribers/{subscriber}/resubscribe', [NewsletterController::class, 'resubscribe'])->name('resubscribe');
         Route::delete('/subscribers/{subscriber}', [NewsletterController::class, 'destroySubscriber'])->name('destroySubscriber');
      });
+     //settings
+     
+Route::prefix('settings')->name('settings.')->group(function () {
+    Route::get('/', [SettingsController::class, 'index'])->name('index');
+    Route::post('/update', [SettingsController::class, 'update'])->name('update');
+    Route::get('/church', [SettingsController::class, 'church'])->name('church');
+    Route::post('/church', [SettingsController::class, 'churchUpdate'])->name('church.update');
+    Route::post('/clear-cache', [SettingsController::class, 'clearCache'])->name('clear-cache');
+    Route::get('/logs', [SettingsController::class, 'logs'])->name('logs');
+});
     
 });

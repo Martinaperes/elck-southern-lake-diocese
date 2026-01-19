@@ -12,7 +12,15 @@
             <h1 class="text-xl font-bold text-slate-900 dark:text-white">Schedule New Event</h1>
         </div>
     </div>
-
+    @if($errors->any())
+    <div class="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded-lg mb-4">
+        <ul class="list-disc list-inside">
+            @foreach($errors->all() as $error)
+                <li>{{ $error }}</li>
+            @endforeach
+        </ul>
+    </div>
+@endif
     <!-- Form -->
     <form action="{{ route('admin.events.store') }}" method="POST" enctype="multipart/form-data" class="p-4 space-y-6 pb-24">
         @csrf
@@ -116,8 +124,8 @@
                     <p class="font-medium text-slate-900 dark:text-white">Public Event</p>
                     <p class="text-sm text-slate-500 dark:text-slate-400">Visible to all members</p>
                 </div>
-                <input type="checkbox" name="is_public" value="1" 
-       {{ old('is_public', true) ? 'checked' : '' }}
+               <input type="checkbox" name="is_public" value="1" 
+       {{ old('is_public', '1') == '1' ? 'checked' : '' }}
        class="h-5 w-5 rounded border-slate-300 text-primary">
             </div>
         </div>
