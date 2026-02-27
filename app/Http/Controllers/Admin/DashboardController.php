@@ -8,112 +8,102 @@ use App\Models\Parish;
 use App\Models\Event;
 use App\Models\Activity;
 use App\Models\Donation;
+use App\Models\Member;
 use Illuminate\Support\Facades\DB;
 
 class DashboardController extends Controller
 {
+    /**
+     * Display the admin dashboard.
+     */
     public function index()
     {
-        // Total congregants (users with role 'member' or 'user')
-        $totalCongregants = User::whereIn('role', ['member', 'user'])->count();
-        
-        // Growth percentage (this month vs last month)
+        $currentMonth = now()->month;
+        $currentYear = now()->year;
+
+        return view('admin.dashboard', [
+            'totalCongregants' => User::whereIn('role', ['member', 'user'])->count(),
+            'growthPercentage' => $this->calculateGrowthPercentage(),
+            'activeParishes' => Parish::where('is_active', true)->count(),
+            'upcomingEvents' => Event::upcoming()->count(),
+            'newEventsThisMonth' => Event::whereMonth('created_at', $currentMonth)->whereYear('created_at', $currentYear)->count(),
+            'recentActivities' => Activity::with(['user', 'subject'])->latest('performed_at')->take(10)->get(),
+            'stats' => $this->getQuickStats(),
+        ]);
+    }
+
+    /**
+     * Calculate member growth percentage compared to last month.
+     */
+    private function calculateGrowthPercentage(): float
+    {
         $currentMonthCount = User::whereIn('role', ['member', 'user'])
             ->whereMonth('created_at', now()->month)
+            ->whereYear('created_at', now()->year)
             ->count();
             
         $lastMonthCount = User::whereIn('role', ['member', 'user'])
             ->whereMonth('created_at', now()->subMonth()->month)
+            ->whereYear('created_at', now()->subMonth()->year)
             ->count();
             
-        $growthPercentage = $lastMonthCount > 0 
+        return $lastMonthCount > 0 
             ? (($currentMonthCount - $lastMonthCount) / $lastMonthCount) * 100 
             : 0;
-        
-        // Active parishes
-        $activeParishes = Parish::where('is_active', true)->count();
-        
-        // Upcoming events
-        $upcomingEvents = Event::where('date', '>=', now())
-            ->orderBy('date')
-            ->take(5)
-            ->count();
-        
-        // New events this month
-        $newEventsThisMonth = Event::whereMonth('created_at', now()->month)->count();
-        
-        // Recent activities (last 10)
-        $recentActivities = Activity::with(['user', 'subject'])
-            ->orderBy('performed_at', 'desc')
-            ->take(10)
-            ->get();
-        
-        // Quick stats for cards
-        $stats = [
-            'total_tithes' => Donation::whereMonth('created_at', now()->month)->sum('amount'),
-            'total_events' => Event::where('date', '>=', now())->count(),
-            'new_members' => User::where('role', 'member')->whereMonth('created_at', now()->month)->count(),
-            'attendance_rate' => $this->calculateAttendanceRate(),
-        ];
-        
-        return view('admin.dashboard', compact(
-            'totalCongregants',
-            'growthPercentage',
-            'activeParishes',
-            'upcomingEvents',
-            'newEventsThisMonth',
-            'recentActivities',
-            'stats'
-        ));
     }
-    public function __construct()
-{
-    view()->share([
-        'getActivityColor' => function($type) {
-            return Activity::getTypeColors()[$type] ?? Activity::getTypeColors()['default'];
-        },
-        'getActivityIcon' => function($type) {
-            return Activity::getTypeIcons()[$type] ?? 'info';
-        },
-    ]);
-}
-    
-    private function calculateAttendanceRate()
+
+    /**
+     * Get quick statistics for the dashboard cards.
+     */
+    private function getQuickStats(): array
     {
-        // Implement your attendance logic here
-        // This is a placeholder - adjust based on your actual data structure
-        $totalMembers = User::where('role', 'member')->count();
-        $attendedThisMonth = 0; // You'll need to query your attendance records
-        
-        return $totalMembers > 0 ? ($attendedThisMonth / $totalMembers) * 100 : 0;
+        $currentMonth = now()->month;
+        $currentYear = now()->year;
+
+        return [
+            'total_tithes' => Donation::whereMonth('created_at', $currentMonth)
+                                      ->whereYear('created_at', $currentYear)
+                                      ->sum('amount'),
+            'total_events' => Event::upcoming()->count(),
+            'new_this_month' => Member::whereMonth('created_at', $currentMonth)
+                                       ->whereYear('created_at', $currentYear)
+                                       ->count(),
+            'total_members' => Member::count(),
+            'active_members' => Member::where('is_active', true)->count(),
+            'total_ministries' => \App\Models\Ministry::count(),
+            'active_ministries' => \App\Models\Ministry::where('is_active', true)->count(),
+            'upcoming_events' => Event::upcoming()->count(),
+        ];
     }
-    
-    // API endpoint for chart data (optional)
+
+    /**
+     * Get chart data for user growth and donations (API endpoint).
+     */
     public function getChartData()
     {
-        // Monthly user growth for the last 6 months
-        $monthlyData = User::select(
+        $last6Months = now()->subMonths(6);
+
+        $userGrowth = User::select(
                 DB::raw('DATE_FORMAT(created_at, "%Y-%m") as month'),
                 DB::raw('COUNT(*) as count')
             )
-            ->where('created_at', '>=', now()->subMonths(6))
+            ->where('created_at', '>=', $last6Months)
             ->groupBy('month')
             ->orderBy('month')
             ->get();
             
-        // Donation data for the last 6 months
-        $donationData = Donation::select(
+        $donations = Donation::select(
                 DB::raw('DATE_FORMAT(created_at, "%Y-%m") as month'),
                 DB::raw('SUM(amount) as total')
             )
-            ->where('created_at', '>=', now()->subMonths(6))
+            ->where('created_at', '>=', $last6Months)
             ->groupBy('month')
             ->orderBy('month')
             ->get();
             
         return response()->json([
-            'user_growth' => $monthlyData,
-            'donations' => $donationData,
+            'user_growth' => $userGrowth,
+            'donations' => $donations,
         ]);
     }
 }

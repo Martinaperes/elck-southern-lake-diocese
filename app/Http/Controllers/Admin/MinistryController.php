@@ -8,11 +8,23 @@ use App\Models\MinistryMember;
 use App\Models\Member;
 use App\Models\Event;
 use App\Models\EventRegistration;
+use App\Http\Requests\Admin\MinistryRequest;
+use App\Traits\FileUploadTrait;
+use App\Services\MinistryService;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Storage;
+use Illuminate\Support\Str;
 
 class MinistryController extends Controller
 {
+    use FileUploadTrait;
+
+    protected $ministryService;
+
+    public function __construct(MinistryService $ministryService)
+    {
+        $this->ministryService = $ministryService;
+    }
+
     public function index()
     {
         $ministries = Ministry::withCount(['members' => function($query) {
@@ -23,16 +35,15 @@ class MinistryController extends Controller
             }])
             ->latest()
             ->paginate(10);
-            $allMinistries = Ministry::orderBy('name')->get(); //for dropdown
+            
+        $allMinistries = Ministry::orderBy('name')->get();
         
-        // Get upcoming events for all ministries
         $upcomingEvents = Event::with('ministry')
             ->where('start_time', '>=', now())
             ->orderBy('start_time')
             ->limit(5)
             ->get();
         
-        // Statistics
         $stats = [
             'total_ministries' => Ministry::count(),
             'active_ministries' => Ministry::where('is_active', true)->count(),
@@ -41,10 +52,7 @@ class MinistryController extends Controller
             'upcoming_events' => $upcomingEvents->count(),
         ];
         
-        return view(
-    'admin.ministries.index',
-    compact('ministries', 'allMinistries', 'stats', 'upcomingEvents')
-);
+        return view('admin.ministries.index', compact('ministries', 'allMinistries', 'stats', 'upcomingEvents'));
     }
     
     public function create()
@@ -54,41 +62,23 @@ class MinistryController extends Controller
         return view('admin.ministries.create', compact('members', 'galleryImages'));
     }
     
-    public function store(Request $request)
+    public function store(MinistryRequest $request)
     {
-        $request->validate([
-            'name' => 'required|string|max:255|unique:ministries',
-            'description' => 'nullable|string',
-            'leader_name' => 'nullable|string|max:255',
-            'contact_email' => 'nullable|email',
-            'meeting_schedule' => 'nullable|string',
-            'is_active' => 'boolean',
-            'leader_image' => 'nullable|image|mimes:jpeg,png,jpg,gif,webp|max:5120',
-            'image_url' => 'nullable|string', // Changed from 'url' to 'string'
-            'image_file' => 'nullable|image|mimes:jpeg,png,jpg,gif,webp|max:5120', // New field for file upload
-        ]);
+        $data = $request->validated();
+        $data['slug'] = Str::slug($request->name);
+        $data['is_active'] = $request->has('is_active');
         
-        $ministryData = $request->except(['leader_image', 'image_file']);
-        $ministryData['slug'] = \Str::slug($request->name);
-        $ministryData['is_active'] = $request->has('is_active');
-        
-        // Handle leader image upload
         if ($request->hasFile('leader_image')) {
-            $path = $request->file('leader_image')->store('ministries/leaders', 'public');
-            $ministryData['leader_image'] = $path;
+            $data['leader_image'] = $this->uploadImage($request->file('leader_image'), 'ministries/leaders');
         }
         
-        // Handle banner image UPLOAD (new image_file field)
         if ($request->hasFile('image_file')) {
-            $bannerPath = $request->file('image_file')->store('ministries/banners', 'public');
-            $ministryData['image_url'] = $bannerPath; // Store the uploaded file path
-        } 
-        // If no file uploaded but text entered, keep the text (could be filename or URL)
-        elseif ($request->filled('image_url')) {
-            $ministryData['image_url'] = $request->image_url;
+            $data['image_url'] = $this->uploadImage($request->file('image_file'), 'ministries/banners');
+        } elseif ($request->filled('image_url')) {
+            $data['image_url'] = $request->image_url;
         }
         
-        $ministry = Ministry::create($ministryData);
+        $ministry = Ministry::create($data);
         
         return redirect()->route('admin.ministries.show', $ministry)
             ->with('success', 'Ministry created successfully!');
@@ -116,95 +106,58 @@ class MinistryController extends Controller
         $galleryImages = $this->getGalleryImages();
         return view('admin.ministries.edit', compact('ministry', 'members', 'galleryImages'));
     }
-    // View ministry members
-// View ministry members
-public function members(Ministry $ministry)
-{
-    // Get ministry members with pagination
-    $ministryMembers = $ministry->members()
-        ->with('member')
-        ->orderBy('role')
-        ->orderBy('joined_at', 'desc')
-        ->paginate(20);
-    
-    // Get all available members (not in this ministry)
-    $availableMembers = Member::active()
-        ->whereDoesntHave('ministries', function($query) use ($ministry) {
-            $query->where('ministry_id', $ministry->id);
-        })
-        ->orderBy('first_name')
-        ->get();
-    
-    // Statistics
-    $stats = [
-        'totalMembers' => $ministry->members()->count(),
-        'activeMembers' => $ministry->members()->where('is_active', true)->count(),
-        'leadersCount' => $ministry->members()->where('role', 'like', '%leader%')->count(),
-        'newThisMonth' => $ministry->members()
-            ->where('joined_at', '>=', now()->subMonth())
-            ->count(),
-    ];
-    
-    return view('admin.ministries.members', compact('ministry', 'ministryMembers', 'availableMembers') + $stats);
-}
-    
-    public function update(Request $request, Ministry $ministry)
+
+    public function members(Ministry $ministry)
     {
-        $request->validate([
-            'name' => 'required|string|max:255|unique:ministries,name,' . $ministry->id,
-            'description' => 'nullable|string',
-            'leader_name' => 'nullable|string|max:255',
-            'contact_email' => 'nullable|email',
-            'meeting_schedule' => 'nullable|string',
-            'is_active' => 'boolean',
-            'leader_image' => 'nullable|image|mimes:jpeg,png,jpg,gif,webp|max:5120',
-            'image_url' => 'nullable|string', // Changed from 'url' to 'string'
-            'image_file' => 'nullable|image|mimes:jpeg,png,jpg,gif,webp|max:5120',
-        ]);
+        $ministryMembers = $ministry->members()
+            ->with('member')
+            ->orderBy('role')
+            ->orderBy('joined_at', 'desc')
+            ->paginate(20);
         
-        $ministryData = $request->except(['leader_image', 'image_file']);
-        $ministryData['is_active'] = $request->has('is_active');
+        $availableMembers = Member::active()
+            ->whereDoesntHave('ministries', fn($q) => $q->where('ministry_id', $ministry->id))
+            ->orderBy('first_name')
+            ->get();
         
-        // Handle leader image upload
+        $stats = [
+            'totalMembers' => $ministry->members()->count(),
+            'activeMembers' => $ministry->members()->where('is_active', true)->count(),
+            'leadersCount' => $ministry->members()->where('role', 'like', '%leader%')->count(),
+            'newThisMonth' => $ministry->members()
+                ->where('joined_at', '>=', now()->subMonth())
+                ->count(),
+        ];
+        
+        return view('admin.ministries.members', compact('ministry', 'ministryMembers', 'availableMembers') + $stats);
+    }
+    
+    public function update(MinistryRequest $request, Ministry $ministry)
+    {
+        $data = $request->validated();
+        $data['is_active'] = $request->has('is_active');
+        
         if ($request->hasFile('leader_image')) {
-            // Delete old image if exists
-            if ($ministry->leader_image) {
-                Storage::disk('public')->delete($ministry->leader_image);
-            }
-            
-            $path = $request->file('leader_image')->store('ministries/leaders', 'public');
-            $ministryData['leader_image'] = $path;
+            $data['leader_image'] = $this->uploadImage($request->file('leader_image'), 'ministries/leaders', $ministry->leader_image);
         }
         
-        // Handle banner image UPLOAD
         if ($request->hasFile('image_file')) {
-            // Delete old uploaded banner if it was a stored file
-            if ($ministry->image_url && strpos($ministry->image_url, 'ministries/banners/') !== false) {
-                Storage::disk('public')->delete($ministry->image_url);
+            // Only delete if it's a stored file path
+            $oldPoster = (Str::contains($ministry->image_url, 'ministries/banners/')) ? $ministry->image_url : null;
+            $data['image_url'] = $this->uploadImage($request->file('image_file'), 'ministries/banners', $oldPoster);
+        } elseif ($request->filled('image_url')) {
+             if ($ministry->image_url && Str::contains($ministry->image_url, 'ministries/banners/') && $request->image_url !== $ministry->image_url) {
+                $this->deleteFile($ministry->image_url);
             }
-            
-            $bannerPath = $request->file('image_file')->store('ministries/banners', 'public');
-            $ministryData['image_url'] = $bannerPath;
-        } 
-        // If user entered text in image_url field (and didn't upload file)
-        elseif ($request->filled('image_url') && !$request->hasFile('image_file')) {
-            // Check if they're trying to remove an uploaded file by entering text
-            if ($ministry->image_url && strpos($ministry->image_url, 'ministries/banners/') !== false && $request->image_url !== $ministry->image_url) {
-                // They had an uploaded file but now entered different text - delete the old file
-                Storage::disk('public')->delete($ministry->image_url);
+            $data['image_url'] = $request->image_url;
+        } elseif (!$request->filled('image_url')) {
+            if ($ministry->image_url && Str::contains($ministry->image_url, 'ministries/banners/')) {
+                $this->deleteFile($ministry->image_url);
             }
-            $ministryData['image_url'] = $request->image_url;
-        }
-        // If image_url is empty (removing banner)
-        elseif (!$request->filled('image_url') && !$request->hasFile('image_file')) {
-            // Delete uploaded file if exists
-            if ($ministry->image_url && strpos($ministry->image_url, 'ministries/banners/') !== false) {
-                Storage::disk('public')->delete($ministry->image_url);
-            }
-            $ministryData['image_url'] = null;
+            $data['image_url'] = null;
         }
         
-        $ministry->update($ministryData);
+        $ministry->update($data);
         
         return redirect()->route('admin.ministries.show', $ministry)
             ->with('success', 'Ministry updated successfully!');
@@ -212,14 +165,10 @@ public function members(Ministry $ministry)
     
     public function destroy(Ministry $ministry)
     {
-        // Delete leader image if exists
-        if ($ministry->leader_image) {
-            Storage::disk('public')->delete($ministry->leader_image);
-        }
+        $this->deleteFile($ministry->leader_image);
         
-        // Delete banner image if it's an uploaded file
-        if ($ministry->image_url && strpos($ministry->image_url, 'ministries/banners/') !== false) {
-            Storage::disk('public')->delete($ministry->image_url);
+        if ($ministry->image_url && Str::contains($ministry->image_url, 'ministries/banners/')) {
+            $this->deleteFile($ministry->image_url);
         }
         
         $ministry->delete();
@@ -228,46 +177,26 @@ public function members(Ministry $ministry)
             ->with('success', 'Ministry deleted successfully!');
     }
     
-    // Add member to ministry
-   // Update your addMember method in MinistryController
-public function addMember(Request $request, Ministry $ministry)
-{
-    // Debug the incoming request
-    \Log::info('Add Member Request:', $request->all());
-    
-    $request->validate([
-        'member_id' => 'required|exists:members,id',
-        'role' => 'required|string|max:255',
-        'joined_at' => 'nullable|date',
-    ]);
-    
-    \Log::info('Creating ministry member for ministry: ' . $ministry->id . ', member: ' . $request->member_id);
-    
-    $ministryMember = MinistryMember::updateOrCreate(
-        [
-            'ministry_id' => $ministry->id,
-            'member_id' => $request->member_id,
-        ],
-        [
-            'role' => $request->role,
-            'joined_at' => $request->joined_at ?: now(),
-            'is_active' => true,
-        ]
-    );
-    
-    \Log::info('Ministry member created:', ['id' => $ministryMember->id]);
-    
-    return back()->with('success', 'Member added to ministry successfully!');
-}
-    // Remove member from ministry
+    public function addMember(Request $request, Ministry $ministry)
+    {
+        $request->validate([
+            'member_id' => 'required|exists:members,id',
+            'role' => 'required|string|max:255',
+            'joined_at' => 'nullable|date',
+        ]);
+        
+        $member = Member::findOrFail($request->member_id);
+        $this->ministryService->addMemberToMinistry($member, $ministry, $request->only('role', 'joined_at'));
+        
+        return back()->with('success', 'Member added to ministry successfully!');
+    }
+
     public function removeMember(Ministry $ministry, MinistryMember $ministryMember)
     {
         $ministryMember->delete();
-        
         return back()->with('success', 'Member removed from ministry successfully!');
     }
     
-    // Register ministry for an event
     public function registerForEvent(Request $request, Ministry $ministry)
     {
         $request->validate([
@@ -276,10 +205,8 @@ public function addMember(Request $request, Ministry $ministry)
             'special_requirements' => 'nullable|string',
         ]);
         
-        // Get all active ministry members
         $members = $ministry->members()->where('is_active', true)->pluck('member_id');
         
-        // Register each member for the event
         foreach ($members as $memberId) {
             EventRegistration::updateOrCreate(
                 [
@@ -297,7 +224,6 @@ public function addMember(Request $request, Ministry $ministry)
         return back()->with('success', 'Ministry registered for event successfully!');
     }
     
-    // View ministry events
     public function events(Ministry $ministry)
     {
         $events = $ministry->events()
@@ -313,7 +239,6 @@ public function addMember(Request $request, Ministry $ministry)
         return view('admin.ministries.events', compact('ministry', 'events', 'upcomingEvents'));
     }
     
-    // Update member role in ministry
     public function updateMemberRole(Request $request, Ministry $ministry, MinistryMember $ministryMember)
     {
         $request->validate([
@@ -329,7 +254,6 @@ public function addMember(Request $request, Ministry $ministry)
         return back()->with('success', 'Member role updated successfully!');
     }
     
-    // Helper method to get gallery images
     private function getGalleryImages()
     {
         $galleryPath = public_path('images/gallery');
@@ -339,7 +263,6 @@ public function addMember(Request $request, Ministry $ministry)
             $files = scandir($galleryPath);
             foreach ($files as $file) {
                 if ($file !== '.' && $file !== '..') {
-                    // Check if it's an image file
                     $ext = strtolower(pathinfo($file, PATHINFO_EXTENSION));
                     if (in_array($ext, ['jpg', 'jpeg', 'png', 'gif', 'webp'])) {
                         $images[] = $file;

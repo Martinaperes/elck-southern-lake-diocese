@@ -1,179 +1,93 @@
 <?php
+
 namespace App\Http\Controllers\Admin;
-
-
-// app/Http/Controllers/Admin/GalleryController.php
-
-
 
 use App\Http\Controllers\Controller;
 use App\Models\Gallery;
+use App\Http\Requests\Admin\GalleryRequest;
+use App\Traits\FileUploadTrait;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\File;
 
 class GalleryController extends Controller
 {
-    public function index(Request $request)
-{
-    $query = Gallery::query();
-    
-    // Search functionality
-    if ($request->has('search') && $request->search) {
-        $query->where('title', 'like', '%' . $request->search . '%')
-              ->orWhere('description', 'like', '%' . $request->search . '%');
-    }
-    
-    // Filter by category (if you add category field later)
-    if ($request->has('category') && $request->category) {
-        // Assuming you have a 'category' field
-        // $query->where('category', $request->category);
-    }
-    
-    // Filter by status
-    if ($request->has('status') && $request->status) {
-        $query->where('is_active', $request->status == 'active');
-    }
-    
-    $galleries = $query->latest()->paginate(12);
-    $totalGalleries = Gallery::count();
-    $activeGalleries = Gallery::where('is_active', true)->count();
+    use FileUploadTrait;
 
-    return view('admin.gallery.index', compact(
-        'galleries',
-        'totalGalleries',
-        'activeGalleries'
-    ));
-}
+    public function index(Request $request)
+    {
+        $query = Gallery::query();
+        
+        if ($request->filled('search')) {
+            $query->where(function($q) use ($request) {
+                $q->where('title', 'like', "%{$request->search}%")
+                  ->orWhere('description', 'like', "%{$request->search}%");
+            });
+        }
+        
+        if ($request->filled('status')) {
+            $query->where('is_active', $request->status === 'active');
+        }
+        
+        $galleries = $query->latest()->paginate(12);
+        
+        return view('admin.gallery.index', array_merge(compact('galleries'), $this->getBasicStats()));
+    }
 
     public function create()
     {
-        $totalGalleries = Gallery::count();
-        $activeGalleries = Gallery::where('is_active', true)->count();
-        
-        return view('admin.gallery.create', compact(
-            'totalGalleries',
-            'activeGalleries'
-        ));
+        return view('admin.gallery.create', $this->getBasicStats());
     }
 
-    public function store(Request $request)
+    public function store(GalleryRequest $request)
     {
-        $validated = $request->validate([
-            'title' => 'required|string|max:255',
-            'description' => 'nullable|string|max:1000',
-            'image' => 'required|image|mimes:jpeg,png,jpg,gif,webp|max:5120', // 5MB
-            'is_active' => 'boolean',
-        ]);
-
-        // Handle image upload - Store in public/images/gallery
+        $data = $request->validated();
+        
         if ($request->hasFile('image')) {
-            // Create directory if it doesn't exist
-            $galleryPath = public_path('images/gallery');
-            if (!File::exists($galleryPath)) {
-                File::makeDirectory($galleryPath, 0755, true);
-            }
-
-            // Generate unique filename
-            $imageName = time().'_'.str_replace(' ', '_', $request->file('image')->getClientOriginalName());
-            
-            // Move uploaded file
-            $request->file('image')->move($galleryPath, $imageName);
-            
-            // Store relative path in database
-            $validated['image_url'] = 'images/gallery/'.$imageName;
+            // Using public_path to maintain existing directory structure if needed, 
+            // but trait supports relative storage path too. Let's use public disk for consistency with modern Laravel.
+            $data['image_url'] = $this->uploadImage($request->file('image'), 'gallery');
         }
 
-        $validated['is_active'] = $request->has('is_active');
+        $data['is_active'] = $request->has('is_active');
+        Gallery::create($data);
 
-        // Create the gallery record
-        Gallery::create($validated);
-
-        return redirect()->route('admin.gallery.index')
-            ->with('success', 'Image added successfully!');
+        return redirect()->route('admin.gallery.index')->with('success', 'Image added successfully!');
     }
 
     public function show(Gallery $gallery)
     {
-        $totalGalleries = Gallery::count();
-        $activeGalleries = Gallery::where('is_active', true)->count();
-        
-        return view('admin.gallery.show', compact(
-            'gallery',
-            'totalGalleries',
-            'activeGalleries'
-        ));
+        return view('admin.gallery.show', array_merge(compact('gallery'), $this->getBasicStats()));
     }
 
     public function edit(Gallery $gallery)
     {
-        $totalGalleries = Gallery::count();
-        $activeGalleries = Gallery::where('is_active', true)->count();
-        
-        return view('admin.gallery.edit', compact(
-            'gallery',
-            'totalGalleries',
-            'activeGalleries'
-        ));
+        return view('admin.gallery.edit', array_merge(compact('gallery'), $this->getBasicStats()));
     }
 
-    public function update(Request $request, Gallery $gallery)
+    public function update(GalleryRequest $request, Gallery $gallery)
     {
-        $validated = $request->validate([
-            'title' => 'required|string|max:255',
-            'description' => 'nullable|string|max:1000',
-            'image' => 'nullable|image|mimes:jpeg,png,jpg,gif,webp|max:5120',
-            'is_active' => 'boolean'
-        ]);
+        $data = $request->validated();
 
-        // Handle image update - Store in public/images/gallery
         if ($request->hasFile('image')) {
-            // Delete old image if it exists
-            if ($gallery->image_url && file_exists(public_path($gallery->image_url))) {
-                unlink(public_path($gallery->image_url));
-            }
-            
-            // Create directory if it doesn't exist
-            $galleryPath = public_path('images/gallery');
-            if (!File::exists($galleryPath)) {
-                File::makeDirectory($galleryPath, 0755, true);
-            }
-
-            // Generate unique filename
-            $imageName = time().'_'.str_replace(' ', '_', $request->file('image')->getClientOriginalName());
-            
-            // Move uploaded file
-            $request->file('image')->move($galleryPath, $imageName);
-            
-            // Store relative path in database
-            $validated['image_url'] = 'images/gallery/'.$imageName;
+            $data['image_url'] = $this->uploadImage($request->file('image'), 'gallery', $gallery->image_url);
         }
 
-        $validated['is_active'] = $request->has('is_active');
+        $data['is_active'] = $request->has('is_active');
+        $gallery->update($data);
 
-        $gallery->update($validated);
-
-        return redirect()->route('admin.gallery.index')
-            ->with('success', 'Gallery image updated successfully!');
+        return redirect()->route('admin.gallery.index')->with('success', 'Gallery image updated successfully!');
     }
 
     public function destroy(Gallery $gallery)
     {
-        // Delete image file from public/images/gallery
-        if ($gallery->image_url && file_exists(public_path($gallery->image_url))) {
-            unlink(public_path($gallery->image_url));
-        }
-
+        $this->deleteFile($gallery->image_url);
         $gallery->delete();
 
-        return redirect()->route('admin.gallery.index')
-            ->with('success', 'Gallery image deleted successfully!');
+        return redirect()->route('admin.gallery.index')->with('success', 'Gallery image deleted successfully!');
     }
 
     public function toggleActive(Gallery $gallery)
     {
-        $gallery->update([
-            'is_active' => !$gallery->is_active
-        ]);
+        $gallery->update(['is_active' => !$gallery->is_active]);
 
         return response()->json([
             'success' => true,
@@ -181,4 +95,13 @@ class GalleryController extends Controller
             'message' => $gallery->is_active ? 'Image activated!' : 'Image deactivated!'
         ]);
     }
+
+    protected function getBasicStats(): array
+    {
+        return [
+            'totalGalleries' => Gallery::count(),
+            'activeGalleries' => Gallery::where('is_active', true)->count(),
+        ];
+    }
 }
+
