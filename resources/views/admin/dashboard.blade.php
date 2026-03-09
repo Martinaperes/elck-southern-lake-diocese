@@ -81,7 +81,7 @@
         </a>
         
         <!-- View Tithes -->
-        <a href="#" 
+        <a href="{{ route('admin.reports.donations') }}" 
            class="group flex flex-col items-center p-4 rounded-2xl bg-white dark:bg-surface-dark border border-slate-200 dark:border-white/10 hover:border-primary/30 dark:hover:border-primary/30 transition-all duration-200 hover:shadow-md active:scale-[0.98]">
             <div class="flex size-12 items-center justify-center rounded-xl bg-emerald-100 dark:bg-emerald-900/30 mb-3 group-hover:bg-emerald-200 dark:group-hover:bg-emerald-900/50 transition-colors">
                 <span class="material-symbols-outlined text-[26px] text-emerald-600 dark:text-emerald-400">payments</span>
@@ -138,7 +138,7 @@
         </a>
         
         <!-- Generate Report -->
-        <a href="#" 
+        <a href="{{ route('admin.reports.index') }}" 
            class="group flex flex-col items-center p-4 rounded-2xl bg-white dark:bg-surface-dark border border-slate-200 dark:border-white/10 hover:border-primary/30 dark:hover:border-primary/30 transition-all duration-200 hover:shadow-md active:scale-[0.98]">
             <div class="flex size-12 items-center justify-center rounded-xl bg-cyan-100 dark:bg-cyan-900/30 mb-3 group-hover:bg-cyan-200 dark:group-hover:bg-cyan-900/50 transition-colors">
                 <span class="material-symbols-outlined text-[26px] text-cyan-600 dark:text-cyan-400">insights</span>
@@ -292,9 +292,101 @@
                 renderGrowthChart(data);
             });
     });
-    
     function renderGrowthChart(data) {
-        {{-- Chart.js rendering code --}}
+        const container = document.getElementById('growthChart');
+        container.innerHTML = '<canvas id="growthCanvas"></canvas>';
+        const ctx = document.getElementById('growthCanvas').getContext('2d');
+        
+        // Extract all unique months from both datasets
+        let monthsSet = new Set();
+        (data.user_growth || []).forEach(item => monthsSet.add(item.month));
+        (data.donations || []).forEach(item => monthsSet.add(item.month));
+        
+        let labels = Array.from(monthsSet).sort();
+        
+        let userGrowthData = labels.map(label => {
+            let found = (data.user_growth || []).find(item => item.month === label);
+            return found ? found.count : 0;
+        });
+        
+        let donationsData = labels.map(label => {
+            let found = (data.donations || []).find(item => item.month === label);
+            return found ? found.total : 0;
+        });
+
+        // Format labels from YYYY-MM to "Mon YYYY"
+        let formattedLabels = labels.map(l => {
+            let [year, month] = l.split('-');
+            let date = new Date(year, parseInt(month) - 1);
+            return date.toLocaleString('default', { month: 'short', year: 'numeric' });
+        });
+
+        new Chart(ctx, {
+            type: 'line',
+            data: {
+                labels: formattedLabels,
+                datasets: [
+                    {
+                        label: 'New Registrations',
+                        data: userGrowthData,
+                        borderColor: '#197b3b',
+                        backgroundColor: 'rgba(25, 123, 59, 0.1)',
+                        borderWidth: 2,
+                        tension: 0.4,
+                        fill: true,
+                        yAxisID: 'y'
+                    },
+                    {
+                        label: 'Donations / Tithes (KES)',
+                        data: donationsData,
+                        borderColor: '#3b82f6',
+                        backgroundColor: 'rgba(59, 130, 246, 0.1)',
+                        borderWidth: 2,
+                        tension: 0.4,
+                        fill: true,
+                        yAxisID: 'y1'
+                    }
+                ]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                interaction: {
+                    mode: 'index',
+                    intersect: false,
+                },
+                plugins: {
+                    legend: {
+                        position: 'top',
+                    }
+                },
+                scales: {
+                    y: {
+                        type: 'linear',
+                        display: true,
+                        position: 'left',
+                        beginAtZero: true,
+                        title: {
+                            display: true,
+                            text: 'Members'
+                        }
+                    },
+                    y1: {
+                        type: 'linear',
+                        display: true,
+                        position: 'right',
+                        beginAtZero: true,
+                        grid: {
+                            drawOnChartArea: false,
+                        },
+                        title: {
+                            display: true,
+                            text: 'Amount (KES)'
+                        }
+                    }
+                }
+            }
+        });
     }
 </script>
 @endpush
