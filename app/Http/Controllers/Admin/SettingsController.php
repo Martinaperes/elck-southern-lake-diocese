@@ -14,14 +14,21 @@ class SettingsController extends Controller
      */
     public function index()
     {
-        $settings = [
+        $settings = \App\Models\Setting::pluck('value', 'key')->toArray();
+        
+        // Provide defaults if missing
+        $settings = array_merge([
             'system_name' => 'ELCK Southern Lake',
             'church_name' => 'E.L.C.K Southern Lake Diocese',
+            'contact_email' => 'contact@southernlake.elck.org',
             'timezone' => 'Africa/Nairobi',
             'date_format' => 'F j, Y',
             'items_per_page' => 10,
             'theme' => 'dark',
-        ];
+            'dark_mode' => '1',
+            'email_notifications' => '1',
+            'maintenance_mode' => '0',
+        ], $settings);
         
         return view('admin.settings.index', compact('settings'));
     }
@@ -31,7 +38,25 @@ class SettingsController extends Controller
      */
     public function update(Request $request)
     {
-        // Logic to update general settings
+        $data = $request->except(['_token', '_method']);
+        
+        // Handle checkboxes (if not sent, default to 0)
+        $checkboxes = ['dark_mode', 'email_notifications', 'maintenance_mode'];
+        foreach ($checkboxes as $field) {
+            if ($request->has('system_prefs') && !isset($data[$field])) {
+                $data[$field] = '0';
+            }
+        }
+
+        foreach ($data as $key => $value) {
+            if ($key !== 'system_prefs') {
+                \App\Models\Setting::updateOrCreate(
+                    ['key' => $key],
+                    ['value' => $value ?? '', 'type' => 'string', 'group' => 'general']
+                );
+            }
+        }
+
         return back()->with('success', 'Settings updated successfully!');
     }
 
@@ -40,7 +65,7 @@ class SettingsController extends Controller
      */
     public function church()
     {
-        return view('admin.settings.index'); // Reusing index view or similar
+        return redirect()->route('admin.settings.index');
     }
 
     /**
@@ -48,7 +73,14 @@ class SettingsController extends Controller
      */
     public function churchUpdate(Request $request)
     {
-        // Logic to update church info
+        $request->validate([
+            'church_name' => 'required|string|max:255',
+            'contact_email' => 'required|email|max:255',
+        ]);
+
+        \App\Models\Setting::updateOrCreate(['key' => 'church_name'], ['value' => $request->church_name, 'type' => 'string']);
+        \App\Models\Setting::updateOrCreate(['key' => 'contact_email'], ['value' => $request->contact_email, 'type' => 'string']);
+
         return back()->with('success', 'Church information updated successfully!');
     }
 
