@@ -92,6 +92,20 @@
                                         <span class="text-sm font-medium">Enter your PIN to complete the donation.</span>
                                     </div>
                                 </div>
+
+                                <div class="mt-8 p-4 bg-white/10 rounded-2xl border border-white/20 backdrop-blur-sm">
+                                    <h4 class="text-xs font-bold uppercase tracking-wider text-emerald-200 mb-3 text-center">Alternative: Manual Paybill</h4>
+                                    <div class="space-y-2 text-xs">
+                                        <div class="flex justify-between border-b border-emerald-500/20 pb-1">
+                                            <span class="text-emerald-100">Business No:</span>
+                                            <span class="font-bold font-mono">{{ env('MPESA_SHORTCODE', 'XXXXXX') }}</span>
+                                        </div>
+                                        <div class="flex justify-between border-b border-emerald-500/20 pb-1">
+                                            <span class="text-emerald-100">Account No:</span>
+                                            <span class="font-bold font-mono">YOUR NAME</span>
+                                        </div>
+                                    </div>
+                                </div>
                             </div>
                             
                             <div class="mt-8 pt-6 border-t border-emerald-500/30">
