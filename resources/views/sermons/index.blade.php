@@ -552,8 +552,11 @@
                                 Get weekly sermons, devotionals, and church updates delivered to your inbox.
                             </p>
                             
-                            <form class="space-y-3 sm:space-y-4">
-                                <input type="email" 
+                            <form action="{{ route('newsletter.subscribe') }}" method="POST" class="space-y-3 sm:space-y-4">
+                                @csrf
+                                <input type="email"
+                                       name="email"
+                                       required 
                                        placeholder="Your email address"
                                        class="w-full px-3 sm:px-4 py-2.5 sm:py-3 rounded-xl bg-white/20 backdrop-blur-sm border border-white/30 text-white placeholder-emerald-200 focus:outline-none focus:ring-2 focus:ring-white/50 text-sm sm:text-base">
 
@@ -566,58 +569,7 @@
                             <p class="text-xs sm:text-sm text-emerald-200/70 mt-3 sm:mt-4">No spam, ever. Unsubscribe anytime.</p>
                         </div>
                     </div>
-                    
-                    {{-- Podcast Card --}}
-                    <div class="bg-white rounded-xl sm:rounded-2xl border border-white/20 p-4 sm:p-6 shadow-xl">
-                        <h3 class="text-lg sm:text-xl font-bold text-gray-900 mb-3 sm:mb-4 flex items-center gap-2">
-                            <svg class="w-5 h-5 sm:w-6 sm:h-6 text-[#197b3b]" fill="currentColor" viewBox="0 0 24 24">
-                                <path d="M18 11c0-.959-.68-1.761-1.581-1.954C16.779 8.445 17 7.75 17 7c0-2.206-1.794-4-4-4-1.517 0-2.821.857-3.5 2.104C8.821 3.857 7.517 3 6 3 3.794 3 2 4.794 2 7c0 .902.312 1.727.827 2.396A1.994 1.994 0 0 0 2 11v2c0 1.103.897 2 2 2h.142c.446 1.722 1.997 3 3.858 3 2.206 0 4-1.794 4-4V5h1c1.103 0 2 .897 2 2v6.142c1.722.446 3 1.997 3 3.858 0 2.206-1.794 4-4 4s-4-1.794-4-4c0-1.861 1.278-3.412 3-3.858V13c0 1.103-.897 2-2 2h-1v-1c0-1.654-1.346-3-3-3s-3 1.346-3 3v1H4v-2h8v1c0 1.654 1.346 3 3 3s3-1.346 3-3c0-1.103-.897-2-2-2h-1V7h1c1.103 0 2-.897 2-2s-.897-2-2-2z"/>
-                            </svg>
-                            Listen Anywhere
-                        </h3>
-                        
-                        <p class="text-gray-600 text-sm sm:text-base mb-4 sm:mb-6">
-                            Subscribe to our podcast on your favorite platforms
-                        </p>
-                        
-                        <div class="space-y-2 sm:space-y-3">
-                            <a href="#" target="_blank" 
-                               class="flex items-center gap-3 p-3 sm:p-4 rounded-xl border border-gray-200 hover:border-[#197b3b]/30 hover:shadow-md transition-all group">
-                                <div class="w-10 h-10 sm:w-12 sm:h-12 rounded-xl bg-gradient-to-br from-purple-100 to-pink-100 flex items-center justify-center">
-                                    <svg class="w-5 h-5 sm:w-6 sm:h-6 text-purple-600" fill="currentColor" viewBox="0 0 24 24">
-                                        <path d="M18 11c0-.959-.68-1.761-1.581-1.954C16.779 8.445 17 7.75 17 7c0-2.206-1.794-4-4-4-1.517 0-2.821.857-3.5 2.104C8.821 3.857 7.517 3 6 3 3.794 3 2 4.794 2 7c0 .902.312 1.727.827 2.396A1.994 1.994 0 0 0 2 11v2c0 1.103.897 2 2 2h.142c.446 1.722 1.997 3 3.858 3 2.206 0 4-1.794 4-4V5h1c1.103 0 2 .897 2 2v6.142c1.722.446 3 1.997 3 3.858 0 2.206-1.794 4-4 4s-4-1.794-4-4c0-1.861 1.278-3.412 3-3.858V13c0 1.103-.897 2-2 2h-1v-1c0-1.654-1.346-3-3-3s-3 1.346-3 3v1H4v-2h8v1c0 1.654 1.346 3 3 3s3-1.346 3-3c0-1.103-.897-2-2-2h-1V7h1c1.103 0 2-.897 2-2s-.897-2-2-2z"/>
-                                    </svg>
-                                </div>
-                                <div class="flex-1">
-                                    <div class="font-bold text-gray-900 group-hover:text-[#197b3b] transition-colors text-sm sm:text-base">
-                                        Apple Podcasts
-                                    </div>
-                                    <div class="text-xs sm:text-sm text-gray-600">Subscribe now</div>
-                                </div>
-                                <svg class="w-4 h-4 sm:w-5 sm:h-5 text-gray-400 group-hover:text-[#197b3b] transition-colors" fill="currentColor" viewBox="0 0 24 24">
-                                    <path d="M19 19H5V5h7V3H5c-1.11 0-2 .9-2 2v14c0 1.1.89 2 2 2h14c1.1 0 2-.9 2-2v-7h-2v7zM14 3v2h3.59l-9.83 9.83 1.41 1.41L19 6.41V10h2V3h-7z"/>
-                                </svg>
-                            </a>
-                            
-                            <a href="#" target="_blank" 
-                               class="flex items-center gap-3 p-3 sm:p-4 rounded-xl border border-gray-200 hover:border-[#197b3b]/30 hover:shadow-md transition-all group">
-                                <div class="w-10 h-10 sm:w-12 sm:h-12 rounded-xl bg-gradient-to-br from-green-100 to-emerald-100 flex items-center justify-center">
-                                    <svg class="w-5 h-5 sm:w-6 sm:h-6 text-green-600" fill="currentColor" viewBox="0 0 24 24">
-                                        <path d="M12 0C5.4 0 0 5.4 0 12s5.4 12 12 12 12-5.4 12-12S18.66 0 12 0zm5.521 17.34c-.24.359-.66.48-1.021.24-2.82-1.74-6.36-2.101-10.561-1.141-.418.122-.779-.179-.899-.539-.12-.421.18-.78.54-.9 4.56-1.021 8.52-.6 11.64 1.32.42.18.479.659.301 1.02zm1.44-3.3c-.301.42-.841.6-1.262.3-3.239-1.98-8.159-2.58-11.939-1.38-.479.12-1.02-.12-1.14-.6-.12-.48.12-1.021.6-1.141C9.6 9.9 15 10.561 18.72 12.84c.361.181.54.78.241 1.2zm.12-3.36C15.24 8.4 8.82 8.16 5.16 9.301c-.6.179-1.2-.181-1.38-.721-.18-.601.18-1.2.72-1.381 4.26-1.26 11.28-1.02 15.721 1.621.539.3.719 1.02.419 1.56-.299.421-1.02.601-1.559.3z"/>
-                                    </svg>
-                                </div>
-                                <div class="flex-1">
-                                    <div class="font-bold text-gray-900 group-hover:text-[#197b3b] transition-colors text-sm sm:text-base">
-                                        Spotify
-                                    </div>
-                                    <div class="text-xs sm:text-sm text-gray-600">Follow our show</div>
-                                </div>
-                                <svg class="w-4 h-4 sm:w-5 sm:h-5 text-gray-400 group-hover:text-[#197b3b] transition-colors" fill="currentColor" viewBox="0 0 24 24">
-                                    <path d="M19 19H5V5h7V3H5c-1.11 0-2 .9-2 2v14c0 1.1.89 2 2 2h14c1.1 0 2-.9 2-2v-7h-2v7zM14 3v2h3.59l-9.83 9.83 1.41 1.41L19 6.41V10h2V3h-7z"/>
-                                </svg>
-                            </a>
-                        </div>
-                    </div>
+
                 </div>
             </div>
         </div>
