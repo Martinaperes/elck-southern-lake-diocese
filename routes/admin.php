@@ -66,6 +66,13 @@ Route::middleware(['auth', 'admin'])->prefix('admin')->name('admin.')->group(fun
     // Gallery Management
 Route::resource('gallery', GalleryController::class);
 Route::post('gallery/{gallery}/toggle-active', [GalleryController::class, 'toggleActive'])->name('gallery.toggle-active');
+
+// Reports Management
+Route::prefix('reports')->name('reports.')->group(function () {
+    Route::get('/', [\App\Http\Controllers\Admin\ReportController::class, 'index'])->name('index');
+    Route::get('/donations', [\App\Http\Controllers\Admin\ReportController::class, 'donations'])->name('donations');
+    Route::get('/events', [\App\Http\Controllers\Admin\ReportController::class, 'events'])->name('events');
+});
 //newsletter Management
      Route::prefix('newsletter')->name('newsletter.')->group(function () {
         // Campaigns
