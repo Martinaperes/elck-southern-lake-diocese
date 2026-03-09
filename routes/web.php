@@ -42,9 +42,8 @@ Route::get('/newsletter/welcome', [App\Http\Controllers\NewsletterController::cl
 
 // Public Pages
 Route::get('/', [PageController::class, 'show'])->defaults('page', 'home')->name('home');
-Route::post('/mpesa/callback', function(Request $request) {
-    return response()->json(['status' => 'Callback received']);
-});
+// M-Pesa Callback
+Route::post('/mpesa/callback', [MpesaCallbackController::class, 'handleStkCallback']);
 
 // Contact
 Route::get('/contact', [ContactController::class, 'show'])->name('contact');
