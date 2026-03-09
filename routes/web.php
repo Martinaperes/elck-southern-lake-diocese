@@ -91,6 +91,9 @@ Route::get('/sermons/{sermon}', [SermonController::class, 'show'])->name('sermon
 // Donations
 Route::get('/give', [DonationController::class, 'create'])->name('donations.give');
 Route::post('/give', [DonationController::class, 'store'])->name('donations.store');
+// M-Pesa Callback
+Route::post('/mpesa/callback', [MpesaCallbackController::class, 'handleStkCallback'])
+    ->name('mpesa.callback');
 
 // Testing / Utilities
 Route::get('/test-ministries', function () {
