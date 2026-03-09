@@ -303,6 +303,16 @@ input:focus {
         <form method="POST" action="{{ route('login') }}">
             @csrf
 
+            @if ($errors->any())
+                <div style="background-color: #fee2e2; border-left: 4px solid #ef4444; color: #b91c1c; padding: 12px 15px; margin-bottom: 20px; border-radius: 4px; font-size: 14px;">
+                    <ul style="list-style-type: none; margin: 0; padding: 0;">
+                        @foreach ($errors->all() as $error)
+                            <li style="margin-bottom: 4px;"><i class="fas fa-exclamation-circle" style="margin-right: 8px;"></i>{{ $error }}</li>
+                        @endforeach
+                    </ul>
+                </div>
+            @endif
+
             <div class="form-group">
                 <label>Email</label>
                 <div class="input-with-icon">
