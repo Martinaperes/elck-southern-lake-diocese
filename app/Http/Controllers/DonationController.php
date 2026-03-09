@@ -24,9 +24,21 @@ class DonationController extends Controller
     // Handle form submission
     public function store(Request $request)
     {
+        // Normalize phone number to format: 2547XXXXXXXX or 2541XXXXXXXX
+        $phone = $request->input('phone');
+        $phone = preg_replace('/\D/', '', $phone); // Remove non-digits
+        
+        if (str_starts_with($phone, '0')) {
+            $phone = '254' . substr($phone, 1);
+        } elseif (strlen($phone) == 9 && (str_starts_with($phone, '7') || str_starts_with($phone, '1'))) {
+            $phone = '254' . $phone;
+        }
+
+        $request->merge(['phone' => $phone]);
+
         $validated = $request->validate([
             'amount' => 'required|numeric|min:10',
-            'phone' => ['required', 'string', 'regex:/^254(7|1)\d{8}$/'],
+            'phone' => ['required', 'string', 'regex:/^254[17][0-9]{8}$/'],
             'purpose' => 'required|string|max:255',
         ]);
 
