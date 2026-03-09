@@ -70,10 +70,52 @@
                     <h2 class="text-base font-bold leading-none tracking-tight">{{ Auth::user()->name ?? 'Admin' }}</h2>
                 </div>
             </div>
-            <button class="relative flex items-center justify-center size-10 rounded-full bg-slate-100 dark:bg-white/5 text-slate-700 dark:text-white hover:bg-slate-200 dark:hover:bg-white/10 transition-colors">
-                <span class="material-symbols-outlined text-[24px]">notifications</span>
-                <span class="absolute top-2.5 right-2.5 size-2 bg-red-500 rounded-full border border-background-dark"></span>
-            </button>
+            <!-- Notification Bell & Dropdown -->
+            <div class="relative" id="notification-container">
+                <button id="notification-btn" class="relative flex items-center justify-center size-10 rounded-full bg-slate-100 dark:bg-white/5 text-slate-700 dark:text-white hover:bg-slate-200 dark:hover:bg-white/10 transition-colors focus:outline-none focus:ring-2 focus:ring-primary/50">
+                    <span class="material-symbols-outlined text-[24px]">notifications</span>
+                    <span class="absolute top-2.5 right-2.5 size-2 bg-red-500 rounded-full border border-white dark:border-background-dark animate-pulse"></span>
+                </button>
+                
+                <!-- Notification Dropdown Menu -->
+                <div id="notification-menu" class="absolute right-0 mt-2 w-80 bg-white dark:bg-surface-dark border border-slate-200 dark:border-white/10 rounded-xl shadow-2xl opacity-0 invisible transform scale-95 transition-all duration-200 origin-top-right z-50">
+                    <div class="p-4 border-b border-slate-100 dark:border-white/5 flex justify-between items-center">
+                        <h3 class="font-bold text-slate-800 dark:text-white">Notifications</h3>
+                        <span class="text-xs bg-primary/10 text-primary font-semibold px-2 py-1 rounded-md">2 New</span>
+                    </div>
+                    
+                    <div class="max-h-[300px] overflow-y-auto divide-y divide-slate-100 dark:divide-white/5">
+                        <!-- Item 1 -->
+                        <div class="p-4 hover:bg-slate-50 dark:hover:bg-white/5 transition-colors cursor-pointer flex gap-3">
+                            <div class="size-8 rounded-full bg-blue-100 text-blue-600 flex items-center justify-center shrink-0">
+                                <span class="material-symbols-outlined text-[16px]">person_add</span>
+                            </div>
+                            <div>
+                                <p class="text-sm font-medium text-slate-800 dark:text-white leading-tight">New user registration</p>
+                                <p class="text-xs text-slate-500 mt-1">Owen Mumbo just joined.</p>
+                                <p class="text-[10px] text-slate-400 mt-1">2 hours ago</p>
+                            </div>
+                        </div>
+                        
+                        <!-- Item 2 -->
+                        <div class="p-4 hover:bg-slate-50 dark:hover:bg-white/5 transition-colors cursor-pointer flex gap-3">
+                            <div class="size-8 rounded-full bg-emerald-100 text-emerald-600 flex items-center justify-center shrink-0">
+                                <span class="material-symbols-outlined text-[16px]">payments</span>
+                            </div>
+                            <div>
+                                <p class="text-sm font-medium text-slate-800 dark:text-white leading-tight">New Tithe Received</p>
+                                <p class="text-xs text-slate-500 mt-1">KES 5,000 via M-Pesa</p>
+                                <p class="text-[10px] text-slate-400 mt-1">5 hours ago</p>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="p-3 text-center border-t border-slate-100 dark:border-white/5">
+                        <a href="#" class="text-sm text-primary font-medium hover:underline">Mark all as read</a>
+                    </div>
+                </div>
+            </div>
+            <!-- End Notifications -->
         </div>
     </header>
 
@@ -157,14 +199,14 @@
             </a>
             
             <!-- Donations -->
-            <a href="#" 
+            <a href="{{ route('admin.reports.donations') }}" 
                class="flex flex-col items-center justify-center p-4 rounded-xl bg-slate-50 dark:bg-white/5 hover:bg-slate-100 dark:hover:bg-white/10 border border-slate-200 dark:border-white/5 transition-all hover:scale-105 active:scale-95">
                 <span class="material-symbols-outlined text-[32px] text-primary">volunteer_activism</span>
                 <span class="text-xs font-medium mt-2 text-slate-700 dark:text-slate-300">Donations</span>
             </a>
             
             <!-- Reports -->
-            <a href="#" 
+            <a href="{{ route('admin.reports.index') }}" 
                class="flex flex-col items-center justify-center p-4 rounded-xl bg-slate-50 dark:bg-white/5 hover:bg-slate-100 dark:hover:bg-white/10 border border-slate-200 dark:border-white/5 transition-all hover:scale-105 active:scale-95">
                 <span class="material-symbols-outlined text-[32px] text-primary">insights</span>
                 <span class="text-xs font-medium mt-2 text-slate-700 dark:text-slate-300">Reports</span>
@@ -263,6 +305,46 @@ document.addEventListener('DOMContentLoaded', function() {
             }, 200);
         });
     });
+
+    // Notification dropdown logic
+    const notifBtn = document.getElementById('notification-btn');
+    const notifMenu = document.getElementById('notification-menu');
+
+    if (notifBtn && notifMenu) {
+        notifBtn.addEventListener('click', function(e) {
+            e.stopPropagation();
+            const isVisible = !notifMenu.classList.contains('invisible');
+            
+            if (isVisible) {
+                closeNotifMenu();
+            } else {
+                notifMenu.classList.remove('invisible', 'opacity-0', 'scale-95');
+                notifMenu.classList.add('opacity-100', 'scale-100');
+            }
+        });
+
+        function closeNotifMenu() {
+            notifMenu.classList.remove('opacity-100', 'scale-100');
+            notifMenu.classList.add('opacity-0', 'scale-95');
+            setTimeout(() => {
+                notifMenu.classList.add('invisible');
+            }, 200); // match duration
+        }
+
+        // Close when clicking outside
+        document.addEventListener('click', function(e) {
+            if (!notifMenu.contains(e.target) && e.target !== notifBtn) {
+                closeNotifMenu();
+            }
+        });
+
+        // Close on Escape route
+        document.addEventListener('keydown', function(e) {
+            if (e.key === 'Escape') {
+                closeNotifMenu();
+            }
+        });
+    }
 });
 </script>
 
