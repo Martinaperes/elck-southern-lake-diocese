@@ -43,8 +43,9 @@ return Application::configure(basePath: dirname(__DIR__))
         
 
         // Middleware groups can be extended
-        // $middleware->group('web', [...]);
-        // $middleware->group('api', [...]);
+        $middleware->validateCsrfTokens(except: [
+            '/mpesa/callback',
+        ]);
     })
     ->withExceptions(function (Exceptions $exceptions) {
         // Exception handling
