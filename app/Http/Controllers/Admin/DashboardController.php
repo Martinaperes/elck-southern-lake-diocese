@@ -29,6 +29,22 @@ class DashboardController extends Controller
             'newEventsThisMonth' => Event::whereMonth('created_at', $currentMonth)->whereYear('created_at', $currentYear)->count(),
             'recentActivities' => Activity::with(['user', 'subject'])->latest('performed_at')->take(10)->get(),
             'stats' => $this->getQuickStats(),
+            'getActivityColor' => function($type) {
+                return match($type) {
+                    'created' => 'bg-emerald-100 text-emerald-600 dark:bg-emerald-900/30 dark:text-emerald-400',
+                    'updated' => 'bg-blue-100 text-blue-600 dark:bg-blue-900/30 dark:text-blue-400',
+                    'deleted' => 'bg-red-100 text-red-600 dark:bg-red-900/30 dark:text-red-400',
+                    default => 'bg-slate-100 text-slate-600 dark:bg-slate-800 dark:text-slate-400',
+                };
+            },
+            'getActivityIcon' => function($type) {
+                return match($type) {
+                    'created' => 'add',
+                    'updated' => 'edit',
+                    'deleted' => 'delete',
+                    default => 'history',
+                };
+            },
         ]);
     }
 
