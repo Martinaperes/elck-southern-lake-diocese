@@ -26,7 +26,7 @@ class DonationController extends Controller
     {
         $validated = $request->validate([
             'amount' => 'required|numeric|min:10',
-            'phone' => 'required|string|regex:/^254(7|1)\d{8}$/',
+            'phone' => ['required', 'string', 'regex:/^254(7|1)\d{8}$/'],
             'purpose' => 'required|string|max:255',
         ]);
 
@@ -41,12 +41,15 @@ class DonationController extends Controller
         // Trigger STK Push
         $response = $this->mpesa->stkPush($validated['amount'], $validated['phone'], 'ChurchDonation', $validated['purpose']);
 
-        if(isset($response['CheckoutRequestID'])){
-            $donation->transaction_code = $response['CheckoutRequestID'];
-            $donation->save();
+        if(isset($response['ResponseCode']) && $response['ResponseCode'] == '0'){
+            $donation->update([
+                'transaction_code' => $response['CheckoutRequestID'] ?? null,
+            ]);
+            return back()->with('success', 'M-Pesa prompt sent! Complete the payment on your phone.');
         }
 
-        return back()->with('success', 'M-Pesa prompt sent! Complete the payment on your phone.');
+        // If initiation failed
+        return back()->withErrors(['mpesa' => $response['CustomerMessage'] ?? 'Failed to initiate M-Pesa payment. Please try again.']);
     }
 
     // Optional: AJAX polling for live table
