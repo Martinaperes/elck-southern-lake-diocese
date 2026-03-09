@@ -26,7 +26,7 @@ class DonationController extends Controller
     {
         $validated = $request->validate([
             'amount' => 'required|numeric|min:10',
-            'phone' => 'required|string|regex:/^2547\d{8}$/',
+            'phone' => 'required|string|regex:/^254(7|1)\d{8}$/',
             'purpose' => 'required|string|max:255',
         ]);
 
