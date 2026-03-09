@@ -131,11 +131,9 @@
                                         <div class="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none">
                                             <span class="text-gray-500 font-medium">KES</span>
                                         </div>
-                                        <input type="number" name="amount" id="amount" 
-                                               class="pl-14 w-full bg-gray-50 dark:bg-gray-700/50 border border-gray-200 dark:border-gray-600 text-gray-900 dark:text-gray-100 text-xl font-bold rounded-xl focus:ring-2 focus:ring-[#197b3b] focus:border-[#197b3b] block p-3.5 transition-all" 
-                                               min="10" placeholder="0.00" required>
+                                               min="1" placeholder="0.00" required>
                                     </div>
-                                    <p class="mt-2 text-xs text-gray-500">Minimum donation amount is KES 10.</p>
+                                    <p class="mt-2 text-xs text-gray-500">Minimum donation amount is KES 1.</p>
                                 </div>
 
                                 <!-- Phone Number Field -->
