@@ -37,7 +37,7 @@ class DonationController extends Controller
         $request->merge(['phone' => $phone]);
 
         $validated = $request->validate([
-            'amount' => 'required|numeric|min:10',
+            'amount' => 'required|numeric|min:1',
             'phone' => ['required', 'string', 'regex:/^254[17][0-9]{8}$/'],
             'purpose' => 'required|string|max:255',
         ]);
