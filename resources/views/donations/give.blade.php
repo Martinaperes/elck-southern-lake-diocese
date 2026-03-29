@@ -68,9 +68,9 @@
                                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 18h.01M8 21h8a2 2 0 002-2V5a2 2 0 00-2-2H8a2 2 0 00-2 2v14a2 2 0 002 2z"></path>
                                     </svg>
                                 </div>
-                                <h3 class="text-2xl font-bold mb-4">M-Pesa Giving</h3>
+                                <h3 class="text-2xl font-bold mb-4">Support Our Ministry</h3>
                                 <p class="text-emerald-50 mb-6 font-light leading-relaxed">
-                                    We have simplified our donation process to exclusively use M-Pesa. It is fast, secure, and directly supports our ministries.
+                                    We offer multiple ways to give. Use M-Pesa for local mobile donations, or Donorbox for international card and PayPal contributions.
                                 </p>
                                 <div class="space-y-4">
                                     <div class="flex items-start gap-3">
@@ -120,77 +120,109 @@
 
                         <!-- Form Area -->
                         <div class="md:col-span-3 p-8 sm:p-10">
-                            <form action="{{ route('donations.store') }}" method="POST" id="donationForm">
-                                @csrf
-                                <input type="hidden" name="payment_method" value="mpesa">
-
-                                <!-- Amount Field -->
-                                <div class="mb-6">
-                                    <label for="amount" class="block text-sm font-bold text-gray-700 dark:text-gray-300 mb-2">Donation Amount (KES)</label>
-                                    <div class="relative">
-                                        <div class="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none">
-                                            <span class="text-gray-500 font-medium">KES</span>
-                                        </div>
-                                        <input type="number" name="amount" id="amount" 
-                                               class="pl-14 w-full bg-gray-50 dark:bg-gray-700/50 border border-gray-200 dark:border-gray-600 text-gray-900 dark:text-gray-100 text-xl font-bold rounded-xl focus:ring-2 focus:ring-[#197b3b] focus:border-[#197b3b] block p-3.5 transition-all" 
-                                               min="1" placeholder="0.00" required>
-                                    </div>
-                                    <p class="mt-2 text-xs text-gray-500">Minimum donation amount is KES 1.</p>
-                                </div>
-
-                                <!-- Phone Number Field -->
-                                <div class="mb-6">
-                                    <label for="phone" class="block text-sm font-bold text-gray-700 dark:text-gray-300 mb-2">M-Pesa Phone Number</label>
-                                    <div class="relative">
-                                        <div class="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none">
-                                            <svg class="w-5 h-5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 5a2 2 0 012-2h3.28a1 1 0 01.948.684l1.498 4.493a1 1 0 01-.502 1.21l-2.257 1.13a11.042 11.042 0 005.516 5.516l1.13-2.257a1 1 0 011.21-.502l4.493 1.498a1 1 0 01.684.949V19a2 2 0 01-2 2h-1C9.716 21 3 14.284 3 6V5z"></path>
-                                            </svg>
-                                        </div>
-                                        <input type="text" name="phone" id="phone" 
-                                               class="pl-12 w-full bg-gray-50 dark:bg-gray-700/50 border border-gray-200 dark:border-gray-600 text-gray-900 dark:text-gray-100 text-base font-medium rounded-xl focus:ring-2 focus:ring-[#197b3b] focus:border-[#197b3b] block p-3.5 transition-all" 
-                                               placeholder="2547XXXXXXXX" required>
-                                    </div>
-                                    <p class="mt-2 text-xs text-gray-500">Ensure this number is registered with M-Pesa. Format: 2547...</p>
-                                </div>
-
-                                <!-- Purpose Field -->
-                                <div class="mb-8">
-                                    <label for="purpose" class="block text-sm font-bold text-gray-700 dark:text-gray-300 mb-2">Donation Purpose</label>
-                                    <div class="relative">
-                                        <div class="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none">
-                                            <svg class="w-5 h-5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10"></path>
-                                            </svg>
-                                        </div>
-                                        <select name="purpose" id="purpose" 
-                                                class="pl-12 w-full bg-gray-50 dark:bg-gray-700/50 border border-gray-200 dark:border-gray-600 text-gray-900 dark:text-gray-100 text-base font-medium rounded-xl focus:ring-2 focus:ring-[#197b3b] focus:border-[#197b3b] block p-3.5 transition-all appearance-none" required>
-                                            <option value="" disabled selected>Select where to direct your giving</option>
-                                            <option value="tithe">Tithe</option>
-                                            <option value="offering">Freewill Offering</option>
-                                            <option value="building">Building Fund</option>
-                                            <option value="project">Special Project</option>
-                                            <option value="charity">Charity / Welfare</option>
-                                            <option value="missions">Missions</option>
-                                        </select>
-                                        <div class="absolute inset-y-0 right-0 pr-4 flex items-center pointer-events-none">
-                                            <svg class="w-5 h-5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path></svg>
-                                        </div>
-                                    </div>
-                                </div>
-
-                                <!-- Submit Button -->
-                                <button type="submit" id="submitBtn" class="w-full bg-gradient-to-r from-[#146c33] to-[#197b3b] hover:from-[#0f4a23] hover:to-[#146c33] text-white font-bold text-lg rounded-xl px-4 py-4 shadow-lg hover:shadow-xl transform hover:-translate-y-0.5 transition-all duration-200 flex items-center justify-center gap-2">
-                                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z"></path>
-                                    </svg>
-                                    <span>Donate via M-Pesa</span>
+                            <!-- Payment Method Tabs -->
+                            <div class="flex border-b border-gray-200 dark:border-gray-700 mb-8">
+                                <button onclick="switchTab('mpesa')" id="tab-mpesa" class="px-6 py-3 border-b-2 border-[#197b3b] text-[#197b3b] font-bold text-sm transition-all focus:outline-none">
+                                    M-Pesa (Local)
                                 </button>
-                                
+                                <button onclick="switchTab('donorbox')" id="tab-donorbox" class="px-6 py-3 border-b-2 border-transparent text-gray-500 hover:text-[#197b3b] font-bold text-sm transition-all focus:outline-none">
+                                    Card / International
+                                </button>
+                            </div>
+
+                            <!-- M-Pesa Tab Pane -->
+                            <div id="pane-mpesa" class="tab-pane active">
+                                <form action="{{ route('donations.store') }}" method="POST" id="donationForm">
+                                    @csrf
+                                    <input type="hidden" name="payment_method" value="mpesa">
+
+                                    <!-- Amount Field -->
+                                    <div class="mb-6">
+                                        <label for="amount" class="block text-sm font-bold text-gray-700 dark:text-gray-300 mb-2">Donation Amount (KES)</label>
+                                        <div class="relative">
+                                            <div class="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none">
+                                                <span class="text-gray-500 font-medium">KES</span>
+                                            </div>
+                                            <input type="number" name="amount" id="amount" 
+                                                   class="pl-14 w-full bg-gray-50 dark:bg-gray-700/50 border border-gray-200 dark:border-gray-600 text-gray-900 dark:text-gray-100 text-xl font-bold rounded-xl focus:ring-2 focus:ring-[#197b3b] focus:border-[#197b3b] block p-3.5 transition-all" 
+                                                   min="1" placeholder="0.00" required>
+                                        </div>
+                                        <p class="mt-2 text-xs text-gray-500">Minimum donation amount is KES 1.</p>
+                                    </div>
+
+                                    <!-- Phone Number Field -->
+                                    <div class="mb-6">
+                                        <label for="phone" class="block text-sm font-bold text-gray-700 dark:text-gray-300 mb-2">M-Pesa Phone Number</label>
+                                        <div class="relative">
+                                            <div class="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none">
+                                                <svg class="w-5 h-5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 5a2 2 0 012-2h3.28a1 1 0 01.948.684l1.498 4.493a1 1 0 01-.502 1.21l-2.257 1.13a11.042 11.042 0 005.516 5.516l1.13-2.257a1 1 0 011.21-.502l4.493 1.498a1 1 0 01.684.949V19a2 2 0 01-2 2h-1C9.716 21 3 14.284 3 6V5z"></path>
+                                                </svg>
+                                            </div>
+                                            <input type="text" name="phone" id="phone" 
+                                                   class="pl-12 w-full bg-gray-50 dark:bg-gray-700/50 border border-gray-200 dark:border-gray-600 text-gray-900 dark:text-gray-100 text-base font-medium rounded-xl focus:ring-2 focus:ring-[#197b3b] focus:border-[#197b3b] block p-3.5 transition-all" 
+                                                   placeholder="2547XXXXXXXX" required>
+                                        </div>
+                                        <p class="mt-2 text-xs text-gray-500">Ensure this number is registered with M-Pesa. Format: 2547...</p>
+                                    </div>
+
+                                    <!-- Purpose Field -->
+                                    <div class="mb-8">
+                                        <label for="purpose" class="block text-sm font-bold text-gray-700 dark:text-gray-300 mb-2">Donation Purpose</label>
+                                        <div class="relative">
+                                            <div class="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none">
+                                                <svg class="w-5 h-5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10"></path>
+                                                </svg>
+                                            </div>
+                                            <select name="purpose" id="purpose" 
+                                                    class="pl-12 w-full bg-gray-50 dark:bg-gray-700/50 border border-gray-200 dark:border-gray-600 text-gray-900 dark:text-gray-100 text-base font-medium rounded-xl focus:ring-2 focus:ring-[#197b3b] focus:border-[#197b3b] block p-3.5 transition-all appearance-none" required>
+                                                <option value="" disabled selected>Select where to direct your giving</option>
+                                                <option value="tithe">Tithe</option>
+                                                <option value="offering">Freewill Offering</option>
+                                                <option value="building">Building Fund</option>
+                                                <option value="project">Special Project</option>
+                                                <option value="charity">Charity / Welfare</option>
+                                                <option value="missions">Missions</option>
+                                            </select>
+                                            <div class="absolute inset-y-0 right-0 pr-4 flex items-center pointer-events-none">
+                                                <svg class="w-5 h-5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path></svg>
+                                            </div>
+                                        </div>
+                                    </div>
+
+                                    <!-- Submit Button -->
+                                    <button type="submit" id="submitBtn" class="w-full bg-gradient-to-r from-[#146c33] to-[#197b3b] hover:from-[#0f4a23] hover:to-[#146c33] text-white font-bold text-lg rounded-xl px-4 py-4 shadow-lg hover:shadow-xl transform hover:-translate-y-0.5 transition-all duration-200 flex items-center justify-center gap-2">
+                                        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z"></path>
+                                        </svg>
+                                        <span>Donate via M-Pesa</span>
+                                    </button>
+                                    
+                                    <p class="text-center text-xs text-gray-400 mt-4">
+                                        By proceeding, you will receive an M-Pesa prompt on the provided phone number.
+                                    </p>
+                                </form>
+                            </div>
+
+                            <!-- Donorbox Tab Pane -->
+                            <div id="pane-donorbox" class="tab-pane hidden">
+                                <script src="https://donorbox.org/widget.js" paypalExpress="false"></script>
+                                <div class="w-full flex justify-center">
+                                    <iframe src="{{ env('DONORBOX_URL', 'https://donorbox.org/embed/elck-southern-lake') }}" 
+                                            name="donorbox" 
+                                            allowpaymentrequest="allowpaymentrequest" 
+                                            seamless="seamless" 
+                                            frameborder="0" 
+                                            scrolling="no" 
+                                            height="700px" 
+                                            width="100%" 
+                                            style="max-width: 500px; min-width: 250px; max-height:none!important"></iframe>
+                                </div>
                                 <p class="text-center text-xs text-gray-400 mt-4">
-                                    By proceeding, you will receive an M-Pesa prompt on the provided phone number.
+                                    Secure international giving provided by Donorbox.
                                 </p>
-                            </form>
+                            </div>
                         </div>
                     </div>
                 </div>
@@ -306,36 +338,56 @@
 
 @push('scripts')
 <script>
+    function switchTab(method) {
+        // Panes
+        document.getElementById('pane-mpesa').classList.add('hidden');
+        document.getElementById('pane-donorbox').classList.add('hidden');
+        document.getElementById('pane-' + method).classList.remove('hidden');
+
+        // Tabs
+        document.getElementById('tab-mpesa').classList.remove('border-[#197b3b]', 'text-[#197b3b]');
+        document.getElementById('tab-mpesa').classList.add('border-transparent', 'text-gray-500');
+        document.getElementById('tab-donorbox').classList.remove('border-[#197b3b]', 'text-[#197b3b]');
+        document.getElementById('tab-donorbox').classList.add('border-transparent', 'text-gray-500');
+
+        document.getElementById('tab-' + method).classList.remove('border-transparent', 'text-gray-500');
+        document.getElementById('tab-' + method).classList.add('border-[#197b3b]', 'text-[#197b3b]');
+    }
+
     document.addEventListener('DOMContentLoaded', function() {
         const form = document.getElementById('donationForm');
         const phoneInput = document.getElementById('phone');
         const submitBtn = document.getElementById('submitBtn');
 
-        // Phone formatter
-        phoneInput.addEventListener('input', function(e) {
-            let val = e.target.value.replace(/\D/g, '');
-            if (val.startsWith('0')) {
-                val = '254' + val.substring(1);
-            } else if (val.startsWith('7') || val.startsWith('1')) {
-                val = '254' + val;
-            }
-            e.target.value = val;
-        });
+        if (phoneInput) {
+            // Phone formatter
+            phoneInput.addEventListener('input', function(e) {
+                let val = e.target.value.replace(/\D/g, '');
+                if (val.startsWith('0')) {
+                    val = '254' + val.substring(1);
+                } else if (val.startsWith('7') || val.startsWith('1')) {
+                    val = '254' + val;
+                }
+                e.target.value = val;
+            });
+        }
 
-        // Add loading state on submit
-        form.addEventListener('submit', function(e) {
-            if (form.checkValidity()) {
-                submitBtn.innerHTML = `
-                    <svg class="animate-spin -ml-1 mr-2 h-5 w-5 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
-                        <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
-                        <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
-                    </svg>
-                    Processing... Please wait
-                `;
-                submitBtn.classList.add('opacity-75', 'cursor-not-allowed');
-                // Allow the form to submit organically
-            }
-        });
+        if (form) {
+            // Add loading state on submit
+            form.addEventListener('submit', function(e) {
+                if (form.checkValidity()) {
+                    submitBtn.innerHTML = `
+                        <svg class="animate-spin -ml-1 mr-2 h-5 w-5 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                            <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+                            <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                        </svg>
+                        Processing... Please wait
+                    `;
+                    submitBtn.classList.add('opacity-75', 'cursor-not-allowed');
+                    // Allow the form to submit organically
+                }
+            });
+        }
     });
 </script>
 @endpush
