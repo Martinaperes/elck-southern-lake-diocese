@@ -677,7 +677,7 @@ h3 {
                                     </button>
                                     <button type="button" 
                                             class="px-6 py-3 md:px-8 md:py-3 bg-blue-500 text-white font-semibold rounded-lg hover:bg-blue-600 transition-all duration-200 shadow-lg hover:shadow-xl flex items-center justify-center text-sm md:text-base"
-                                            onclick="window.location.href='{{ route('ministries.index') }}'">
+                                            onclick="window.location.href='{{ route('donations.give') }}'">
                                         <i class="fas fa-donate mr-2"></i>
                                         Make a Donation
                                     </button>
