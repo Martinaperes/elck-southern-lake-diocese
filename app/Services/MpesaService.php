@@ -3,52 +3,75 @@
 namespace App\Services;
 
 use GuzzleHttp\Client;
+use Illuminate\Support\Facades\Log;
 
 class MpesaService
 {
     protected $client;
-    protected $consumer_key;
-    protected $consumer_secret;
-    protected $shortcode;
-    protected $passkey;
-    protected $callback_url;
-
+    protected $config;
     protected $baseUrl;
 
     public function __construct()
     {
         $this->client = new Client();
-        $this->consumer_key = env('MPESA_CONSUMER_KEY');
-        $this->consumer_secret = env('MPESA_CONSUMER_SECRET');
-        $this->shortcode = env('MPESA_SHORTCODE');
-        $this->passkey = env('MPESA_PASSKEY');
-        $this->callback_url = env('MPESA_CALLBACK_URL');
-        $this->baseUrl = env('MPESA_ENV') === 'live' 
+        $this->config = config('mpesa');
+        
+        $this->baseUrl = ($this->config['env'] ?? 'sandbox') === 'live' 
             ? 'https://api.safaricom.co.ke' 
             : 'https://sandbox.safaricom.co.ke';
+    }
+
+    /**
+     * Log M-Pesa events for debugging and tracking
+     */
+    protected function logEvent($label, $data = []) {
+        Log::info("M-PESA [{$label}]", $data);
     }
 
     public function getAccessToken()
     {
         try {
             $response = $this->client->request('GET', $this->baseUrl . '/oauth/v1/generate?grant_type=client_credentials', [
-                'auth' => [$this->consumer_key, $this->consumer_secret]
+                'auth' => [$this->config['consumer_key'], $this->config['consumer_secret']]
             ]);
+            
             $body = json_decode($response->getBody(), true);
-            return $body['access_token'] ?? null;
+            $token = $body['access_token'] ?? null;
+            
+            if (!$token) {
+                $this->logEvent('TOKEN_FAILED', $body);
+            }
+            
+            return $token;
         } catch (\Exception $e) {
-            \Log::error('M-Pesa Access Token Error: ' . $e->getMessage());
+            $this->logEvent('TOKEN_ERROR', ['msg' => $e->getMessage()]);
             return null;
         }
     }
 
-    public function stkPush($amount, $phone, $accountReference = 'Donation', $transactionDesc = 'Church Donation')
+    public function stkPush($amount, $phone, $accountReference = 'Donation', $transactionDesc = 'Church Donation', $transactionType = 'CustomerPayBillOnline')
     {
         $token = $this->getAccessToken();
-        if (!$token) return ['ResponseCode' => 1, 'CustomerMessage' => 'Failed to generate access token'];
+        if (!$token) return ['ResponseCode' => 1, 'CustomerMessage' => 'M-Pesa Authentication failed'];
 
         $timestamp = date('YmdHis');
-        $password = base64_encode($this->shortcode . $this->passkey . $timestamp);
+        $password = base64_encode($this->config['shortcode'] . $this->config['passkey'] . $timestamp);
+
+        $payload = [
+            'BusinessShortCode' => $this->config['shortcode'],
+            'Password' => $password,
+            'Timestamp' => $timestamp,
+            'TransactionType' => $transactionType,
+            'Amount' => (int)$amount,
+            'PartyA' => $phone,
+            'PartyB' => $this->config['shortcode'],
+            'PhoneNumber' => $phone,
+            'CallBackURL' => $this->config['callback_url'],
+            'AccountReference' => $accountReference,
+            'TransactionDesc' => $transactionDesc
+        ];
+
+        $this->logEvent('STK_REQUEST_SENT', $payload);
 
         try {
             $response = $this->client->post($this->baseUrl . '/mpesa/stkpush/v1/processrequest', [
@@ -56,25 +79,54 @@ class MpesaService
                     'Authorization' => 'Bearer ' . $token,
                     'Content-Type' => 'application/json',
                 ],
+                'json' => $payload
+            ]);
+
+            $result = json_decode($response->getBody(), true);
+            $this->logEvent('STK_RESPONSE_RECEIVED', $result);
+            
+            return $result;
+        } catch (\GuzzleHttp\Exception\RequestException $e) {
+            $response = $e->getResponse();
+            $body = $response ? json_decode($response->getBody(), true) : null;
+            
+            $this->logEvent('STK_API_ERROR', [
+                'status' => $response ? $response->getStatusCode() : 'No Response',
+                'body' => $body,
+                'msg' => $e->getMessage()
+            ]);
+
+            return [
+                'ResponseCode' => 1, 
+                'CustomerMessage' => $body['errorMessage'] ?? 'M-Pesa API Error (Status: ' . ($response ? $response->getStatusCode() : 'Unknown') . ')'
+            ];
+        } catch (\Exception $e) {
+            $this->logEvent('STK_FATAL_ERROR', ['msg' => $e->getMessage()]);
+            return ['ResponseCode' => 1, 'CustomerMessage' => 'Failed to connect to M-Pesa. Please check your configuration.'];
+        }
+    }
+
+    public function verifyTransaction($checkoutRequestId)
+    {
+        $this->logEvent('VERIFY_REQUEST_INITIATED', ['checkout_request_id' => $checkoutRequestId]);
+
+        try {
+            $response = $this->client->post($this->config['verify_url'], [
+                'headers' => [
+                    'Content-Type' => 'application/json',
+                ],
                 'json' => [
-                    'BusinessShortCode' => $this->shortcode,
-                    'Password' => $password,
-                    'Timestamp' => $timestamp,
-                    'TransactionType' => 'CustomerPayBillOnline',
-                    'Amount' => $amount,
-                    'PartyA' => $phone,
-                    'PartyB' => $this->shortcode,
-                    'PhoneNumber' => $phone,
-                    'CallBackURL' => $this->callback_url,
-                    'AccountReference' => $accountReference,
-                    'TransactionDesc' => $transactionDesc
+                    'checkout_request_id' => $checkoutRequestId
                 ]
             ]);
 
-            return json_decode($response->getBody(), true);
+            $result = json_decode($response->getBody(), true);
+            $this->logEvent('VERIFY_RESPONSE_RECEIVED', $result);
+            
+            return $result;
         } catch (\Exception $e) {
-            \Log::error('M-Pesa STK Push Error: ' . $e->getMessage());
-            return ['ResponseCode' => 1, 'CustomerMessage' => 'Failed to initiate STK push'];
+            $this->logEvent('VERIFY_FATAL_ERROR', ['msg' => $e->getMessage()]);
+            return ['status' => 'error', 'message' => 'Unable to verify payment status at this moment.'];
         }
     }
 }
