@@ -57,7 +57,8 @@ class DonationController extends Controller
             $donation->update([
                 'transaction_code' => $response['CheckoutRequestID'] ?? null,
             ]);
-            return back()->with('success', 'M-Pesa prompt sent! Complete the payment on your phone.');
+            return back()->with('success', 'M-Pesa prompt sent! Complete the payment on your phone.')
+                         ->with('checkout_request_id', $response['CheckoutRequestID'] ?? null);
         }
 
         // If initiation failed
@@ -69,5 +70,28 @@ class DonationController extends Controller
     {
         $donations = auth()->user()->donations()->latest()->get();
         return response()->json(['donations' => $donations]);
+    }
+
+    public function checkStatus($checkoutRequestId)
+    {
+        $response = $this->mpesa->verifyTransaction($checkoutRequestId);
+        
+        // If the transaction is completed, update the donation in our DB
+        if (isset($response['transaction_status'])) {
+            $donation = Donation::where('transaction_code', $checkoutRequestId)->first();
+            
+            if ($donation) {
+                if ($response['transaction_status'] === 'completed') {
+                    $donation->update([
+                        'status' => 'completed',
+                        'transaction_code' => $response['data']['mpesa_receipt_number'] ?? $checkoutRequestId
+                    ]);
+                } elseif ($response['transaction_status'] === 'failed') {
+                    $donation->update(['status' => 'failed']);
+                }
+            }
+        }
+        
+        return response()->json($response);
     }
 }
