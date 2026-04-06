@@ -30,11 +30,21 @@
     <div class="max-w-[1000px] mx-auto px-4 sm:px-6 lg:px-8 -mt-16 sm:-mt-24 relative z-10">
         <!-- Flash Messages -->
         @if(session('success'))
-            <div class="bg-emerald-100 border border-emerald-400 text-emerald-700 px-4 py-3 rounded-xl relative mb-6 shadow-sm flex items-center gap-3 animate-fadeIn" role="alert">
-                <svg class="w-5 h-5 flex-shrink-0" fill="currentColor" viewBox="0 0 20 20">
-                    <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd"/>
-                </svg>
-                <span class="block sm:inline font-medium">{{ session('success') }}</span>
+            <div id="mpesa-polling-status" class="bg-emerald-100 border border-emerald-400 text-emerald-700 px-4 py-4 rounded-xl relative mb-6 shadow-sm flex items-start gap-3 animate-fadeIn" role="alert">
+                <div class="mt-1">
+                    <svg class="w-5 h-5 flex-shrink-0" fill="currentColor" viewBox="0 0 20 20">
+                        <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd"/>
+                    </svg>
+                </div>
+                <div class="flex-grow">
+                    <span class="block font-bold text-lg mb-1" id="status-message">{{ session('success') }}</span>
+                    @if(session('checkout_request_id'))
+                        <div id="polling-indicator" class="flex items-center gap-2 text-sm text-emerald-600 dark:text-emerald-400">
+                             <div class="animate-spin h-4 w-4 border-2 border-emerald-500 border-t-transparent rounded-full"></div>
+                             <span id="polling-text">Verifying your payment... Don't close this page.</span>
+                        </div>
+                    @endif
+                </div>
             </div>
         @endif
 
@@ -384,11 +394,86 @@
                         Processing... Please wait
                     `;
                     submitBtn.classList.add('opacity-75', 'cursor-not-allowed');
-                    // Allow the form to submit organically
                 }
             });
         }
     });
+
+    // Logging initial server-side errors to console
+    @if($errors->any())
+        console.error("M-Pesa Initiation Errors:", @json($errors->all()));
+    @endif
+
+    @if(session('success'))
+        console.log("M-Pesa Status:", "{{ session('success') }}");
+    @endif
+
+    @if(session('checkout_request_id'))
+    (function() {
+        let attempts = 0;
+        const maxAttempts = 30; // 60 seconds
+        const checkoutRequestId = "{{ session('checkout_request_id') }}";
+        console.log("Starting polling for CheckoutRequestID:", checkoutRequestId);
+        
+        const statusMessage = document.getElementById('status-message');
+        const pollingIndicator = document.getElementById('polling-indicator');
+        const statusDiv = document.getElementById('mpesa-polling-status');
+
+        function checkStatus() {
+            attempts++;
+            if (attempts > maxAttempts) {
+                console.warn("Polling timed out after 30 attempts.");
+                pollingIndicator.innerHTML = `
+                    <svg class="w-5 h-5 text-amber-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                    </svg>
+                    <span>Verification taking longer than expected. Please check your history below.</span>
+                `;
+                return;
+            }
+
+            fetch(`/mpesa/verify/${checkoutRequestId}`)
+                .then(response => response.json())
+                .then(data => {
+                    console.log("Polling response:", data);
+
+                    if (data.transaction_status === 'completed') {
+                        console.log("Transaction Success!");
+                        statusMessage.innerText = "Payment Successful!";
+                        pollingIndicator.innerHTML = `
+                            <svg class="w-5 h-5 text-emerald-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path>
+                            </svg>
+                            <span class="font-bold">Transaction Verified! Receipt: ${data.data.mpesa_receipt_number}</span>
+                        `;
+                        // Trigger a reload after 3 seconds to show updated history
+                        setTimeout(() => window.location.reload(), 3000);
+                    } else if (data.transaction_status === 'failed') {
+                        console.error("Transaction Failed:", data);
+                        statusDiv.classList.remove('bg-emerald-100', 'border-emerald-400', 'text-emerald-700');
+                        statusDiv.classList.add('bg-red-50', 'border-red-200', 'text-red-700');
+                        statusMessage.innerText = "Payment Failed";
+                        pollingIndicator.innerHTML = `
+                            <svg class="w-5 h-5 text-red-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
+                            </svg>
+                            <span>${data.error_description || 'Transaction was cancelled or failed.'}</span>
+                        `;
+                    } else {
+                        // Still pending, check again in 2 seconds
+                        setTimeout(checkStatus, 2000);
+                    }
+                })
+                .catch(error => {
+                    console.error('Polling network error:', error);
+                    setTimeout(checkStatus, 2000); // Retry on network error
+                });
+        }
+
+        // Start polling
+        setTimeout(checkStatus, 2000);
+    })();
+    @endif
 </script>
 @endpush
 @endsection
