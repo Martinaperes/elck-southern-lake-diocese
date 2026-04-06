@@ -95,6 +95,8 @@ Route::post('/give', [DonationController::class, 'store'])->name('donations.stor
 Route::post('/mpesa/callback', [MpesaCallbackController::class, 'handleStkCallback'])
     ->name('mpesa.callback');
 
+Route::get('/mpesa/verify/{checkoutRequestId}', [DonationController::class, 'checkStatus'])->name('mpesa.verify');
+
 // Testing / Utilities
 Route::get('/test-ministries', function () {
     $ministries = \App\Models\Ministry::where('is_active', true)->get();
